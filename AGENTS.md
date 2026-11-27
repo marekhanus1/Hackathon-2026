@@ -1,4 +1,4 @@
-# Pravidla pro AI agenty (Claude Code, Gemini CLI, …)
+# Pravidla pro AI agenty (Claude Code, Gemini, Codex, …)
 
 Tento soubor je **jediný zdroj pravdy** pro všechny agenty. `CLAUDE.md` a `GEMINI.md`
 na něj jen odkazují — pravidla měň tady.
@@ -9,22 +9,25 @@ nepřepisoval práci a merge byl nudný.
 ## Projekt
 
 Narsil: Android aplikace proti prokrastinaci na sociálních sítích (hackathon, 20 h).
-Zadání a plán: docs/BRIEF.md. Priorita: funkční demo, ne dokonalý kód.
+Zadání a plán: docs/BRIEF.md. Pravidla chování a čísla: docs/SPEC.md.
+Rozhraní, UI sloty a sdílená databáze: docs/contracts.md (rozšíření v docs/SPEC.md, sekce 11).
+Priorita: funkční demo, ne dokonalý kód.
 
 - Stack: Kotlin, Jetpack Compose, jeden modul app, minSdk 29, Room, CameraX,
   ML Kit Pose Detection, Health Connect, Media3, OkHttp.
 - Build: ./gradlew assembleDebug · Testy: ./gradlew testDebugUnitTest
 - Instalace: ./gradlew installDebug (demo Nothing Phone 3a, záloha Redmi Note 11)
 - Balíčky a vlastníci (Soubory v tasku jen z vlastních balíčků):
-  - cz.narsil.core, detection, overlay, app: Marek / Claude (úkoly 1xx)
-  - cz.narsil.movement, gamification, contract, llm: Šimon / Claude (2xx)
+  - cz.narsil.core (vč. databáze), detection, overlay, app: Marek / Claude (1xx)
+  - cz.narsil.movement, gamification, contract: Šimon / Claude (2xx)
   - cz.narsil.ui a res/: Jan / Antigravity (3xx); každá obrazovka ve vlastní
     složce ui/screens/<obrazovka>/, sdílené komponenty jen v úkolu 302
   - mockdata/, pitch/, assets/: Štěpán / Gemini (4xx)
-- Rozhraní v cz.narsil.core a docs/contracts.md mění jen Marek.
+  - cz.narsil.verify, integrations, llm: Člen 5 / Codex (5xx)
+- Rozhraní v cz.narsil.core, schéma databáze a docs/contracts.md mění jen Marek.
 - Blokuje tě cizí modul: použij fake z cz.narsil.core.fake a pokračuj.
 - Nové závislosti nepřidávej, vše je v gradle/libs.versions.toml.
-- API klíč Claude jen v local.properties (není v gitu).
+- API klíče (Claude, Gemini, OpenAI, Strava) jen v local.properties, nikdy v gitu.
 - Texty v UI česky. Hlavní mechanika se v UI jmenuje Ozvěna.
 
 ## Zlatá pravidla
@@ -35,7 +38,7 @@ Zadání a plán: docs/BRIEF.md. Priorita: funkční demo, ne dokonalý kód.
    které k úkolu patří (sekce `Soubory` v tasku). Pokud potřebuješ sáhnout jinam,
    napiš to do tasku a dej vědět člověku.
 3. **Malé, časté commity** s prefixem agenta: `[claude] přidán endpoint /login`,
-   `[gemini] oprava parsování CSV`.
+   `[gemini] oprava parsování CSV`, `[codex] klient Strava`.
 4. **Před PR se rebasni na `origin/main`** (`git fetch && git rebase origin/main`)
    a ověř, že projekt jde spustit / testy projdou.
 5. **Nemaž a nepřepisuj cizí kód** bez zmínky v PR. Nedělej force-push na cizí větve.
