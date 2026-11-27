@@ -1,9 +1,9 @@
 ---
-status: todo
-owner: 
-agent: 
-branch: 
-pr: 
+status: review
+owner: jan
+agent: gemini
+branch: jan/gemini/324-obrazovka-overeni
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/18
 ---
 
 # 324 – Obrazovka ověření úkolu

@@ -1,9 +1,9 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:              # jméno člověka
-agent:              # claude | gemini | human
-branch:
-pr:
+status: review      # todo | in-progress | review | done
+owner: jan          # jméno člověka
+agent: gemini       # claude | gemini | human
+branch: jan/gemini/310-ozvena-overlay
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/17
 ---
 
 # 310 – Obrazovka Ozvěny (překryvné okno)

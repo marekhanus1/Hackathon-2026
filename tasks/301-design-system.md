@@ -1,9 +1,9 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:              # jméno člověka
-agent:              # claude | gemini | human
-branch:
-pr:
+status: done        # todo | in-progress | review | done
+owner: jan          # jméno člověka
+agent: gemini       # claude | gemini | human
+branch: jan/gemini/301-design-system
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/5
 ---
 
 # 301 – Design systém: barvy, typografie, tvary

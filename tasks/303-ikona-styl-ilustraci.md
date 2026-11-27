@@ -1,9 +1,9 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:              # jméno člověka
-agent:              # claude | gemini | human
-branch:
-pr:
+status: done        # todo | in-progress | review | done
+owner: jan          # jméno člověka
+agent: gemini       # claude | gemini | human
+branch: jan/gemini/303-ikona-a-styl
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/7
 ---
 
 # 303 – Ikona aplikace a styl ilustrací
