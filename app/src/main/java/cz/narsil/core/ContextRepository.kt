@@ -17,6 +17,12 @@ interface ContextRepository {
     /** Ruční přepínač „jsem doma / venku“; null = automatika. */
     val manualOverride: StateFlow<ComfortContext?>
 
-    /** Nastaví ruční přepínač; null vrátí automatickou detekci. */
+    /** Nastaví ruční přepínač; null vrátí automatickou detekci. Platí do konce dne (4:00). */
     suspend fun setManualOverride(context: ComfortContext?)
+
+    /** Název aktuální Wi-Fi; null = žádná Wi-Fi nebo název nejde zjistit (chybí poloha). */
+    val currentWifiSsid: StateFlow<String?>
+
+    /** „Tohle je můj domov“: uloží aktuální Wi-Fi do `Settings.homeSsid`. false = není co uložit. */
+    suspend fun saveCurrentWifiAsHome(): Boolean
 }
