@@ -46,5 +46,15 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
+
+        <!-- 113: ladění Ozvěny – adb shell am broadcast -a cz.narsil.DEBUG_ECHO -p cz.narsil -->
+        <receiver
+            android:name=".overlay.OverlayDebugReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="cz.narsil.DEBUG_ECHO" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
