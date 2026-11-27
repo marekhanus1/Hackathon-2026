@@ -232,6 +232,48 @@ Nothing Phone 3a je demo telefon, Redmi Note 11 telefon Parťáka a záloha. Oba
 
 # Plány agentů (záložky)
 
+## Předání Markovi: co Šimon (2xx) nemohl dodělat
+
+Stav 28. 11.: úkoly 201–231 jsou hotové v kódu a v review (PR #32–#40, #42, #43), build a 104 unit testů prochází.
+Následující body z vlastních balíčků Šimon udělat nemohl (cizí soubory, nebo jen na telefonu). **Vlastník: Marek.**
+
+**Napojení v aplikaci (124, `ServiceLocator`)**
+- [ ] Pohyb: `MovementModule.create(appContext)` + `startAutoRefresh(appScope)` (211).
+- [ ] Gamifikace: `GamificationModule.create(appContext, appScope)` a po vytvoření smlouvy a pohybu `GamificationModule.watchContract(engine, contractRepository, movementRepository, appScope)` (220, +100 XP za splněnou smlouvu).
+- [ ] Smlouva a Ozvěna: `ContractModule.contractRepository(appContext, appScope)`, `ContractModule.echoVideoRepository(appContext)` (212).
+- [ ] Odměny: `TaskRewardService.create(appContext, movement, gamification)` (221), volá ho ověření (520).
+- [ ] Dřepy: `PoseSquatCounter(appContext)` (210/231); náhled `SquatCameraPreview(counter)` do `SquatScreen(cameraPreviewSlot = …)`.
+
+**Demo panel (123, `app/demo/DemoActions.kt`)**
+- [ ] `prepareDemo()`: místo `setState(FakeGamificationEngine.DEMO_STATE)` (1 340 XP – dřepy pak úroveň nespustí) volat `GamificationDebug.prepareDemo(engine)` (1 480 XP, 20 dřepů → úroveň 4, 230) a `MovementDebug.resetDay(movement)`.
+- [ ] Tlačítka přes `MovementDebug.addSteps`, `GamificationDebug.addXp` / `setAvatar` / `resetDay` – fungují i se skutečnými moduly (222).
+- [ ] Na obrazovce dřepů v demo režimu zobrazit `SquatTuningOverlay(counter)` pro zkoušku v sále.
+
+**Overlay a Ozvěna (114/115)**
+- [ ] Animace nové úrovně (321): ukázat, když `level` po `onOutcome` > `level` před ním (`DemoTuning.levelsUp`).
+- [ ] Dřepy nad 20 posílat do `RulesGamificationEngine.onExtraSquats(n)` – za každých 50 navíc žolík.
+
+**Onboarding (122)**
+- [ ] Oprávnění Health Connect: `registerForActivityResult(HealthConnectStepsSource.permissionContract())` s `HealthConnectStepsSource.PERMISSIONS`; na Redmi případně doinstalovat Health Connect (`HealthConnectStepsSource.isAvailable`).
+- [ ] Runtime oprávnění `ACTIVITY_RECOGNITION` (záloha senzor kroků), `CAMERA`, `RECORD_AUDIO` (video smlouvy), `POST_NOTIFICATIONS` (zpráva Parťákovi).
+- [ ] Video z onboardingu uložit přes `PrefsOnboardingVideoStore(context).save(uri, den)` – záloha Ozvěny (SPEC 9).
+
+**Databáze a manifest (jen Marek)**
+- [ ] `XpDao.all()` – gamifikace teď načítá historii po dnech za 90 dní (`RoomGamificationStore`).
+- [ ] Manifest z PR #36 (211): `<queries>` pro Health Connect a dva `activity-alias` na MainActivity (vysvětlení oprávnění) – zkontrolovat při merge.
+
+**Jen na telefonu (130, s pomocí Šimona)**
+- [ ] 231: 3 různí lidé × 20 dřepů na Nothing i Redmi v sále se `SquatTuningOverlay`; při chybách doladit `SquatThresholds.downDepth` / `upDepth`.
+- [ ] 211: kroky z Health Connect a ze senzoru se promítnou do zůstatku (kroky / 100).
+- [ ] 212: nahrání 15s videa smlouvy přední kamerou a jeho přehrání v Ozvěně druhý den.
+
+**Rozhodnutí k odsouhlasení (zapsat do `docs/decisions.md`)**
+- [ ] Postava: kdo má méně než 7 dní historie, nespadne pod `OK` (nikdy netrestat; SPEC 8 by dal `EXHAUSTED`).
+- [ ] Ozvěna: nejdřív video **dnešní** smlouvy (natočené včera večer), pak starší, pak onboarding (SPEC 9 doslova „staršího dne“).
+- [ ] Dřepy: tolerantní prahy pro sál (dole ≈ 122°, nahoře ≈ 150°) místo 100° / 160° ze SPEC 3/210, plus signál ze stehna pro postoj čelem ke kameře.
+
+**Pořadí merge PR:** #34 (203) a #33 (202) → #36 (211) a #38 (220) → #40 (222) → #42 (230); #43 (231) po #35 (210); #32, #37, #39 nezávisle.
+
 ## Plány agentů
 
 Každý člověk řídí jednoho hlavního agenta jako orchestrátora. Orchestrátor sám skoro nepíše kód: rozdělí fázi na nezávislé proudy, každý proud pustí jako samostatného subagenta ve vlastním worktree, kontroluje výsledky a otevírá PR. Pravidla repozitáře jsou v `AGENTS.md`. Brief exportujte do Markdownu jako `docs/BRIEF.md` včetně těchto záložek.
