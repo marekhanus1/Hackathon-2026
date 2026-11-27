@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/110-accessibility-service
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/20
 ---
 
 # 110 – AccessibilityService: aplikace v popředí a URL
