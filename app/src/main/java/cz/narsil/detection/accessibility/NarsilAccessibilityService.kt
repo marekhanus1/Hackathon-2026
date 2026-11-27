@@ -25,9 +25,9 @@ class NarsilAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        instanceRef = WeakReference(this) // dřív než setConnected: posluchači hned čtou instance
-        AccessibilityEvents.setConnected(true)
-        Log.i(TAG, "služba připojena")
+        instanceRef = WeakReference(this) // dřív než attach: posluchači hned čtou instance
+        AccessibilityEvents.attach(this)
+        Log.i(TAG, "služba připojena (${System.identityHashCode(this)})")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -99,8 +99,16 @@ class NarsilAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() = Unit
 
+    override fun onUnbind(intent: android.content.Intent?): Boolean {
+        Log.i(TAG, "služba odpojena (${System.identityHashCode(this)})")
+        AccessibilityEvents.detach(this)
+        return super.onUnbind(intent)
+    }
+
     override fun onDestroy() {
-        AccessibilityEvents.setConnected(false)
+        Log.i(TAG, "služba zničena (${System.identityHashCode(this)})")
+        // Stará instance po přeinstalaci se ničí až po připojení nové: odpojit jen sebe.
+        AccessibilityEvents.detach(this)
         if (instanceRef.get() === this) instanceRef = WeakReference(null)
         super.onDestroy()
     }
