@@ -9,15 +9,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import cz.narsil.app.nav.NarsilNavHost
+import cz.narsil.ui.theme.NarsilTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // Vlastní téma dodá Jan v cz.narsil.ui.theme; pak nahradit MaterialTheme.
-            MaterialTheme {
-                Surface(Modifier.fillMaxSize()) {
+            NarsilTheme {
+                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     NarsilNavHost()
                 }
             }
