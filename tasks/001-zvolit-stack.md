@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/001-zvolit-stack
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/1
 ---
 
 # 001 – Zvolit projekt a stack
