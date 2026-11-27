@@ -12,7 +12,6 @@ import cz.narsil.core.LlmProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -126,6 +125,5 @@ class LlmTaskVerifierTest {
         assertEquals(512 to 384, VerifyRules.scaledSize(4000, 3000))
         assertEquals(300 to 200, VerifyRules.scaledSize(300, 200))
         assertEquals("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", VerifyRules.sha256Hex("abc".toByteArray()))
-        assertNull(null)
     }
 }
