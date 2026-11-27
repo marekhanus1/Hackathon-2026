@@ -94,7 +94,7 @@ fun DemoPanelScreen(onBack: () -> Unit) {
             scope.launch {
                 val ok = block()
                 snackbar.currentSnackbarData?.dismiss()
-                snackbar.showSnackbar(if (ok) done else "Nejde: modul ještě není fake / služba neběží")
+                snackbar.showSnackbar(if (ok) done else "Nejde: služba neběží nebo modul akci nepodporuje")
             }
         }
 
@@ -239,7 +239,7 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                     onClick = { act("Den resetován") { DemoActions.resetDay(); true } },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("Reset dne") }
-                Hint("Mock data (430) zatím nejsou. Pohyb a XP běží přes ukázková data, dokud je nedodá Šimon.")
+                Hint("Mock data (430) zatím nejsou. Při zapnutých fake jsou pohyb a XP ukázková data.")
             }
         }
     }

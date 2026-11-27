@@ -1,6 +1,12 @@
 package cz.narsil.app
 
 import android.content.Context
+import cz.narsil.contract.ContractModule
+import cz.narsil.core.RewardService
+import cz.narsil.core.fake.FakeRewardService
+import cz.narsil.gamification.GamificationModule
+import cz.narsil.gamification.reward.TaskRewardService
+import cz.narsil.movement.MovementModule
 import cz.narsil.core.ContextRepository
 import cz.narsil.core.ContractRepository
 import cz.narsil.core.EchoVideoRepository
@@ -58,8 +64,7 @@ object ServiceLocator {
 
     /**
      * true = všechno fake (náhledy, demo bez telefonu). false = skutečné moduly, kde už existují
-     * (detekce 110/111, kontext 112, nastavení 105); pohyb, dřepy, gamifikace a smlouva zůstávají
-     * fake, dokud je nedodá Šimon (203/210/211/202/212).
+     * (detekce, kontext, nastavení, pohyb, dřepy, gamifikace, smlouva, odměny).
      */
     const val DEFAULT_USE_FAKES = false
 
@@ -117,18 +122,42 @@ object ServiceLocator {
             else AccessibilityTriggerSource(contextRepository, settingsRepository, appScope)
         }
 
-    // Fake, dokud nejsou skutečné moduly (Šimon). Pak: if (useFakes) Fake… else Real…
-    val movementRepository: MovementRepository
-        get() = cached("movement") { FakeMovementRepository() }
+    // Pohyb, gamifikace a smlouva (Šimon, 2xx). Při useFakes ukázková data.
 
-    val gamificationEngine: GamificationEngine
-        get() = cached("gamification") { FakeGamificationEngine() }
+    val movementRepository: MovementRepository
+        get() = cached("movement") {
+            if (useFakes) FakeMovementRepository()
+            else MovementModule.create(appContext).also { it.startAutoRefresh(appScope) }
+        }
 
     val contractRepository: ContractRepository
-        get() = cached("contract") { FakeContractRepository() }
+        get() = cached("contract") {
+            if (useFakes) FakeContractRepository() else ContractModule.contractRepository(appContext, appScope)
+        }
+
+    val gamificationEngine: GamificationEngine
+        get() = cached("gamification") {
+            if (useFakes) {
+                FakeGamificationEngine()
+            } else {
+                GamificationModule.create(appContext, appScope).also {
+                    // +100 XP a série za splněnou smlouvu (220).
+                    GamificationModule.watchContract(it, contractRepository, movementRepository, appScope)
+                }
+            }
+        }
 
     val echoVideoRepository: EchoVideoRepository
-        get() = cached("echoVideo") { FakeEchoVideoRepository() }
+        get() = cached("echoVideo") {
+            if (useFakes) FakeEchoVideoRepository() else ContractModule.echoVideoRepository(appContext)
+        }
+
+    /** Odměna za ověřený úkol (221); volá ověření (520). */
+    val rewardService: RewardService
+        get() = cached("reward") {
+            if (useFakes) FakeRewardService(movementRepository, gamificationEngine)
+            else TaskRewardService.create(appContext, movementRepository, gamificationEngine)
+        }
 
     val squatCounter: SquatCounter
         get() = cached("squats") {
