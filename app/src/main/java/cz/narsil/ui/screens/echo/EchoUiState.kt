@@ -13,7 +13,8 @@ enum class EchoFeeling(val label: String) {
     NUDA("Nuda"),
     UNAVA("Únava"),
     UKOL("Těžký úkol"),
-    SAMOTA("Samota")
+    SAMOTA("Samota"),
+    JINE("Jiné")
 }
 
 data class EchoUiState(
