@@ -50,6 +50,9 @@ class WifiContextRepository(
     /** Poslední hodnota z callbacku s FLAG_INCLUDE_LOCATION_INFO (jediný zdroj nezačerněného SSID od Androidu 12). */
     @Volatile
     private var callbackWifi: WifiReading? = null
+
+    /** Wi-Fi sítě, které callback hlásí jako připojené (onLost je odebere). */
+    private val wifiNetworks = java.util.concurrent.ConcurrentHashMap.newKeySet<Network>()
     private val _override = MutableStateFlow(loadOverride())
     private val _context = MutableStateFlow(ComfortContext.UNKNOWN)
 
@@ -102,34 +105,46 @@ class WifiContextRepository(
      * známou síť z callbacku.
      */
     fun refresh() {
-        val caps = connectivity.activeNetwork?.let { connectivity.getNetworkCapabilities(it) }
-        val reading = readingFrom(caps)
         val known = callbackWifi
-        _wifi.value = if (reading == WifiReading.Unknown && known is WifiReading.Connected) known else reading
+        // Dokud callback drží připojenou Wi-Fi, je jeho stav pravdivý: activeNetwork může být mobilní
+        // (Wi-Fi bez internetu) a WifiManager na Androidu 16 vrací networkId -1 → falešné NotOnWifi.
+        if (wifiNetworks.isNotEmpty() && known != null) {
+            val reading = wifiNetworks.firstNotNullOfOrNull { connectivity.getNetworkCapabilities(it) }?.let(::readingFrom)
+            _wifi.value = if (reading is WifiReading.Connected) reading else known
+            return
+        }
+        val caps = connectivity.activeNetwork?.let { connectivity.getNetworkCapabilities(it) }
+        _wifi.value = readingFrom(caps)
     }
 
-    private fun onCallback(caps: NetworkCapabilities) {
+    private fun onCallback(network: Network, caps: NetworkCapabilities) {
+        wifiNetworks += network
         val reading = readingFrom(caps)
+        // Začerněné SSID nepřepíše už známou síť.
+        if (reading == WifiReading.Unknown && callbackWifi is WifiReading.Connected) return
         callbackWifi = reading
         _wifi.value = reading
     }
 
-    private fun onWifiLost() {
-        callbackWifi = null
-        refresh()
+    private fun onWifiLost(network: Network) {
+        wifiNetworks -= network
+        if (wifiNetworks.isEmpty()) {
+            callbackWifi = null
+            _wifi.value = WifiReading.NotOnWifi
+        }
     }
 
     private fun registerCallback() {
         val request = NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build()
         val callback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             object : ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
-                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = onCallback(caps)
-                override fun onLost(network: Network) = onWifiLost()
+                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = onCallback(network, caps)
+                override fun onLost(network: Network) = onWifiLost(network)
             }
         } else {
             object : ConnectivityManager.NetworkCallback() {
-                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = onCallback(caps)
-                override fun onLost(network: Network) = onWifiLost()
+                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = onCallback(network, caps)
+                override fun onLost(network: Network) = onWifiLost(network)
             }
         }
         runCatching { connectivity.registerNetworkCallback(request, callback) }
@@ -139,7 +154,8 @@ class WifiContextRepository(
 
     @Suppress("DEPRECATION")
     private fun readingFrom(caps: NetworkCapabilities?): WifiReading {
-        if (caps == null || !caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+        val onWifi = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true || wifiNetworks.isNotEmpty()
+        if (!onWifi) {
             // Aktivní síť může být mobilní, i když je Wi-Fi připojená (bez internetu) – rozhoduje WifiManager.
             if (wifiManager?.connectionInfo?.networkId?.let { it != -1 } != true) return WifiReading.NotOnWifi
         }
