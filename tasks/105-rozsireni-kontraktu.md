@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/105-rozsireni-kontraktu
-pr: 
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/19
 ---
 
 # 105 – Rozšíření kontraktů, sdílená databáze, nastavení
