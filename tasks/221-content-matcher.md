@@ -1,8 +1,8 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:              # jméno člověka
-agent:              # claude | gemini | human
-branch:
+status: in-progress
+owner: simon
+agent: claude
+branch: simon/claude/221-content-matcher
 pr:
 ---
 
