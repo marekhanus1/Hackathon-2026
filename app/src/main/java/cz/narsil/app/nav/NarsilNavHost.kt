@@ -58,6 +58,10 @@ fun NarsilNavHost(
             // 320 + 122: OnboardingScreen
             PlaceholderScreen(NarsilRoute.Onboarding, onNavigate = navigate, onBack = back)
         }
+        composable(NarsilRoute.Settings.route) {
+            // 325: SettingsScreen (Jan)
+            PlaceholderScreen(NarsilRoute.Settings, onNavigate = navigate, onBack = back)
+        }
         composable(NarsilRoute.Demo.route) {
             DemoPanelScreen(onBack = back)
         }

@@ -42,11 +42,15 @@ enum class ComfortContext { HOME, AWAY, UNKNOWN }
 interface ContextRepository {
     val context: StateFlow<ComfortContext>          // výsledný stav
     val manualOverride: StateFlow<ComfortContext?>  // null = automatika
-    suspend fun setManualOverride(context: ComfortContext?)
+    suspend fun setManualOverride(context: ComfortContext?) // platí do 4:00
+    val currentWifiSsid: StateFlow<String?>          // null = žádná Wi-Fi / chybí poloha (125)
+    suspend fun saveCurrentWifiAsHome(): Boolean      // „tohle je můj domov“ → Settings.homeSsid (125)
 }
 ```
 
-Fake: `FakeContextRepository(detected = HOME)`, `setDetected(ctx)` simuluje změnu Wi-Fi.
+Implementace: `cz.narsil.detection.context.WifiContextRepository` (112). Obrazovka nastavení: 325.
+
+Fake: `FakeContextRepository(detected = HOME, wifiSsid = "Doma")`, `setDetected(ctx)` simuluje změnu kontextu, `setWifi(ssid)` jinou Wi-Fi, `savedHome` = uložený domov.
 
 ## ConsumptionEvent (111, 120)
 

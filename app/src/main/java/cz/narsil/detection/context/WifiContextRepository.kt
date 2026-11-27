@@ -21,6 +21,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -60,6 +62,9 @@ class WifiContextRepository(
     val wifi: StateFlow<WifiReading> = _wifi.asStateFlow()
     override val context: StateFlow<ComfortContext> = _context.asStateFlow()
     override val manualOverride: StateFlow<ComfortContext?> = _override.asStateFlow()
+    override val currentWifiSsid: StateFlow<String?> = _wifi
+        .map { (it as? WifiReading.Connected)?.ssid }
+        .stateIn(scope, SharingStarted.Eagerly, null)
 
     init {
         registerCallback()
@@ -88,6 +93,8 @@ class WifiContextRepository(
         }.apply()
         _override.value = context
     }
+
+    override suspend fun saveCurrentWifiAsHome(): Boolean = saveCurrentAsHome()
 
     /** Uloží aktuální Wi-Fi jako domov. false = nejsme na Wi-Fi nebo neznáme název (oprávnění). */
     suspend fun saveCurrentAsHome(): Boolean {
