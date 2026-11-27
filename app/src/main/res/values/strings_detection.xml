@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texty detekce (110) ve vlastním souboru, ať nekolidují se strings.xml (Jan). -->
+<resources>
+    <string name="a11y_service_label">Narsil – detekce nekonečného scrollování</string>
+    <string name="a11y_service_description">Narsil pozná, kdy doma dlouho scrolluješ feed, Reels nebo Shorts, a nabídne Ozvěnu. Zprávy a chaty nikdy nečte. Nic neodesílá mimo telefon.</string>
+</resources>
