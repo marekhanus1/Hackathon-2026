@@ -19,7 +19,7 @@ object MovementRates {
 
 /**
  * @param stepsToday kroky dnes (Health Connect / senzor)
- * @param balanceMinutes nevyčerpané minuty z kroků (kroky / kurz − už zaplacené)
+ * @param balanceMinutes zůstatek: kroky / kurz + odměny za úkoly − zaplacené − přenesený dluh (SPEC 5)
  * @param debtMinutes vypůjčené minuty, přenáší se do zítřka
  * @param debtLimitMinutes limit dluhu pro Parťáka
  */
@@ -44,6 +44,9 @@ interface MovementRepository {
 
     /** Zapíše odcvičené dřepy (statistiky, odznaky). Vrací získané minuty podle kurzu. */
     suspend fun recordSquats(count: Int): Int
+
+    /** Odměna za ověřený úkol plánu (volá [RewardService]); zvýší zůstatek. */
+    suspend fun addEarnedMinutes(minutes: Int)
 
     /** Znovu načte kroky (Health Connect). */
     suspend fun refresh()

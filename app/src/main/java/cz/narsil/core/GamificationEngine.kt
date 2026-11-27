@@ -48,6 +48,9 @@ interface GamificationEngine {
     /** Splněná večerní smlouva (+100, prodlouží sérii). Vrací přidané XP. */
     suspend fun onContractFulfilled(): Int
 
+    /** Ověřený úkol plánu (+30, volá [RewardService]). Vrací přidané XP. */
+    suspend fun onTaskVerified(task: PlanTask): Int
+
     /** Ohodnocené video (+5). Vrací přidané XP. */
     suspend fun onVideoRated(rating: Int): Int
 }

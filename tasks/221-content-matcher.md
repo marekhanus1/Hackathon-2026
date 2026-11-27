@@ -6,20 +6,20 @@ branch:
 pr:
 ---
 
-# 221 – ContentMatcher přes Claude API
+# 221 – RewardService: odměny za ověřené úkoly
 
 ## Cíl
-`ContentMatcher.isPlanned(název, plán)`: jedno volání Claude API (OkHttp), odpověď JSON `{planned, reason}`, timeout 3 s, pak záloha přes klíčová slova. Do LLM jde jen název videa a plán.
+`RewardService.reward(task)` podle `docs/SPEC.md` 7 a 11.2: po ověření úkolu (`VERIFIED`) přičte `task.rewardMinutes` do zůstatku (`MovementRepository.addEarnedMinutes`) a +30 XP (`GamificationEngine.onTaskVerified`). Každý úkol se odmění jen jednou (i po restartu – podle `PlanTaskEntity.verifiedAtMillis` nebo záznamu v ledgeru). Unit testy.
 
 ## Soubory
-- app/src/main/java/cz/narsil/llm/
-- app/src/test/java/cz/narsil/llm/ (odhad – test zálohy přes klíčová slova)
+- app/src/main/java/cz/narsil/gamification/reward/
+- app/src/test/java/cz/narsil/gamification/reward/
 
 ## Hotovo když
-„Přednáška o Rustu“ v plánu spáruje s podobným názvem videa; bez sítě funguje záloha.
+Ověřený úkol zvýší zůstatek i XP právě jednou; test pokrývá dvojí volání.
 
 ## Poznámky
 - Pro: Šimon (Claude Pro č. 2).
-- Fáze 2, proud B. Používá ho Marek v 120 (YouTube).
-- API klíč jen v `local.properties` (není v gitu). Načtení do BuildConfig vyžaduje změnu `app/build.gradle.kts` (Marek) – pokud tam ještě není, napsat do Poznámek a dát vědět Markovi. Oprávnění `INTERNET` v manifestu ověřit.
-- Škrt č. 3 při skluzu: jen klíčová slova.
+- Fáze 2, proud B. Volá ho ověření Člena 5 (520), odměnu ukazuje Jan (321).
+- Do napojení `FakeRewardService` v `cz.narsil.core.fake`.
+- `ContentMatcher` (Claude API, plánovaný obsah) přešel na Člena 5, úkol 512.

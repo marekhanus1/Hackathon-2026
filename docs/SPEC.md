@@ -146,7 +146,7 @@ data class DailyContract(              // stávající + tasks
     val plannedContent: List<String> = emptyList(),
     val videoUri: String? = null,
     val tasks: List<PlanTask> = emptyList(),
-) { val isFulfilled: Boolean }          // dopočítá implementace podle sekce 6
+) { fun isFulfilled(stepsToday: Int): Boolean } // sekce 6; kroky smlouva nezná (rozhodnutí 105)
 
 interface ContractRepository {          // stávající + updateTask
     val today: StateFlow<DailyContract?>
