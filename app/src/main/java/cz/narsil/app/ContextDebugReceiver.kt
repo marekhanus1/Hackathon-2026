@@ -25,7 +25,7 @@ class ContextDebugReceiver : BroadcastReceiver() {
         sl.appScope.launch {
             try {
                 when (intent.getStringExtra("cmd")) {
-                    "save_home" -> Log.i(TAG, "uložit domov: ${wifiRepo?.saveCurrentAsHome()}")
+                    "save_home" -> Log.i(TAG, "uložit domov: ${repo.saveCurrentWifiAsHome()}")
                     "home" -> repo.setManualOverride(ComfortContext.HOME)
                     "away" -> repo.setManualOverride(ComfortContext.AWAY)
                     "auto" -> repo.setManualOverride(null)

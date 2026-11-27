@@ -9,7 +9,25 @@ import kotlinx.coroutines.flow.asStateFlow
 /** Fake: „detekovaný“ stav se mění přes [setDetected], ruční přepínač má přednost. */
 class FakeContextRepository(
     detected: ComfortContext = ComfortContext.HOME,
+    wifiSsid: String? = "Doma",
 ) : ContextRepository {
+    private val _ssid = MutableStateFlow(wifiSsid)
+    override val currentWifiSsid: StateFlow<String?> = _ssid.asStateFlow()
+
+    /** Naposledy uložený domov (fake nemá nastavení). */
+    var savedHome: String? = null
+        private set
+
+    override suspend fun saveCurrentWifiAsHome(): Boolean {
+        savedHome = _ssid.value ?: return false
+        return true
+    }
+
+    /** Simuluje připojení k jiné Wi-Fi (null = žádná). */
+    fun setWifi(ssid: String?) {
+        _ssid.value = ssid
+    }
+
     private var detected = detected
     private val _override = MutableStateFlow<ComfortContext?>(null)
     private val _context = MutableStateFlow(detected)

@@ -31,6 +31,16 @@ class FakesTest {
     }
 
     @Test
+    fun contextSavesCurrentWifiAsHome() = runTest {
+        val repo = FakeContextRepository(wifiSsid = "Doma 5G")
+        assertTrue(repo.saveCurrentWifiAsHome())
+        assertEquals("Doma 5G", repo.savedHome)
+        repo.setWifi(null)
+        assertNull(repo.currentWifiSsid.value)
+        assertFalse(repo.saveCurrentWifiAsHome())
+    }
+
+    @Test
     fun movementPayAndBorrow() = runTest {
         val repo = FakeMovementRepository(stepsToday = 1_500)
         assertEquals(15, repo.state.value.balanceMinutes)
