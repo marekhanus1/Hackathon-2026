@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/114-overlay-volby
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/24
 ---
 
 # 114 – Volby v okně a časovač odemknutí
