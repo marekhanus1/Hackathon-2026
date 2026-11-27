@@ -1,5 +1,6 @@
 package cz.narsil.overlay
 
+import android.content.Context
 import android.net.Uri
 import android.view.ViewGroup
 import androidx.annotation.OptIn
@@ -35,7 +36,9 @@ import androidx.media3.ui.PlayerView
 @OptIn(UnstableApi::class)
 @Composable
 fun EchoVideoPlayer(uri: String?, fallbackText: String?, modifier: Modifier = Modifier) {
-    var failed by remember(uri) { mutableStateOf(uri == null) }
+    val context = LocalContext.current
+    // Neexistující zdroj (např. demo video, které ještě není v res/raw) → rovnou záložní text.
+    var failed by remember(uri) { mutableStateOf(uri == null || !isPlayable(context, uri)) }
     if (failed) {
         Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
@@ -47,7 +50,6 @@ fun EchoVideoPlayer(uri: String?, fallbackText: String?, modifier: Modifier = Mo
         }
         return
     }
-    val context = LocalContext.current
     val player = remember(uri) {
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(Uri.parse(uri)))
@@ -63,6 +65,8 @@ fun EchoVideoPlayer(uri: String?, fallbackText: String?, modifier: Modifier = Mo
             }
         }
         player.addListener(listener)
+        // Chyba mohla přijít dřív, než se posluchač připojil.
+        if (player.playerError != null) failed = true
         onDispose {
             player.removeListener(listener)
             player.release()
@@ -80,3 +84,8 @@ fun EchoVideoPlayer(uri: String?, fallbackText: String?, modifier: Modifier = Mo
         },
     )
 }
+
+/** Lze [uri] otevřít? (content://, file://, android.resource://). Chyba = ne. */
+private fun isPlayable(context: Context, uri: String): Boolean =
+    runCatching { context.contentResolver.openAssetFileDescriptor(Uri.parse(uri), "r")?.use { true } ?: false }
+        .getOrDefault(false)
