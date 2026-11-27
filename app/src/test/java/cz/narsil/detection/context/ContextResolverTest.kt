@@ -16,9 +16,12 @@ class ContextResolverTest {
     }
 
     @Test
-    fun unknownWithoutPermissionOrHome() {
+    fun unknownOnlyWithoutSsid() {
         assertEquals(UNKNOWN, ContextResolver.resolve(null, WifiReading.Unknown, "Doma 5G"))
-        assertEquals(UNKNOWN, ContextResolver.resolve(null, WifiReading.Connected("Doma 5G"), null))
+        assertEquals(UNKNOWN, ContextResolver.resolve(null, WifiReading.Unknown, null))
+        // Bez uloženého domova: jiná nebo žádná Wi-Fi = AWAY (SPEC 2).
+        assertEquals(AWAY, ContextResolver.resolve(null, WifiReading.Connected("Doma 5G"), null))
+        assertEquals(AWAY, ContextResolver.resolve(null, WifiReading.NotOnWifi, null))
     }
 
     @Test

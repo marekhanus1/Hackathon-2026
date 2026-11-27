@@ -16,15 +16,16 @@ sealed interface WifiReading {
 
 /**
  * Komfortní zóna (SPEC 2), čistý Kotlin:
- * ruční přepínač → HOME/AWAY; jinak domácí Wi-Fi → HOME, jiná / žádná → AWAY;
- * neznámý název nebo nenastavený domov → UNKNOWN (nezasahovat).
+ * ruční přepínač → HOME/AWAY; jinak domácí Wi-Fi → HOME, jiná / žádná → AWAY
+ * (i když domov ještě není uložený); neznámý název sítě (oprávnění, poloha) → UNKNOWN.
+ * AWAY i UNKNOWN znamenají nezasahovat.
  */
 object ContextResolver {
     fun resolve(manual: ComfortContext?, wifi: WifiReading, homeSsid: String?): ComfortContext {
         if (manual != null) return manual
-        val home = normalize(homeSsid) ?: return ComfortContext.UNKNOWN
+        val home = normalize(homeSsid)
         return when (wifi) {
-            is WifiReading.Connected -> if (normalize(wifi.ssid) == home) ComfortContext.HOME else ComfortContext.AWAY
+            is WifiReading.Connected -> if (home != null && normalize(wifi.ssid) == home) ComfortContext.HOME else ComfortContext.AWAY
             WifiReading.NotOnWifi -> ComfortContext.AWAY
             WifiReading.Unknown -> ComfortContext.UNKNOWN
         }
