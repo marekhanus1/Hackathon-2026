@@ -46,6 +46,10 @@ class WifiContextRepository(
     private val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     private val _wifi = MutableStateFlow<WifiReading>(WifiReading.NotOnWifi)
+
+    /** Poslední hodnota z callbacku s FLAG_INCLUDE_LOCATION_INFO (jediný zdroj nezačerněného SSID od Androidu 12). */
+    @Volatile
+    private var callbackWifi: WifiReading? = null
     private val _override = MutableStateFlow(loadOverride())
     private val _context = MutableStateFlow(ComfortContext.UNKNOWN)
 
@@ -85,32 +89,47 @@ class WifiContextRepository(
     /** Uloží aktuální Wi-Fi jako domov. false = nejsme na Wi-Fi nebo neznáme název (oprávnění). */
     suspend fun saveCurrentAsHome(): Boolean {
         refresh()
-        val ssid = (_wifi.value as? WifiReading.Connected)?.ssid ?: return false
+        val ssid = (_wifi.value as? WifiReading.Connected)?.ssid
+            ?: (callbackWifi as? WifiReading.Connected)?.ssid
+            ?: return false
         settings.update { it.copy(homeSsid = ssid) }
         return true
     }
 
-    /** Znovu přečte Wi-Fi (např. po udělení oprávnění k poloze). */
+    /**
+     * Znovu přečte Wi-Fi (např. po udělení oprávnění k poloze). getNetworkCapabilities() bez
+     * FLAG_INCLUDE_LOCATION_INFO vrací od Androidu 12 začerněné SSID, proto „Unknown“ nepřepíše
+     * známou síť z callbacku.
+     */
     fun refresh() {
         val caps = connectivity.activeNetwork?.let { connectivity.getNetworkCapabilities(it) }
-        _wifi.value = readingFrom(caps)
+        val reading = readingFrom(caps)
+        val known = callbackWifi
+        _wifi.value = if (reading == WifiReading.Unknown && known is WifiReading.Connected) known else reading
+    }
+
+    private fun onCallback(caps: NetworkCapabilities) {
+        val reading = readingFrom(caps)
+        callbackWifi = reading
+        _wifi.value = reading
+    }
+
+    private fun onWifiLost() {
+        callbackWifi = null
+        refresh()
     }
 
     private fun registerCallback() {
         val request = NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build()
         val callback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             object : ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
-                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-                    _wifi.value = readingFrom(caps)
-                }
-                override fun onLost(network: Network) = refresh()
+                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = onCallback(caps)
+                override fun onLost(network: Network) = onWifiLost()
             }
         } else {
             object : ConnectivityManager.NetworkCallback() {
-                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-                    _wifi.value = readingFrom(caps)
-                }
-                override fun onLost(network: Network) = refresh()
+                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = onCallback(caps)
+                override fun onLost(network: Network) = onWifiLost()
             }
         }
         runCatching { connectivity.registerNetworkCallback(request, callback) }
@@ -125,10 +144,9 @@ class WifiContextRepository(
             if (wifiManager?.connectionInfo?.networkId?.let { it != -1 } != true) return WifiReading.NotOnWifi
         }
         if (!hasLocationPermission()) return WifiReading.Unknown
-        val info: WifiInfo? =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) caps?.transportInfo as? WifiInfo ?: wifiManager?.connectionInfo
-            else wifiManager?.connectionInfo
-        val ssid = ContextResolver.normalize(info?.ssid)
+        // transportInfo bývá bez FLAG_INCLUDE_LOCATION_INFO začerněné ("<unknown ssid>") → zkusit WifiManager.
+        val fromCaps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) (caps?.transportInfo as? WifiInfo)?.ssid else null
+        val ssid = ContextResolver.normalize(fromCaps) ?: ContextResolver.normalize(wifiManager?.connectionInfo?.ssid)
         return if (ssid != null) WifiReading.Connected(ssid) else WifiReading.Unknown
     }
 
