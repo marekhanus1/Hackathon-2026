@@ -6,6 +6,7 @@ import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import java.lang.ref.WeakReference
 
 /**
  * Detekce (110): sleduje změny oken a scrollování, zjistí aplikaci v popředí, URL v Chrome
@@ -25,6 +26,7 @@ class NarsilAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         AccessibilityEvents.setConnected(true)
+        instanceRef = WeakReference(this)
         Log.i(TAG, "služba připojena")
     }
 
@@ -99,6 +101,7 @@ class NarsilAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         AccessibilityEvents.setConnected(false)
+        if (instanceRef.get() === this) instanceRef = WeakReference(null)
         super.onDestroy()
     }
 
@@ -108,6 +111,15 @@ class NarsilAccessibilityService : AccessibilityService() {
         /** Vypisovat strom okna do logu (ladění ID prvků pro 111). Vypnout pro demo. */
         @Volatile
         var dumpTree: Boolean = true
+
+        @Volatile
+        private var instanceRef = WeakReference<NarsilAccessibilityService>(null)
+
+        /** Běžící služba (null = vypnutá). Pro okno Ozvěny (TYPE_ACCESSIBILITY_OVERLAY) a návrat na plochu (114). */
+        val instance: NarsilAccessibilityService? get() = instanceRef.get()
+
+        /** Pošle aplikaci v popředí do pozadí (plocha). false = služba neběží. */
+        fun goHome(): Boolean = instance?.performGlobalAction(GLOBAL_ACTION_HOME) ?: false
 
         /** Je služba zapnutá v nastavení systému? (onboarding 122) */
         fun isEnabled(context: Context): Boolean {

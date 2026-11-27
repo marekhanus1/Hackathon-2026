@@ -5,28 +5,37 @@ import android.content.Context
 import android.content.Intent
 import cz.narsil.core.fake.FakeContractRepository
 import cz.narsil.core.fake.FakeEchoVideoRepository
+import cz.narsil.core.fake.FakeGamificationEngine
 import cz.narsil.core.fake.FakeInterventionTriggerSource
 import cz.narsil.core.fake.FakeMovementRepository
+import cz.narsil.core.fake.FakeSquatCounter
+import cz.narsil.detection.accessibility.NarsilAccessibilityService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 /**
- * Ladění 113 bez detekce: `adb shell am broadcast -a cz.narsil.DEBUG_ECHO -p cz.narsil`
- * ukáže Ozvěnu s fake daty (TikTok, 6 min). Potřebuje povolené „zobrazení přes ostatní aplikace“.
- * Jen pro debug; skutečné napojení (detekce → overlay) dělá 124.
+ * Ladění 113/114 bez detekce: `adb shell am broadcast -a cz.narsil.DEBUG_ECHO -p cz.narsil`
+ * ukáže Ozvěnu s fake daty (TikTok, 6 min). Volby se zpracují ([EchoOutcomeHandler]), dřepy přibývají
+ * samy (fake, 1 za 0,6 s). Výsledek v logu `adb logcat -s NarsilEcho NarsilOverlay`.
+ * Okno: přes běžící službu přístupnosti, jinak „zobrazení přes ostatní aplikace“. Jen debug; napojení dělá 124.
  */
 class OverlayDebugReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val pending = goAsync()
+        val app = context.applicationContext
+        lastWindow?.dismiss()
+        val window = EchoOverlayWindow(NarsilAccessibilityService.instance ?: app).also { lastWindow = it }
         val controller = EchoOverlayController(
-            window = window ?: EchoOverlayWindow(context.applicationContext).also { window = it },
+            window = window,
             triggers = FakeInterventionTriggerSource(),
-            movement = FakeMovementRepository(),
+            movement = movement,
             contracts = FakeContractRepository(),
             videos = FakeEchoVideoRepository(),
             scope = scope,
+            choiceHandler = EchoOutcomeHandler(movement, gamification, timer, goHome = { HomeNavigator.goHome(app) }),
+            squatCounter = FakeSquatCounter(scope, intervalMillis = 600),
         )
         scope.launch {
             try {
@@ -39,6 +48,9 @@ class OverlayDebugReceiver : BroadcastReceiver() {
 
     private companion object {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-        var window: EchoOverlayWindow? = null
+        val movement = FakeMovementRepository()
+        val gamification = FakeGamificationEngine()
+        val timer = UnlockTimer()
+        var lastWindow: EchoOverlayWindow? = null
     }
 }
