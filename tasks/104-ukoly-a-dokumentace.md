@@ -1,9 +1,9 @@
 ---
-status: in-progress        # todo | in-progress | review | done
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/104-ukoly-a-dokumentace
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/2
 ---
 
 # 104 – Úkoly 1xx–4xx a dokumentace
