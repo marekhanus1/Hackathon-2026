@@ -96,8 +96,20 @@ Odznak se odemkne jednou a už nezmizí (`BadgeEntity`, insert IGNORE).
 - Společný týdenní cíl kroků party (výchozí 4 × 6 000 × 7 = 168 000) a žebříček získaného času (`reclaimedMinutes` za týden).
 - V MVP jen připravená data (430, Štěpán) a obrazovka žebříčku (323, Jan); engine je nepočítá.
 
-## 10. Co engine vystavuje
+## 10. Demo (230)
+
+Scénář dema (brief, 403) přidává XP jen dvakrát: **20 dřepů naživo** (+20) a případně placení kroky
+za neplánované video (+10). Aby demo skončilo animací nové úrovně (321):
+
+- Demo startuje na **1 480 XP** (úroveň 3, 480 / 500) – `DemoTuning.DEMO_START_XP`.
+- Dřepy (+20) → 1 500 XP → **úroveň 4** a animace. Placení kroky pak jen přidá 10 XP v nové úrovni.
+- Příprava: `GamificationDebug.prepareDemo(engine)` (reset dne + dorovnání XP; fake i skutečný engine)
+  a `MovementDebug.resetDay(repo)` = 4 200 kroků = 42 min, takže placení kroky v demu projde.
+- Animaci spustí UI, když `level` po volbě > `level` před ní (`DemoTuning.levelsUp`).
+- Kurz pohybu se nemění (1 000 kroků = 10 min, 20 dřepů = 10 min): sedí na demo i na běžný den.
+
+## 11. Co engine vystavuje
 
 `GamificationState`: `xp`, `level`, `xpInLevel`, `xpPerLevel`, `streakDays`, `jokers`, `avatar`, `today` (`DailyScore`),
 `wonDays`, `badges` (id ze sekce 8). Metody viz `docs/contracts.md` – `onOutcome`, `onContractFulfilled`,
-`onTaskVerified`, `onVideoRated`; ladění (222): `addXp`, `setAvatar`.
+`onTaskVerified`, `onVideoRated`; ladění (222): `addXp`, `setAvatar`, `resetToday`; demo (230): `GamificationDebug.prepareDemo`.

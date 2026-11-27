@@ -3,6 +3,7 @@ package cz.narsil.gamification.debug
 import cz.narsil.core.AvatarState
 import cz.narsil.core.GamificationEngine
 import cz.narsil.core.fake.FakeGamificationEngine
+import cz.narsil.gamification.DemoTuning
 import cz.narsil.gamification.RulesGamificationEngine
 
 /**
@@ -47,6 +48,23 @@ object GamificationDebug {
         }
         is FakeGamificationEngine -> {
             engine.setState(FakeGamificationEngine.DEMO_STATE)
+            true
+        }
+        else -> false
+    }
+
+    /**
+     * Příprava dema (230): reset dne a XP těsně pod úrovní ([DemoTuning.DEMO_START_XP] u fake,
+     * u skutečného enginu dorovnání přes DEMO XP), takže 20 dřepů v demu spustí novou úroveň.
+     */
+    suspend fun prepareDemo(engine: GamificationEngine): Boolean = when (engine) {
+        is RulesGamificationEngine -> {
+            engine.resetToday()
+            engine.addXp(DemoTuning.xpToPrepare(engine.state.value.xp))
+            true
+        }
+        is FakeGamificationEngine -> {
+            engine.setState(DemoTuning.DEMO_STATE)
             true
         }
         else -> false
