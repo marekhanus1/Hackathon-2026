@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import cz.narsil.app.demo.DemoPanelScreen
 
 /**
  * Navigace aplikace. Každá trasa zatím ukazuje [PlaceholderScreen];
@@ -58,8 +59,7 @@ fun NarsilNavHost(
             PlaceholderScreen(NarsilRoute.Onboarding, onNavigate = navigate, onBack = back)
         }
         composable(NarsilRoute.Demo.route) {
-            // 123: DemoPanel
-            PlaceholderScreen(NarsilRoute.Demo, onNavigate = navigate, onBack = back)
+            DemoPanelScreen(onBack = back)
         }
     }
 }
