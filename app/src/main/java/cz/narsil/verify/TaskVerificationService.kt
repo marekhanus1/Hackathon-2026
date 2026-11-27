@@ -14,13 +14,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/** Ověřovač s otiskem fotky ([LlmTaskVerifier]); obyčejný [TaskVerifier] (fake) se obalí přes [of]. */
+/** Ověřovač s otiskem fotky ([LlmTaskVerifier], demo obal); obyčejný [TaskVerifier] (fake) se obalí přes [of]. */
 fun interface DetailedVerifier {
-    suspend fun verify(task: PlanTask, proof: Proof): VerificationOutcome
+    suspend fun verifyDetailed(task: PlanTask, proof: Proof): VerificationOutcome
 
     companion object {
         fun of(verifier: TaskVerifier): DetailedVerifier = when (verifier) {
-            is LlmTaskVerifier -> DetailedVerifier { t, p -> verifier.verifyDetailed(t, p) }
+            is DetailedVerifier -> verifier
             else -> DetailedVerifier { t, p -> VerificationOutcome(verifier.verify(t, p)) }
         }
     }
@@ -103,7 +103,7 @@ class TaskVerificationService(
     private suspend fun submitLocked(task: PlanTask, proof: Proof): PlanTask {
         if (!task.canRetry) return task
         emit(task.id, task.status, "Ověřuji…", running = true)
-        val outcome = runCatching { verifier.verify(task, proof) }
+        val outcome = runCatching { verifier.verifyDetailed(task, proof) }
             .getOrElse { VerificationOutcome(VerificationResult.LATER, reason = "chyba ověření") }
         val updated = when (outcome.result) {
             VerificationResult.YES -> task.copy(status = TaskStatus.VERIFIED, attempts = task.attempts + 1)

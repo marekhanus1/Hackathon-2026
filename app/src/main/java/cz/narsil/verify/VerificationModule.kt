@@ -21,7 +21,11 @@ import kotlinx.coroutines.CoroutineScope
  * ```
  */
 object VerificationModule {
-    fun verifier(context: Context, settings: SettingsRepository, strava: StravaRepository?): LlmTaskVerifier {
+    /** Skutečný ověřovač obalený demo přepínačem „vždy ANO“ (522, demo panel). */
+    fun verifier(context: Context, settings: SettingsRepository, strava: StravaRepository?): TaskVerifier =
+        cz.narsil.verify.demo.DemoAwareTaskVerifier(llmVerifier(context, settings, strava), settings)
+
+    fun llmVerifier(context: Context, settings: SettingsRepository, strava: StravaRepository?): LlmTaskVerifier {
         val app = context.applicationContext
         return LlmTaskVerifier(
             llm = MultiProviderLlmClient(provider = { settings.settings.value.llmProvider }),
