@@ -9,7 +9,7 @@ import java.time.LocalDate
 /** Pohyby minut ve sdílené tabulce `ledger` (`LedgerDao`, SPEC 11.5). */
 class RoomLedgerStore(private val dao: LedgerDao) : LedgerStore {
     override suspend fun entries(date: LocalDate): List<MinuteEntry> =
-        dao.forDate(date.toString()).map { MinuteEntry(it.kind, it.minutes, it.atMillis) }
+        dao.forDate(date.toString()).sortedWith(compareBy({ it.atMillis }, { it.id })).map { MinuteEntry(it.kind, it.minutes, it.atMillis) }
 
     override suspend fun add(date: LocalDate, entry: MinuteEntry) {
         dao.insert(

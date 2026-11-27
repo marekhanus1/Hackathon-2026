@@ -12,6 +12,20 @@ import java.time.ZoneId
  */
 object GamificationCalculator {
 
+    /**
+     * Historie po resetech dne (222): u dne s [XpSource.DAY_RESET] se zahodí události do posledního resetu
+     * včetně značky samotné. Ostatní funkce dostávají už očištěné záznamy.
+     */
+    fun effective(records: List<XpRecord>): List<XpRecord> {
+        // Podle pořadí v historii (ne podle času) – události ve stejné milisekundě jako reset rozhodne pořadí zápisu.
+        val lastResetIndex = mutableMapOf<java.time.LocalDate, Int>()
+        records.forEachIndexed { i, r -> if (r.source == XpSource.DAY_RESET) lastResetIndex[r.date] = i }
+        if (lastResetIndex.isEmpty()) return records
+        return records.filterIndexed { i, r ->
+            r.source != XpSource.DAY_RESET && i > (lastResetIndex[r.date] ?: -1)
+        }
+    }
+
     /** XP za CLOSED: 50, nejvýš 5× denně a s odstupem ≥ 10 min, jinak 0 (SPEC 4). */
     fun closeXp(records: List<XpRecord>, today: LocalDate, nowMillis: Long): Int {
         val rewarded = records.filter { it.date == today && it.source == XpSource.CLOSED && it.xp > 0 }
@@ -154,7 +168,7 @@ object GamificationCalculator {
         feedMinutesFor: (LocalDate) -> Int? = { null },
         avatarOverride: AvatarState? = null,
     ): GamificationState {
-        val records = history.records
+        val records = effective(history.records)
         val xp = records.sumOf { it.xp }.coerceAtLeast(0)
         val (streak, jokers) = streakAndJokers(records, today)
         return GamificationState(

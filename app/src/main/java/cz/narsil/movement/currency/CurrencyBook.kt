@@ -80,6 +80,13 @@ class CurrencyBook(
         add(date, LedgerKind.TASK_REWARD, minutes)
     }
 
+    /** Ladění (222): čistý den – platby, půjčky, odměny i přenesený dluh dneška se přestanou počítat. */
+    suspend fun resetToday() = mutex.withLock {
+        val date = today()
+        ensureCarry(date)
+        add(date, DayMinutes.DAY_RESET, 0)
+    }
+
     private suspend fun add(date: LocalDate, kind: String, minutes: Int): Boolean =
         runCatching { store.add(date, MinuteEntry(kind, minutes, clock.millis())) }.isSuccess
 

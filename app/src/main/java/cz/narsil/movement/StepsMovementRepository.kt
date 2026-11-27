@@ -78,6 +78,17 @@ class StepsMovementRepository(
         publish()
     }
 
+    /**
+     * Ladění (222): reset dne. Minuty dneška od nuly, demo kroky pryč; když je zadáno [steps],
+     * kroky dneška se nastaví na tuto hodnotu (posun proti skutečným krokům telefonu).
+     */
+    suspend fun resetDay(steps: Int? = null) {
+        book.resetToday()
+        rollDemoDay()
+        demoSteps = if (steps == null) 0 else steps - lastSteps
+        publish()
+    }
+
     /** Pravidelné načítání kroků (výchozí 1 min). Opakované volání předchozí smyčku nahradí. */
     fun startAutoRefresh(scope: CoroutineScope, intervalMillis: Long = 60_000) {
         autoRefresh?.cancel()
@@ -104,7 +115,7 @@ class StepsMovementRepository(
 
     private fun stepsNow(): Int {
         rollDemoDay()
-        return lastSteps + demoSteps
+        return (lastSteps + demoSteps).coerceAtLeast(0)
     }
 
     private suspend fun publish() {

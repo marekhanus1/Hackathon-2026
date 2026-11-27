@@ -32,7 +32,7 @@ class RoomGamificationStore(
         for (back in historyDays.toLong() downTo 0L) {
             val date = today.minusDays(back)
             val key = date.toString()
-            val events = runCatching { xpDao.forDate(key) }.getOrDefault(emptyList())
+            val events = runCatching { xpDao.forDate(key) }.getOrDefault(emptyList()).sortedWith(compareBy({ it.atMillis }, { it.id }))
             if (events.isEmpty()) continue
             // Minuty odměn úkolů nejsou v xp_events – vezmou se z ledgeru a připíšou prvnímu TASK záznamu dne.
             var taskMinutes = if (events.any { it.source == XpSource.TASK }) {
