@@ -8,7 +8,24 @@ nepřepisoval práci a merge byl nudný.
 
 ## Projekt
 
-> TODO: doplnit, až bude jasné, co stavíme (cíl, stack, jak spustit, jak testovat).
+Narsil: Android aplikace proti prokrastinaci na sociálních sítích (hackathon, 20 h).
+Zadání a plán: docs/BRIEF.md. Priorita: funkční demo, ne dokonalý kód.
+
+- Stack: Kotlin, Jetpack Compose, jeden modul app, minSdk 29, Room, CameraX,
+  ML Kit Pose Detection, Health Connect, Media3, OkHttp.
+- Build: ./gradlew assembleDebug · Testy: ./gradlew testDebugUnitTest
+- Instalace: ./gradlew installDebug (demo Nothing Phone 3a, záloha Redmi Note 11)
+- Balíčky a vlastníci (Soubory v tasku jen z vlastních balíčků):
+  - cz.narsil.core, detection, overlay, app: Marek / Claude (úkoly 1xx)
+  - cz.narsil.movement, gamification, contract, llm: Šimon / Claude (2xx)
+  - cz.narsil.ui a res/: Jan / Antigravity (3xx); každá obrazovka ve vlastní
+    složce ui/screens/<obrazovka>/, sdílené komponenty jen v úkolu 302
+  - mockdata/, pitch/, assets/: Štěpán / Gemini (4xx)
+- Rozhraní v cz.narsil.core a docs/contracts.md mění jen Marek.
+- Blokuje tě cizí modul: použij fake z cz.narsil.core.fake a pokračuj.
+- Nové závislosti nepřidávej, vše je v gradle/libs.versions.toml.
+- API klíč Claude jen v local.properties (není v gitu).
+- Texty v UI česky. Hlavní mechanika se v UI jmenuje Ozvěna.
 
 ## Zlatá pravidla
 
