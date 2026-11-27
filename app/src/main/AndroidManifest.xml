@@ -17,6 +17,11 @@
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
+    <!-- 211: zjištění, zda je nainstalovaný Health Connect -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
     <application
         android:name=".app.NarsilApp"
         android:allowBackup="false"
@@ -32,6 +37,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 211: Health Connect vyžaduje obrazovku s vysvětlením oprávnění (Android 13- a 14+) -->
+        <activity-alias
+            android:name=".app.HealthPermissionsRationale"
+            android:exported="true"
+            android:targetActivity=".app.MainActivity">
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".app.HealthPermissionsUsage"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".app.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
 
         <!-- 110: detekce (AccessibilityService) -->
         <service
