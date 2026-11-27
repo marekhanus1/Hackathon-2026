@@ -5,13 +5,14 @@ import cz.narsil.core.GamificationEngine
 import cz.narsil.core.GamificationState
 import cz.narsil.core.InterventionOutcome
 import cz.narsil.core.MovementRates
+import cz.narsil.core.PlanTask
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * Fake s výchozími čísly z briefu (zavřít 50, dřepy 20, kroky 10, půjčka 0, smlouva 100, hodnocení 5).
+ * Fake s výchozími čísly z briefu (zavřít 50, dřepy 20, kroky 10, půjčka 0, smlouva 100, hodnocení 5, úkol 30).
  * Skutečná pravidla: docs/GAMIFICATION.md (201) a 202/220.
  */
 class FakeGamificationEngine(
@@ -46,6 +47,14 @@ class FakeGamificationEngine(
         return 100
     }
 
+    override suspend fun onTaskVerified(task: PlanTask): Int {
+        _state.update {
+            it.copy(today = it.today.copy(reclaimedMinutes = it.today.reclaimedMinutes + task.rewardMinutes))
+        }
+        addXp(TASK_XP)
+        return TASK_XP
+    }
+
     override suspend fun onVideoRated(rating: Int): Int {
         addXp(5)
         return 5
@@ -64,6 +73,8 @@ class FakeGamificationEngine(
     }
 
     companion object {
+        const val TASK_XP = 30
+
         val DEMO_STATE = GamificationState(
             xp = 1_340,
             level = 3,

@@ -14,6 +14,7 @@ class FakeMovementRepository(
     debtMinutes: Int = 0,
 ) : MovementRepository {
     private var spentMinutes = 0
+    private var earnedMinutes = 0
     var squatsTotal = 0
         private set
 
@@ -40,6 +41,11 @@ class FakeMovementRepository(
         return count * MovementRates.MINUTES_PER_UNLOCK / MovementRates.SQUATS_PER_UNLOCK
     }
 
+    override suspend fun addEarnedMinutes(minutes: Int) {
+        earnedMinutes += minutes
+        recompute()
+    }
+
     override suspend fun refresh() = Unit
 
     fun setSteps(steps: Int) {
@@ -53,6 +59,6 @@ class FakeMovementRepository(
     fun setDebt(minutes: Int) = _state.update { it.copy(debtMinutes = minutes) }
 
     private fun recompute() = _state.update {
-        it.copy(balanceMinutes = (it.stepsToday / MovementRates.STEPS_PER_MINUTE - spentMinutes).coerceAtLeast(0))
+        it.copy(balanceMinutes = (it.stepsToday / MovementRates.STEPS_PER_MINUTE + earnedMinutes - spentMinutes).coerceAtLeast(0))
     }
 }
