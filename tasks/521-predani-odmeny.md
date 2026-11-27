@@ -1,8 +1,8 @@
 ---
-status: todo
-owner: 
-agent: 
-branch: 
+status: in-progress
+owner: simon
+agent: claude
+branch: simon/claude/521-predani-odmeny
 pr: 
 ---
 
