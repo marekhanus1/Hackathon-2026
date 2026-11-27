@@ -25,8 +25,8 @@ class NarsilAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        instanceRef = WeakReference(this) // dřív než setConnected: posluchači hned čtou instance
         AccessibilityEvents.setConnected(true)
-        instanceRef = WeakReference(this)
         Log.i(TAG, "služba připojena")
     }
 
