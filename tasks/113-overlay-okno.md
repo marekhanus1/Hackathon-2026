@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/113-overlay-okno
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/22
 ---
 
 # 113 – Překryvné okno Ozvěny
