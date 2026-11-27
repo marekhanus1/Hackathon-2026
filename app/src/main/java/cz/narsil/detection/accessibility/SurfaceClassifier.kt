@@ -98,6 +98,7 @@ object SurfaceRules {
     )
     val YOUTUBE = listOf(
         SurfaceClassifier.Rule(Surface.SHORTS, listOf("reel_player", "reel_recycler", "shorts")),
-        SurfaceClassifier.Rule(Surface.VIDEO, listOf("watch_player", "player_view", "watch_while", "watch_list")),
+        // Ne „watch_while“: watch_while_layout_coordinator_layout je viditelné na všech obrazovkách (ověřeno na Nothing 3a).
+        SurfaceClassifier.Rule(Surface.VIDEO, listOf("watch_player", "player_view")),
     )
 }

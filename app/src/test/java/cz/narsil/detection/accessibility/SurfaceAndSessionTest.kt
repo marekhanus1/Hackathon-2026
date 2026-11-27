@@ -48,6 +48,11 @@ class SurfaceAndSessionTest {
         assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(tt, cls = "com.ss.android.ugc.aweme.im.chat.ChatRoomActivity")))
         assertEquals(Surface.SHORTS, SurfaceClassifier.classify(snap("com.google.android.youtube", setOf("reel_player_page_container"))))
         assertNull(SurfaceClassifier.classify(snap("com.whatsapp", setOf("conversation"))))
+        val yt = "com.google.android.youtube"
+        val ytShell = setOf("watch_while_layout_coordinator_layout")
+        assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(yt, ytShell + "results"))) // domovská stránka
+        assertEquals(Surface.VIDEO, SurfaceClassifier.classify(snap(yt, ytShell + "watch_player")))
+        assertEquals(Surface.SHORTS, SurfaceClassifier.classify(snap(yt, ytShell + setOf("reel_recycler", "reel_watch_player"))))
         assertEquals(Surface.REELS, SurfaceClassifier.classifyUrl("instagram.com/reels/abc"))
         assertEquals(Surface.MESSAGES, SurfaceClassifier.classifyUrl("https://www.instagram.com/direct/inbox"))
         assertEquals(Surface.VIDEO, SurfaceClassifier.classifyUrl("youtube.com/watch?v=1"))
