@@ -44,6 +44,7 @@ class PoseSquatCounter(
     private val _running = MutableStateFlow(false)
     private val _kneeAngle = MutableStateFlow<Double?>(null)
     private val _personVisible = MutableStateFlow(false)
+    private val _depth = MutableStateFlow<Double?>(null)
 
     override val count: StateFlow<Int> = _count.asStateFlow()
     override val isRunning: StateFlow<Boolean> = _running.asStateFlow()
@@ -53,6 +54,9 @@ class PoseSquatCounter(
 
     /** Je člověk (nohy) vidět v záběru – UI může ukázat „ustup dál od telefonu“. */
     val personVisible: StateFlow<Boolean> = _personVisible.asStateFlow()
+
+    /** Vyhlazená hloubka dřepu 0–1 (ukazatel pro ladění v sále, [SquatTuningOverlay]). */
+    val depth: StateFlow<Double?> = _depth.asStateFlow()
 
     private var provider: ProcessCameraProvider? = null
     private var useCases: List<UseCase> = emptyList()
@@ -67,6 +71,7 @@ class PoseSquatCounter(
         synchronized(reps) { reps.reset() }
         _count.value = 0
         _kneeAngle.value = null
+        _depth.value = null
         active = true
         val executor = Executors.newSingleThreadExecutor().also { analysisExecutor = it }
         val poseDetector = PoseDetection.getClient(
@@ -127,19 +132,29 @@ class PoseSquatCounter(
 
     private fun onPose(pose: Pose) {
         if (!active) return
-        val left = leg(pose, PoseLandmark.LEFT_HIP, PoseLandmark.LEFT_KNEE, PoseLandmark.LEFT_ANKLE)
-        val right = leg(pose, PoseLandmark.RIGHT_HIP, PoseLandmark.RIGHT_KNEE, PoseLandmark.RIGHT_ANKLE)
+        fun joint(type: Int): Joint? = pose.getPoseLandmark(type)?.let { Joint(it.position.x, it.position.y, it.inFrameLikelihood) }
+        val frame = PoseFrame(
+            leftShoulder = joint(PoseLandmark.LEFT_SHOULDER),
+            rightShoulder = joint(PoseLandmark.RIGHT_SHOULDER),
+            leftHip = joint(PoseLandmark.LEFT_HIP),
+            rightHip = joint(PoseLandmark.RIGHT_HIP),
+            leftKnee = joint(PoseLandmark.LEFT_KNEE),
+            rightKnee = joint(PoseLandmark.RIGHT_KNEE),
+            leftAnkle = joint(PoseLandmark.LEFT_ANKLE),
+            rightAnkle = joint(PoseLandmark.RIGHT_ANKLE),
+        )
         val now = SystemClock.elapsedRealtime()
         synchronized(reps) {
-            val visible = reps.kneeAngle(left, right) != null
-            _personVisible.value = visible
-            if (reps.onFrame(left, right, now)) _count.value = reps.count
+            val counted = reps.onFrame(frame, now)
+            fun seen(vararg j: Joint?) = j.any { (it?.likelihood ?: 0f) >= VISIBLE_LIKELIHOOD }
+            _personVisible.value = seen(frame.leftHip, frame.rightHip) && seen(frame.leftKnee, frame.rightKnee)
+            if (counted) _count.value = reps.count
             _kneeAngle.value = reps.lastAngle
+            _depth.value = reps.lastDepth
         }
     }
 
-    private fun leg(pose: Pose, hip: Int, knee: Int, ankle: Int): Leg? {
-        fun joint(type: Int): Joint? = pose.getPoseLandmark(type)?.let { Joint(it.position.x, it.position.y, it.inFrameLikelihood) }
-        return Leg(joint(hip) ?: return null, joint(knee) ?: return null, joint(ankle) ?: return null)
+    private companion object {
+        const val VISIBLE_LIKELIHOOD = 0.4f
     }
 }
