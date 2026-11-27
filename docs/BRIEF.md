@@ -148,7 +148,7 @@ Hlavní cíl: v 8. hodině funkční průchod TikTok → Ozvěna → dřepy na t
 | Dotahování dema | 14–18 h | G4 Generálka: demo 3× bez chyby |
 | Rezerva | 18–20 h | – |
 
-Brána je kontrola, kterou celý tým projde společně. Kdo ji nesplní, škrtá podle seznamu výše, nikdo kvůli ní nepracuje dél.
+Brána je kontrola, kterou celý tým projde společně. Kdo ji nesplní, škrtá podle seznamu výše, nikdo kvůli ní nepracuje déle.
 
 ## Rozhodnutí k odsouhlasení
 
@@ -196,7 +196,7 @@ Nothing Phone 3a je demo telefon, Redmi Note 11 telefon Parťáka a záloha. Oba
 
 | Telefon | Role | Na co si dát pozor |
 | --- | --- | --- |
-| Nothing Phone 3a | Demo telefon (Marek) | Novejší Android: Health Connect je součástí systému. U APK povolit omezená nastavení, jinak nejde zapnout Accessibility. Vypnout optimalizaci baterie pro aplikaci a automatické aktualizace Instagramu a TikToku. |
+| Nothing Phone 3a | Demo telefon (Marek) | Novější Android: Health Connect je součástí systému. U APK povolit omezená nastavení, jinak nejde zapnout Accessibility. Vypnout optimalizaci baterie pro aplikaci a automatické aktualizace Instagramu a TikToku. |
 | Redmi Note 11 | Telefon Parťáka na demu, záložní demo telefon, test na starším Androidu | MIUI zabíjí služby na pozadí: povolit automatické spouštění, vypínat spořič baterie pro aplikaci a povolit zobrazování vyskakovacích oken při běhu na pozadí (oprávnění jen pro MIUI, bez něj se překryvné okno neukáže). Health Connect pravděpodobně doinstalovat z Google Play, jinak záloha senzor kroků. Slabší výkon: ověřit rychlost počítání dřepů. |
 
 ## Demo scénář (2 minuty)
@@ -252,7 +252,7 @@ Každý člověk řídí jednoho hlavního agenta jako orchestrátora. Orchestr�
 3. Pro každý proud: `scripts/claim-task.sh tasks/NNN-*.md <jméno> <agent>` (zamkne úkol na `main`), pak `scripts/start-task.sh <větev>` (vytvoří worktree).
 4. Subagentovi předá zadání podle šablony níže a cestu k worktree. Nic dalšího nepotřebuje.
 5. Když proud skončí: zkontroluje diff a build, ve worktree spustí `scripts/finish-task.sh`, otevře PR, v tasku nastaví `status: review` a pustí další úkol.
-6. Sám řeší jen integraci a rozhodnutí, rutinní kód nechvá proudům.
+6. Sám řeší jen integraci a rozhodnutí, rutinní kód nechává proudům.
 7. Limity: na Claude Pro nejvýš 3 proudy najednou, paralelní agenti spotřebují limit rychleji. Když se blíží limit, pokračuje jedním proudem a rutinu dává úspornějšímu modelu.
 
 ### Zadání pro subagenta (šablona)
