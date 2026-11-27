@@ -38,6 +38,8 @@ class EchoOverlayController(
     private val scope: CoroutineScope,
     private val choiceHandler: EchoChoiceHandler = EchoChoiceHandler { _, _, _ -> },
     private val squatCounter: SquatCounter? = null,
+    /** Demo režim: ladicí ukazatel přes kameru dřepů. */
+    private val demoMode: () -> Boolean = { false },
 ) {
     private var job: Job? = null
 
@@ -92,6 +94,7 @@ class EchoOverlayController(
                         scope.launch { showEcho(trigger) } // zpět na Ozvěnu
                     },
                     onDone = { choose(trigger, InterventionOutcome.SQUATS, feeling) },
+                    demoMode = demoMode(),
                 )
             }
         }

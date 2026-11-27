@@ -63,6 +63,7 @@ object EchoOverlayStarter {
                     scope = sl.appScope,
                     choiceHandler = handler,
                     squatCounter = sl.squatCounter,
+                    demoMode = { sl.settingsRepository.settings.value.demoMode },
                 ).also { it.start() }
                 _ready.value = true
                 Log.i(TAG, "Ozvěna připravena (fakes=${sl.useFakes})")

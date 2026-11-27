@@ -19,6 +19,7 @@ import cz.narsil.core.fake.FakeMovementRepository
 import cz.narsil.core.fake.FakeSquatCounter
 import cz.narsil.detection.accessibility.AccessibilityTriggerSource
 import cz.narsil.detection.context.WifiContextRepository
+import cz.narsil.movement.squat.PoseSquatCounter
 import cz.narsil.overlay.UnlockTimer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -130,7 +131,9 @@ object ServiceLocator {
         get() = cached("echoVideo") { FakeEchoVideoRepository() }
 
     val squatCounter: SquatCounter
-        get() = cached("squats") { FakeSquatCounter(appScope, intervalMillis = 1_000) }
+        get() = cached("squats") {
+            if (useFakes) FakeSquatCounter(appScope, intervalMillis = 1_000) else PoseSquatCounter(appContext)
+        }
 
     val unlockTimer: UnlockTimer
         get() = cached("unlockTimer") { UnlockTimer() }
