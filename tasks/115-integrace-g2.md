@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/115-integrace-g2
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/26
 ---
 
 # 115 – Integrace pro první průchod (G2)
