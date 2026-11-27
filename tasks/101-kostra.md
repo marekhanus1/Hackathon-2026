@@ -1,9 +1,9 @@
 ---
-status: in-progress        # todo | in-progress | review | done
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/101-kostra
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/3
 ---
 
 # 101 – Kostra projektu
