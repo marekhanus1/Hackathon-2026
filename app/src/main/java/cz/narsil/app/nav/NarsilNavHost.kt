@@ -31,12 +31,10 @@ fun NarsilNavHost(
         modifier = modifier,
     ) {
         composable(NarsilRoute.Home.route) {
-            // 312: HomeScreen
-            PlaceholderScreen(NarsilRoute.Home, onNavigate = navigate, onBack = null)
+            HomeRoute(onNavigate = navigate)
         }
         composable(NarsilRoute.Contract.route) {
-            // 313: ContractScreen
-            PlaceholderScreen(NarsilRoute.Contract, onNavigate = navigate, onBack = back)
+            ContractRoute(onBack = back)
         }
         composable(NarsilRoute.Squat.route) {
             SquatRoute(onBack = back)
@@ -46,16 +44,17 @@ fun NarsilNavHost(
             PlaceholderScreen(NarsilRoute.EchoPreview, onNavigate = navigate, onBack = back)
         }
         composable(NarsilRoute.Mirror.route) {
-            // 322: MirrorScreen
-            PlaceholderScreen(NarsilRoute.Mirror, onNavigate = navigate, onBack = back)
+            MirrorRoute()
         }
         composable(NarsilRoute.Badges.route) {
-            // 323: BadgesScreen
-            PlaceholderScreen(NarsilRoute.Badges, onNavigate = navigate, onBack = back)
+            BadgesRoute()
         }
         composable(NarsilRoute.Onboarding.route) {
             // 320 + 122: OnboardingScreen
             PlaceholderScreen(NarsilRoute.Onboarding, onNavigate = navigate, onBack = back)
+        }
+        composable(NarsilRoute.Verify.route) {
+            VerifyRoute(onBack = back)
         }
         composable(NarsilRoute.Settings.route) {
             // 325: SettingsScreen (Jan)
