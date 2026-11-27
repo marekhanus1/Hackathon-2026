@@ -1,0 +1,4 @@
+<resources>
+    <!-- Okenní téma bez ActionBaru; vzhled řeší Compose téma v cz.narsil.ui (Jan). -->
+    <style name="Theme.Narsil" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
