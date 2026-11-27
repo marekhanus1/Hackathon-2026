@@ -1,6 +1,28 @@
 package cz.narsil.app
 
 import android.content.Context
+import cz.narsil.core.ContextRepository
+import cz.narsil.core.ContractRepository
+import cz.narsil.core.EchoVideoRepository
+import cz.narsil.core.GamificationEngine
+import cz.narsil.core.InterventionTriggerSource
+import cz.narsil.core.MovementRepository
+import cz.narsil.core.SettingsRepository
+import cz.narsil.core.SquatCounter
+import cz.narsil.core.data.DataStoreSettingsRepository
+import cz.narsil.core.fake.FakeContextRepository
+import cz.narsil.core.fake.FakeContractRepository
+import cz.narsil.core.fake.FakeEchoVideoRepository
+import cz.narsil.core.fake.FakeGamificationEngine
+import cz.narsil.core.fake.FakeInterventionTriggerSource
+import cz.narsil.core.fake.FakeMovementRepository
+import cz.narsil.core.fake.FakeSquatCounter
+import cz.narsil.detection.accessibility.AccessibilityTriggerSource
+import cz.narsil.detection.context.WifiContextRepository
+import cz.narsil.overlay.UnlockTimer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * Jednoduchý ServiceLocator: jediné místo, kde se rozhoduje, zda aplikace používá
@@ -33,8 +55,12 @@ import android.content.Context
  */
 object ServiceLocator {
 
-    /** Výchozí stav přepínače; po napojení skutečných modulů (124) změnit na false. */
-    const val DEFAULT_USE_FAKES = true
+    /**
+     * true = všechno fake (náhledy, demo bez telefonu). false = skutečné moduly, kde už existují
+     * (detekce 110/111, kontext 112, nastavení 105); pohyb, dřepy, gamifikace a smlouva zůstávají
+     * fake, dokud je nedodá Šimon (203/210/211/202/212).
+     */
+    const val DEFAULT_USE_FAKES = false
 
     private lateinit var appContextRef: Context
 
@@ -50,6 +76,9 @@ object ServiceLocator {
 
     val isInitialized: Boolean
         get() = ::appContextRef.isInitialized
+
+    /** Scope aplikace (běží po celou dobu procesu). */
+    val appScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     fun init(context: Context, useFakes: Boolean = DEFAULT_USE_FAKES) {
         appContextRef = context.applicationContext
@@ -69,4 +98,40 @@ object ServiceLocator {
     @Synchronized
     fun <T : Any> cached(key: String, create: () -> T): T =
         instances.getOrPut(key, create) as T
+
+    // --- Moduly ---
+
+    /** Nastavení: vždy DataStore (i demo přepínače musí přežít restart). */
+    val settingsRepository: SettingsRepository
+        get() = cached("settings") { DataStoreSettingsRepository(appContext) }
+
+    val contextRepository: ContextRepository
+        get() = cached("context") {
+            if (useFakes) FakeContextRepository() else WifiContextRepository(appContext, settingsRepository, appScope)
+        }
+
+    val interventionTriggerSource: InterventionTriggerSource
+        get() = cached("triggers") {
+            if (useFakes) FakeInterventionTriggerSource()
+            else AccessibilityTriggerSource(contextRepository, settingsRepository, appScope)
+        }
+
+    // Fake, dokud nejsou skutečné moduly (Šimon). Pak: if (useFakes) Fake… else Real…
+    val movementRepository: MovementRepository
+        get() = cached("movement") { FakeMovementRepository() }
+
+    val gamificationEngine: GamificationEngine
+        get() = cached("gamification") { FakeGamificationEngine() }
+
+    val contractRepository: ContractRepository
+        get() = cached("contract") { FakeContractRepository() }
+
+    val echoVideoRepository: EchoVideoRepository
+        get() = cached("echoVideo") { FakeEchoVideoRepository() }
+
+    val squatCounter: SquatCounter
+        get() = cached("squats") { FakeSquatCounter(appScope, intervalMillis = 1_000) }
+
+    val unlockTimer: UnlockTimer
+        get() = cached("unlockTimer") { UnlockTimer() }
 }
