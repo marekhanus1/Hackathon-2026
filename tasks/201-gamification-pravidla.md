@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/201-gamification-pravidla
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/32
 ---
 
 # 201 – Pravidla gamifikace

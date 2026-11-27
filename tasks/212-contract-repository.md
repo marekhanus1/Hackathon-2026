@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/212-contract-repository
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/37
 ---
 
 # 212 – ContractRepository a večerní video

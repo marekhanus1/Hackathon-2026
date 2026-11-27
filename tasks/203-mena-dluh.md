@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/203-mena-dluh
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/34
 ---
 
 # 203 – Měna: kurz pohybu a dluh

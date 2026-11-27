@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/202-gamification-engine
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/33
 ---
 
 # 202 – GamificationEngine v čistém Kotlinu

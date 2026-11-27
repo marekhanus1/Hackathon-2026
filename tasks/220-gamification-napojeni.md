@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/220-gamification-napojeni
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/38
 ---
 
 # 220 – Gamifikace napojená na výsledky
@@ -23,3 +23,4 @@ Každá volba v Ozvěně změní XP a denní skóre.
 - Fáze 2 (8–14 h), proud A. Po 202. Brána G3.
 - Denní minuty feedu a získané minuty bere z Room souhrnů Marka (121).
 - Překryv: `gamification/` obsahuje `gamification/debug/` z 222 (stejná fáze, paralelně) – 220 do `debug/` nesahá.
+- Pro Marka: chybí `XpDao.all()` (teď se historie načítá po dnech za 90 dní). Dřepy nad 20 posílat do `RulesGamificationEngine.onExtraSquats(n)` (žolíky).

@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/211-movement-repository
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/36
 ---
 
 # 211 – MovementRepository: kroky a zůstatek
@@ -24,3 +24,4 @@ Kroky z telefonu se promítnou do zůstatku minut.
 - Fáze 1, proud B. Po 203.
 - Překryv: Soubory `movement/` obsahují i `movement/squat/` (210, stejná fáze, paralelně) – proto 211 smí měnit jen soubory přímo v `movement/` a `movement/steps/`.
 - Redmi: Health Connect pravděpodobně doinstalovat z Google Play, jinak záloha senzor kroků. Škrt č. 4 při skluzu: jen senzor kroků.
+- Manifest: `<queries>` Health Connect + 2× `activity-alias` (rationale oprávnění). Oprávnění žádá onboarding přes `HealthConnectStepsSource.permissionContract()`.

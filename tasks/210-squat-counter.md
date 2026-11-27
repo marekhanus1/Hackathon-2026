@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/210-squat-counter
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/35
 ---
 
 # 210 – SquatCounter: dřepy přes kameru
@@ -23,3 +23,4 @@ Na Nothing počítá správně 9 z 10 pokusů, na Redmi stíhá v reálném čas
 - Fáze 1 (1,5–8 h), proud A, samostatná relace řízená člověkem. Potřeba pro bránu G2.
 - Šimon mezitím dělá dřepy před kamerou a ladí prahy. Pokračuje v 231.
 - Náhled kamery: UI obrazovky dřepů je Janovo (311) – 210 dodá jen composable/View s preview, ne layout obrazovky.
+- Na telefonu zatím neověřeno (9 z 10 na Nothing, real-time na Redmi) – ověřit ručně, ladění prahů v 231.
