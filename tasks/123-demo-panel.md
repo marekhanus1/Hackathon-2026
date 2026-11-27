@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/123-demo-panel
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/31
 ---
 
 # 123 – Demo panel
