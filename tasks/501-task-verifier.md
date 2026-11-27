@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/501-task-verifier
-pr: 
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/53
 ---
 
 # 501 – TaskVerifier (čistý Kotlin)

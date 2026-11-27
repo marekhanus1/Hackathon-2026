@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/522-demo-overeni
-pr: 
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/56
 ---
 
 # 522 – Demo ověření
@@ -16,3 +16,4 @@ Připravené důkazy (ANO i NE), testovací aktivita na Stravě, režim „ově�
 
 ## Poznámky
 -
+- Fotky důkazů nafotit v den dema (mockdata/dukazy/README.md), testovací aktivita na Stravě.

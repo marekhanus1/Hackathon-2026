@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/520-overeni-v-aplikaci
-pr: 
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/54
 ---
 
 # 520 – Ověření fotkou a textem v aplikaci
@@ -16,3 +16,4 @@ Napojit `TaskVerifier` na úkoly plánu (`ContractRepository.updateTask`): stavy
 
 ## Poznámky
 -
+- Ověřit na telefonu s klíčem: fotka zápisků → VERIFIED do 5 s.

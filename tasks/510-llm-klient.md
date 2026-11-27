@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/510-llm-klient
-pr: 
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/52
 ---
 
 # 510 – Klient LLM pro Claude, Gemini a OpenAI
@@ -16,3 +16,4 @@ Klient přes OkHttp pro tři poskytovatele (`LlmProvider`), timeout 5 s, teplota
 
 ## Poznámky
 - API klíče z `local.properties` přes BuildConfig.
+- Claude `claude-haiku-5-5` bez `temperature` (odmítá ji), thinking vypnuté + effort low. Pro Marka: `buildConfigField` GEMINI_API_KEY, OPENAI_API_KEY. Shoda tří poskytovatelů ověřena jen s falešným HTTP – živě v 530.

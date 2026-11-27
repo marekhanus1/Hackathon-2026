@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/511-strava-integrace
-pr: 
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/59
 ---
 
 # 511 – Strava OAuth a dnešní aktivity
@@ -16,3 +16,4 @@ pr:
 
 ## Poznámky
 - Deep link v `AndroidManifest.xml` patří Markovi (`app/`), požádat ho v Poznámkách.
+- Pro Marka: deep link `narsil://strava` v manifestu + `handleRedirect` v MainActivity, `STRAVA_CLIENT_ID/SECRET` v BuildConfig. Registrace aplikace = 502 (člověk).
