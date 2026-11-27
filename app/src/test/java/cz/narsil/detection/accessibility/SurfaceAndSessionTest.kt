@@ -19,10 +19,27 @@ class SurfaceAndSessionTest {
 
     @Test
     fun instagramSurfaces() {
-        assertEquals(Surface.FEED, SurfaceClassifier.classify(snap(ig, setOf("row_feed_photo_imageview", "action_bar_inbox_button"))))
-        assertEquals(Surface.REELS, SurfaceClassifier.classify(snap(ig, setOf("clips_viewer_view_pager"))))
-        assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(ig, setOf("row_thread_composer_edittext", "row_feed_x"))))
+        // ID z Nothing 3a (viditelná stránka po odfiltrování neviditelných uzlů), tabbar je vidět všude.
+        val tabbar = setOf("feed_tab", "clips_tab", "direct_tab", "search_tab", "profile_tab")
+        val feed = tabbar + setOf("main_feed_action_bar", "row_feed_profile_header", "row_feed_button_like", "clips_media_component", "clips_video_container")
+        val reels = tabbar + setOf("clips_viewer_container", "clips_viewer_view_pager", "root_clips_layout", "clips_video_container")
+        val inbox = tabbar + setOf("direct_inbox_action_bar")
+        assertEquals(Surface.FEED, SurfaceClassifier.classify(snap(ig, feed)))
+        assertEquals(Surface.REELS, SurfaceClassifier.classify(snap(ig, reels)))
+        assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(ig, inbox)))
         assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(ig, setOf("something_unknown"))))
+    }
+
+    @Test
+    fun instagramSelectedTabDecidesWhenIdsAmbiguous() {
+        val ambiguous = setOf("clips_video_container")
+        assertEquals(Surface.FEED, SurfaceClassifier.classify(snap(ig, ambiguous).copy(selectedTab = "feed_tab")))
+        assertEquals(Surface.REELS, SurfaceClassifier.classify(snap(ig, ambiguous).copy(selectedTab = "clips_tab")))
+        assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(ig, ambiguous).copy(selectedTab = "search_tab")))
+        // Celoobrazovkový reel otevřený z feedu: přehrávač má přednost před záložkou.
+        assertEquals(Surface.REELS, SurfaceClassifier.classify(snap(ig, setOf("clips_viewer_container")).copy(selectedTab = "feed_tab")))
+        // Zprávy mají přednost vždy.
+        assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(ig, setOf("direct_inbox_action_bar")).copy(selectedTab = "feed_tab")))
     }
 
     @Test

@@ -14,17 +14,36 @@ object SurfaceClassifier {
     fun classify(s: ForegroundSnapshot): Surface? = when (s.app) {
         null -> null
         WatchedApp.CHROME -> s.url?.let(::classifyUrl)
-        WatchedApp.INSTAGRAM -> classifyByIds(s, SurfaceRules.INSTAGRAM, default = Surface.MESSAGES)
+        WatchedApp.INSTAGRAM -> classifyInstagram(s)
         // TikTok má obfuskovaná ID: hlavní obrazovka je feed, pokud nejde zjevně o zprávy/profil.
         WatchedApp.TIKTOK -> classifyByIds(s, SurfaceRules.TIKTOK, default = Surface.FEED)
         WatchedApp.YOUTUBE -> classifyByIds(s, SurfaceRules.YOUTUBE, default = Surface.MESSAGES)
     }
 
-    private fun classifyByIds(s: ForegroundSnapshot, rules: List<Rule>, default: Surface): Surface {
-        val haystack = buildList {
-            s.className?.let { add(it.lowercase()) }
-            s.viewIds.mapTo(this) { it.substringAfter(":id/").lowercase() }
+    /**
+     * Instagram (ověřeno na Nothing 3a, 11/2026): viditelná ID zpráv → MESSAGES, celoobrazovkový přehrávač
+     * Reels → REELS, pak vybraná záložka, pak ID feedu. Inline reels ve feedu mají clips_video_*, proto
+     * REELS jen podle clips_viewer_*.
+     */
+    private fun classifyInstagram(s: ForegroundSnapshot): Surface {
+        val ids = idHaystack(s)
+        fun has(rule: List<String>) = rule.any { f -> ids.any { it.contains(f) } }
+        return when {
+            has(SurfaceRules.INSTAGRAM_MESSAGES) -> Surface.MESSAGES
+            has(SurfaceRules.INSTAGRAM_REELS) -> Surface.REELS
+            s.selectedTab != null -> SurfaceRules.INSTAGRAM_TABS[s.selectedTab] ?: Surface.MESSAGES
+            has(SurfaceRules.INSTAGRAM_FEED) -> Surface.FEED
+            else -> Surface.MESSAGES
         }
+    }
+
+    private fun idHaystack(s: ForegroundSnapshot): List<String> = buildList {
+        s.className?.let { add(it.lowercase()) }
+        s.viewIds.mapTo(this) { it.substringAfter(":id/").lowercase() }
+    }
+
+    private fun classifyByIds(s: ForegroundSnapshot, rules: List<Rule>, default: Surface): Surface {
+        val haystack = idHaystack(s)
         // Pravidla jsou seřazená podle priority: zprávy první.
         return rules.firstOrNull { rule -> rule.fragments.any { f -> haystack.any { it.contains(f) } } }?.surface ?: default
     }
@@ -61,15 +80,19 @@ object SurfaceClassifier {
 
 /** Fragmenty názvu aktivity a ID prvků (malými písmeny, bez balíčku), seřazené podle priority. */
 object SurfaceRules {
-    val INSTAGRAM = listOf(
-        // Jen prvky uvnitř zpráv: feed má v liště tlačítko „action_bar_inbox_button“, proto ne obecné „inbox“.
-        SurfaceClassifier.Rule(
-            Surface.MESSAGES,
-            listOf("directthread", "direct_thread", "row_thread", "thread_title", "row_inbox", "direct_inbox", "message_list", "composer"),
-        ),
-        SurfaceClassifier.Rule(Surface.REELS, listOf("clips_viewer", "clips_video", "clips_linear", "reel_viewer")),
-        SurfaceClassifier.Rule(Surface.FEED, listOf("row_feed", "main_feed", "feed_tab", "reel_empty_badge")),
+    // Instagram: ID ze stromu bez neviditelných stránek ViewPageru (WindowReader).
+    val INSTAGRAM_MESSAGES = listOf("direct_inbox_action_bar", "direct_thread", "row_thread", "thread_title", "message_list")
+    val INSTAGRAM_REELS = listOf("clips_viewer_container", "clips_viewer_view_pager", "root_clips_layout")
+    val INSTAGRAM_FEED = listOf("main_feed_action_bar", "row_feed")
+    val INSTAGRAM_TABS = mapOf(
+        "feed_tab" to Surface.FEED,
+        "clips_tab" to Surface.REELS,
+        "direct_tab" to Surface.MESSAGES,
+        // Prozkoumat a profil: v nejistotě nezasahovat.
+        "search_tab" to Surface.MESSAGES,
+        "profile_tab" to Surface.MESSAGES,
     )
+
     val TIKTOK = listOf(
         SurfaceClassifier.Rule(Surface.MESSAGES, listOf("chatroom", "chat_", "im.chat", "inboxactivity", "messageactivity")),
     )
