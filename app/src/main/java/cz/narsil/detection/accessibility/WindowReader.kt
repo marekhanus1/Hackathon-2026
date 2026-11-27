@@ -12,19 +12,25 @@ internal object WindowReader {
 
     private val CHROME_URL_IDS = listOf("url_bar", "search_box_text", "location_bar_edit_text")
 
-    data class Result(val viewIds: Set<String>, val texts: List<String>, val url: String?)
+    data class Result(val viewIds: Set<String>, val texts: List<String>, val url: String?, val selectedTab: String? = null)
 
     fun read(root: AccessibilityNodeInfo, app: WatchedApp?, dumpToLog: Boolean): Result {
         val ids = linkedSetOf<String>()
         val texts = mutableListOf<String>()
         var url: String? = null
+        var selectedTab: String? = null
         var visited = 0
         val stack = ArrayDeque<Pair<AccessibilityNodeInfo, Int>>()
         stack.addLast(root to 0)
         while (stack.isNotEmpty() && visited < MAX_NODES) {
             val (node, depth) = stack.removeLast()
             visited++
+            // Instagram drží ve stromu všechny záložky (ViewPager); stránky mimo obrazovku i s podstromem přeskočit.
+            if (depth > 0 && !node.isVisibleToUser) continue
             val id = node.viewIdResourceName
+            if (id != null && node.isSelected && id.endsWith("_tab") && selectedTab == null) {
+                selectedTab = id.substringAfter(":id/")
+            }
             if (id != null) ids += id
             val text = (node.text ?: node.contentDescription)?.toString()?.trim()?.take(MAX_TEXT_LEN)
             if (app == WatchedApp.CHROME && url == null && id != null && CHROME_URL_IDS.any { id.endsWith(":id/$it") }) {
@@ -33,12 +39,12 @@ internal object WindowReader {
             if (!text.isNullOrEmpty() && texts.size < MAX_TEXTS) texts += text
             if (dumpToLog) {
                 Log.d(TAG, "${"  ".repeat(depth.coerceAtMost(20))}${node.className?.toString()?.substringAfterLast('.')} id=$id" +
-                    (if (!text.isNullOrEmpty()) " \"$text\"" else "") + (if (node.isScrollable) " [scroll]" else ""))
+                    (if (!text.isNullOrEmpty()) " \"$text\"" else "") + (if (node.isScrollable) " [scroll]" else "") + (if (node.isSelected) " [selected]" else ""))
             }
             for (i in node.childCount - 1 downTo 0) {
                 node.getChild(i)?.let { stack.addLast(it to depth + 1) }
             }
         }
-        return Result(ids, texts, url)
+        return Result(ids, texts, url, selectedTab)
     }
 }

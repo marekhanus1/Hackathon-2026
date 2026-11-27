@@ -20,6 +20,7 @@ class NarsilAccessibilityService : AccessibilityService() {
     private val throttle = SnapshotThrottle()
     private var lastClassName: String? = null
     private var lastPackage: String? = null
+    private var lastSelectedTab: String? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -67,8 +68,15 @@ class NarsilAccessibilityService : AccessibilityService() {
             return
         }
         val root = rootInActiveWindow
-        val result = root?.let {
-            runCatching { WindowReader.read(it, app, dumpToLog = dumpTree && kind == SnapshotKind.WINDOW_CHANGED) }.getOrNull()
+        val dumpNow = dumpTree && kind == SnapshotKind.WINDOW_CHANGED
+        var result = root?.let { runCatching { WindowReader.read(it, app, dumpToLog = dumpNow) }.getOrNull() }
+        // Přepnutí záložky v aplikaci nevyvolá WINDOW_CHANGED: při změně záložky vypsat strom znovu.
+        if (result != null && result.selectedTab != lastSelectedTab) {
+            lastSelectedTab = result.selectedTab
+            if (dumpTree && !dumpNow) {
+                Log.d(TAG, "záložka: ${result.selectedTab}")
+                result = runCatching { WindowReader.read(root, app, dumpToLog = true) }.getOrNull() ?: result
+            }
         }
         val snapshot = ForegroundSnapshot(
             packageName = pkg,
@@ -79,10 +87,11 @@ class NarsilAccessibilityService : AccessibilityService() {
             url = result?.url,
             viewIds = result?.viewIds.orEmpty(),
             texts = result?.texts.orEmpty(),
+            selectedTab = result?.selectedTab,
         )
         AccessibilityEvents.emit(snapshot)
         if (kind == SnapshotKind.WINDOW_CHANGED || snapshot.url != null) {
-            Log.d(TAG, "popředí: $app ($pkg) okno=${snapshot.className} url=${snapshot.url} ids=${snapshot.viewIds.size}")
+            Log.d(TAG, "popředí: $app ($pkg) okno=${snapshot.className} tab=${snapshot.selectedTab} url=${snapshot.url} ids=${snapshot.viewIds.size}")
         }
     }
 
