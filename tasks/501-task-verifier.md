@@ -1,8 +1,8 @@
 ---
-status: todo
-owner: 
-agent: 
-branch: 
+status: in-progress
+owner: simon
+agent: claude
+branch: simon/claude/501-task-verifier
 pr: 
 ---
 
