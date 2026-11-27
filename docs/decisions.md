@@ -9,3 +9,5 @@ Jeden řádek na rozhodnutí: `YYYY-MM-DD – kdo – co a proč`.
 2026-11-27 – marek – Demo telefon Nothing Phone 3a, záloha a telefon Parťáka Redmi Note 11.
 2026-11-27 – marek – Jedna Room databáze AppDatabase v core/data (úkol 121); ostatní moduly (např. 212) přidávají jen vlastní entity a DAO a registraci v AppDatabase hlásí Markovi.
 2026-11-27 – marek – Změny AndroidManifest.xml a app/build.gradle.kts drží proudy minimální; konflikty řeší Marek. Klíč Claude je v BuildConfig.CLAUDE_API_KEY z local.properties (už v kostře 101).
+2026-11-27 – marek – Sdílená databáze je NarsilDatabase v cz.narsil.core.data (105, nahrazuje AppDatabase/121): všechny entity a DAO předem, ostatní moduly vlastní entity nezakládají.
+2026-11-27 – marek – DailyContract.isFulfilled je funkce isFulfilled(stepsToday), ne vlastnost: kroky smlouva nezná (105). Den od 4:00 počítá sdílený DayKey.

@@ -9,7 +9,7 @@ pr: https://github.com/marekhanus1/Hackathon-2026/pull/13
 # 320 – Onboarding: oprávnění a domácí Wi-Fi
 
 ## Cíl
-Obrazovky onboardingu: každé oprávnění vysvětlené jednou větou (Accessibility, překryvné okno, poloha kvůli Wi-Fi, kamera, Health Connect), nastavení domácí Wi-Fi („tohle je můj domov“), kroky pro MIUI (automatické spouštění, vyskakovací okna na pozadí).
+Obrazovky onboardingu: každé oprávnění vysvětlené jednou větou (Accessibility, překryvné okno, poloha kvůli Wi-Fi, kamera, Health Connect), nastavení domácí Wi-Fi („tohle je můj domov“), kroky pro MIUI (automatické spouštění, vyskakovací okna na pozadí), připojení Stravy (nepovinné, `StravaRepository.isConnected`) a nahrání prvního videa pro Ozvěnu (záloha, než vznikne video ze smlouvy, SPEC 9).
 
 ## Soubory
 - app/src/main/java/cz/narsil/ui/screens/onboarding/
@@ -19,5 +19,6 @@ Logiku napojí Marek (122).
 
 ## Poznámky
 - Pro: Jan (Gemini Antigravity Pro).
+- Připojení Stravy (OAuth) dodá Člen 5 (511), nahrávání videa Šimon (212); obrazovka má pro obojí tlačítko/slot.
 - Fáze 2 (8–14 h), proud A.
 - Data jen přes ViewModel se `StateFlow<UiState>`, do napojení fake stavy. `@Preview` ve světlém i tmavém režimu. Texty česky, tón klidný a povzbuzující, nikdy trestající.
