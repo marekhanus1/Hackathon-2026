@@ -39,8 +39,7 @@ fun NarsilNavHost(
             PlaceholderScreen(NarsilRoute.Contract, onNavigate = navigate, onBack = back)
         }
         composable(NarsilRoute.Squat.route) {
-            // 311: SquatScreen
-            PlaceholderScreen(NarsilRoute.Squat, onNavigate = navigate, onBack = back)
+            SquatRoute(onBack = back)
         }
         composable(NarsilRoute.EchoPreview.route) {
             // 310: EchoScreen (náhled; produkčně v překryvném okně, úkol 113)
