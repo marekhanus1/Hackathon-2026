@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/002-spec-a-kontrakty
-pr: 
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/9
 ---
 
 # 002 – Pravidla chování a rozšíření kontraktů
