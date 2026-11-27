@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/112-context-wifi
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/25
 ---
 
 # 112 – ContextRepository přes domácí Wi-Fi
