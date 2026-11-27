@@ -1,5 +1,22 @@
 # Hackathon 2026
 
+## Narsil – TL;DR
+
+Android aplikace proti prokrastinaci na sociálních sítích (hackathon „antiprokrastinační zbraň“, 20 h).
+Nic neblokuje, přesvědčuje. Název podle zlomeného a znovu ukovaného meče: relaps není konec.
+
+- **Kdy zasahuje:** jen doma (domácí Wi-Fi) a jen u nekonečného obsahu (feed, Reels, TikTok, řetězení videí na YouTube) po 5 minutách. Venku, ve zprávách a při krátkém pohledu mlčí.
+- **Ozvěna:** v pokušení pustí tvoje vlastní večerní video a zeptá se „Čemu se teď vyhýbáš?“.
+- **Pohyb jako měna:** plánovaný obsah z večerní smlouvy je zdarma, neplánovaný se platí kroky nebo 20 dřepy před kamerou. Jde si i půjčit.
+- **Gamifikace:** nejvíc XP za „Zavřít“, postava budoucího já, souboj s algoritmem, série se žolíky. Nikdy netrestá.
+- **Parťák:** když aplikaci smažeš, nedozví se to server, ale kamarád.
+- **Stack:** Kotlin, Jetpack Compose, AccessibilityService, ML Kit Pose Detection, Health Connect, Claude API.
+- **Tým:** Marek (Claude, jádro a integrace), Šimon (Claude, pohyb a gamifikace), Jan (Antigravity, UI), Štěpán (Gemini, pitch a data).
+- **Cíl harmonogramu:** v 8. hodině funkční průchod TikTok → Ozvěna → dřepy na telefonu.
+
+Celý brief, harmonogram a plány agentů: [docs/BRIEF.md](docs/BRIEF.md). Pravidla pro agenty: [AGENTS.md](AGENTS.md).
+
+## Workspace
 Kolaborační workspace: víc lidí × víc AI agentů (Claude Code, Gemini CLI) na jednom repu zároveň.
 
 ## Jak to funguje
@@ -30,4 +47,3 @@ scripts/finish-task.sh                                 # rebase + push + odkaz n
 Nový úkol: zkopíruj `tasks/_TEMPLATE.md` na `tasks/NNN-nazev.md`, commit + push na `main`.
 
 Po merge PR: `git worktree remove ../hackathon_2026-wt/<složka>`.
-# Hackathon-2026
