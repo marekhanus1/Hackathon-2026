@@ -36,6 +36,22 @@ object GamificationDebug {
         else -> false
     }
 
+    /**
+     * Demo „reset dne“: dnešní XP, skóre souboje a smlouva dneška se nepočítají (skutečný engine),
+     * fake se vrátí na `FakeGamificationEngine.DEMO_STATE`.
+     */
+    suspend fun resetDay(engine: GamificationEngine): Boolean = when (engine) {
+        is RulesGamificationEngine -> {
+            engine.resetToday()
+            true
+        }
+        is FakeGamificationEngine -> {
+            engine.setState(FakeGamificationEngine.DEMO_STATE)
+            true
+        }
+        else -> false
+    }
+
     /** Přepne postavu na další stav (EXHAUSTED → … → THRIVING → EXHAUSTED). Vrací nový stav. */
     suspend fun nextAvatar(engine: GamificationEngine): AvatarState {
         val states = AvatarState.entries

@@ -71,6 +71,9 @@ object XpSource {
     /** Získaný žolík (50 dřepů navíc), 0 XP. */
     const val JOKER = "JOKER"
 
+    /** Reset dne z demo panelu (222), 0 XP: události dne před ním se nepočítají. */
+    const val DAY_RESET = "DAY_RESET"
+
     /** Volby, které jsou zásahem Ozvěny (boss, skóre). */
     val INTERVENTIONS = setOf(CLOSED, PAID_STEPS, SQUATS, BORROWED)
 

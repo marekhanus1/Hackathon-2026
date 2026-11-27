@@ -47,7 +47,7 @@ class RulesGamificationEngine(
         val now = clock.millis()
         val today = today()
         val xp = when (outcome) {
-            InterventionOutcome.CLOSED -> GamificationCalculator.closeXp(h.records, today, now)
+            InterventionOutcome.CLOSED -> GamificationCalculator.closeXp(GamificationCalculator.effective(h.records), today, now)
             InterventionOutcome.SQUATS -> GamificationRules.XP_SQUATS
             InterventionOutcome.PAID_STEPS -> GamificationRules.XP_PAID_STEPS
             InterventionOutcome.BORROWED -> GamificationRules.XP_BORROWED
@@ -61,7 +61,7 @@ class RulesGamificationEngine(
 
     override suspend fun onContractFulfilled(): Int = mutex.withLock {
         val today = today()
-        if (GamificationCalculator.hasContractXp(history().records, today)) return@withLock 0
+        if (GamificationCalculator.hasContractXp(effectiveRecords(), today)) return@withLock 0
         append(XpRecord(today, clock.millis(), XpSource.CONTRACT, GamificationRules.XP_CONTRACT))
         settle()
         publish()
@@ -78,7 +78,7 @@ class RulesGamificationEngine(
 
     override suspend fun onVideoRated(rating: Int): Int = mutex.withLock {
         val today = today()
-        val xp = GamificationCalculator.videoRatedXp(history().records, today)
+        val xp = GamificationCalculator.videoRatedXp(effectiveRecords(), today)
         append(XpRecord(today, clock.millis(), XpSource.VIDEO_RATED, xp))
         publish()
         xp
@@ -122,7 +122,20 @@ class RulesGamificationEngine(
         publish()
     }
 
+    /**
+     * Ladění (222): reset dne – dnešní XP, skóre souboje, žolíky a smlouva dneška se přestanou počítat
+     * (zapíše se značka DAY_RESET, přežije restart). Zruší i vnucenou postavu. Odznaky zůstanou.
+     */
+    suspend fun resetToday() = mutex.withLock {
+        append(XpRecord(today(), clock.millis(), XpSource.DAY_RESET, 0))
+        avatarOverride = null
+        extraSquatsToday = 0
+        publish()
+    }
+
     // --- vnitřek (volat pod mutexem) ---
+
+    private suspend fun effectiveRecords(): List<XpRecord> = GamificationCalculator.effective(history().records)
 
     private fun today(): LocalDate = DayKey.of(clock.millis(), clock.zone)
 
@@ -140,12 +153,12 @@ class RulesGamificationEngine(
         val now = clock.millis()
         val today = today()
         for (day in listOf(today.minusDays(1), today)) {
-            if (GamificationCalculator.bossDue(history().records, day, now, clock.zone)) {
+            if (GamificationCalculator.bossDue(effectiveRecords(), day, now, clock.zone)) {
                 append(XpRecord(day, now, XpSource.BOSS, GamificationRules.XP_BOSS))
             }
         }
         val h = history()
-        val newBadges = GamificationCalculator.earnedBadges(h.records, today) - h.badges.keys
+        val newBadges = GamificationCalculator.earnedBadges(GamificationCalculator.effective(h.records), today) - h.badges.keys
         if (newBadges.isNotEmpty()) {
             history = h.copy(badges = h.badges + newBadges.associateWith { now })
             newBadges.forEach { runCatching { store.unlockBadge(it, now) } }

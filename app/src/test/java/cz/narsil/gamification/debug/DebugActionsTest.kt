@@ -42,3 +42,43 @@ class DebugActionsTest {
         assertEquals(AvatarState.TIRED, GamificationDebug.nextAvatar(fake.also { it.setAvatar(AvatarState.EXHAUSTED) }))
     }
 }
+
+class ResetDayTest {
+    @Test
+    fun gamificationResetDropsTodayOnly() = kotlinx.coroutines.test.runTest {
+        val clock = cz.narsil.gamification.TestClock(java.time.LocalDateTime.of(2026, 11, 28, 10, 0))
+        val store = cz.narsil.gamification.InMemoryGamificationStore()
+        val engine = RulesGamificationEngine(store, clock)
+        engine.onContractFulfilled() // včera
+        clock.set(java.time.LocalDateTime.of(2026, 11, 29, 10, 0))
+        engine.onOutcome(cz.narsil.core.InterventionOutcome.CLOSED)
+        engine.setAvatar(AvatarState.THRIVING)
+        assertEquals(150, engine.state.value.xp)
+        assertTrue(GamificationDebug.resetDay(engine))
+        assertEquals(100, engine.state.value.xp) // včerejšek zůstal
+        assertEquals(0, engine.state.value.today.reclaimedMinutes)
+        assertEquals(AvatarState.OK, engine.state.value.avatar)
+        assertEquals(50, engine.onOutcome(cz.narsil.core.InterventionOutcome.CLOSED)) // strop CLOSED od nuly
+        val restarted = RulesGamificationEngine(store, clock)
+        restarted.refresh()
+        assertEquals(150, restarted.state.value.xp)
+    }
+
+    @Test
+    fun movementResetClearsMinutesAndSetsSteps() = kotlinx.coroutines.test.runTest {
+        val repo = StepsMovementRepository({ 9_000 }, CurrencyBook())
+        repo.refresh()
+        repo.pay(30)
+        repo.borrow(20)
+        assertTrue(MovementDebug.resetDay(repo))
+        val s = repo.state.value
+        assertEquals(4_200, s.stepsToday)
+        assertEquals(42, s.balanceMinutes)
+        assertEquals(0, s.debtMinutes)
+
+        val fake = FakeMovementRepository(stepsToday = 0, debtMinutes = 20)
+        assertTrue(MovementDebug.resetDay(fake))
+        assertEquals(4_200, fake.state.value.stepsToday)
+        assertEquals(0, fake.state.value.debtMinutes)
+    }
+}

@@ -16,13 +16,23 @@ data class DayMinutes(
     val carryDone: Boolean = false,
 ) {
     companion object {
-        fun of(entries: List<MinuteEntry>): DayMinutes = DayMinutes(
-            taskRewards = entries.sumFor(LedgerKind.TASK_REWARD),
-            paid = entries.sumFor(LedgerKind.PAID),
-            borrowed = entries.sumFor(LedgerKind.BORROW),
-            carriedDebt = entries.sumFor(LedgerKind.DEBT_CARRY),
-            carryDone = entries.any { it.kind == LedgerKind.DEBT_CARRY },
-        )
+        /** Reset dne z demo panelu (222): pohyby minut do posledního resetu se nepočítají. */
+        const val DAY_RESET = "DAY_RESET"
+
+        fun of(all: List<MinuteEntry>): DayMinutes {
+            // Podle pořadí zápisu (store vrací záznamy dne v pořadí vložení).
+            val resetIndex = all.indexOfLast { it.kind == DAY_RESET }
+            val lastReset = if (resetIndex >= 0) resetIndex else null
+            val entries = if (lastReset == null) all else all.drop(resetIndex + 1)
+            return DayMinutes(
+                taskRewards = entries.sumFor(LedgerKind.TASK_REWARD),
+                paid = entries.sumFor(LedgerKind.PAID),
+                borrowed = entries.sumFor(LedgerKind.BORROW),
+                carriedDebt = entries.sumFor(LedgerKind.DEBT_CARRY),
+                // Po resetu se dluh ze včerejška znovu nepřenáší.
+                carryDone = lastReset != null || entries.any { it.kind == LedgerKind.DEBT_CARRY },
+            )
+        }
 
         private fun List<MinuteEntry>.sumFor(kind: String) = filter { it.kind == kind }.sumOf { it.minutes.coerceAtLeast(0) }
     }

@@ -104,3 +104,18 @@ class CurrencyTest {
         assertEquals(0, book.state(0).debtMinutes)
     }
 }
+
+class CurrencyResetTest {
+    @Test
+    fun resetTodayClearsMinutes() = runTest {
+        val book = CurrencyBook(clock = MutableClock(LocalDateTime.of(2026, 11, 28, 10, 0)))
+        book.borrow(20)
+        book.pay(5_000, 10)
+        book.addEarnedMinutes(30)
+        book.resetToday()
+        val s = book.state(5_000)
+        assertEquals(50, s.balanceMinutes)
+        assertEquals(0, s.debtMinutes)
+        assertTrue(book.borrow(30).accepted) // limit znovu od nuly
+    }
+}

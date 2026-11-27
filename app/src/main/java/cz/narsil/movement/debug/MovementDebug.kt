@@ -21,4 +21,23 @@ object MovementDebug {
         }
         else -> false
     }
+
+    /**
+     * Demo „reset dne“: minuty dneška od nuly (platby, půjčky, odměny, přenesený dluh), dluh 0,
+     * kroky dneška na [steps] (výchozí 4 200 jako ve fake). Do Health Connect se nic nepíše.
+     */
+    suspend fun resetDay(repo: MovementRepository, steps: Int = DEMO_STEPS): Boolean = when (repo) {
+        is StepsMovementRepository -> {
+            repo.resetDay(steps)
+            true
+        }
+        is FakeMovementRepository -> {
+            repo.setSteps(steps)
+            repo.setDebt(0)
+            true
+        }
+        else -> false
+    }
+
+    const val DEMO_STEPS = 4_200
 }
