@@ -55,6 +55,7 @@ fun DemoPanelScreen(onBack: () -> Unit) {
     val comfort by sl.contextRepository.context.collectAsState()
     val manual by sl.contextRepository.manualOverride.collectAsState()
     val serviceOn by AccessibilityEvents.serviceConnected.collectAsState()
+    val echoReady by EchoOverlayStarter.isReady.collectAsState()
     val movement by sl.movementRepository.state.collectAsState()
     val game by sl.gamificationEngine.state.collectAsState()
     val unlockedUntil by sl.unlockTimer.unlockedUntil.collectAsState()
@@ -79,7 +80,7 @@ fun DemoPanelScreen(onBack: () -> Unit) {
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("Stav", fontWeight = FontWeight.SemiBold)
-                Text("Služba přístupnosti: ${if (serviceOn) "běží" else "VYPNUTÁ"} · Ozvěna ${if (EchoOverlayStarter.isReady) "připravená" else "nepřipravená"}")
+                Text("Služba přístupnosti: ${if (serviceOn) "běží" else "VYPNUTÁ"} · Ozvěna ${if (echoReady) "připravená" else "nepřipravená"}")
                 Text("Překrytí oken: ${if (AndroidSettings.canDrawOverlays(context)) "povoleno" else "nepovoleno"}")
                 Text("Kontext: $comfort${manual?.let { " (ručně)" } ?: ""} · domov: ${settings.homeSsid ?: "neuložen"}")
                 Text("Práh zásahu: ${settings.demoThresholdSec?.let { "$it s" } ?: "5 min"}")

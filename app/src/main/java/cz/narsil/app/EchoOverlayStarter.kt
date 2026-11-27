@@ -1,11 +1,13 @@
 package cz.narsil.app
 
 import android.util.Log
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.fake.FakeInterventionTriggerSource
 import cz.narsil.detection.accessibility.AccessibilityEvents
 import cz.narsil.detection.accessibility.AccessibilityTriggerSource
-import cz.narsil.detection.accessibility.NarsilAccessibilityService
 import cz.narsil.overlay.EchoOutcomeHandler
 import cz.narsil.overlay.EchoOverlayController
 import cz.narsil.overlay.EchoOverlayWindow
@@ -21,8 +23,10 @@ object EchoOverlayStarter {
     private const val TAG = "NarsilApp"
     private var controller: EchoOverlayController? = null
 
-    /** Ozvěna připravená (běží služba přístupnosti). */
-    val isReady: Boolean get() = controller != null
+    private val _ready = MutableStateFlow(false)
+
+    /** Ozvěna připravená (běží služba přístupnosti). StateFlow, ať ho Compose sleduje. */
+    val isReady: StateFlow<Boolean> = _ready.asStateFlow()
 
     /** Demo panel (123): ukáže Ozvěnu hned, bez čekání na detekci. false = služba neběží. */
     suspend fun showNow(trigger: InterventionTrigger = FakeInterventionTriggerSource.demoTrigger()): Boolean {
@@ -34,11 +38,12 @@ object EchoOverlayStarter {
     fun start() {
         val sl = ServiceLocator
         sl.appScope.launch {
-            AccessibilityEvents.serviceConnected.collect { connected ->
+            // Sleduje instanci služby: nová instance (přeinstalace) dostane nové okno i ovladač.
+            AccessibilityEvents.service.collect { service ->
                 controller?.stop()
                 controller = null
-                val service = NarsilAccessibilityService.instance
-                if (!connected || service == null) return@collect
+                _ready.value = false
+                if (service == null) return@collect
                 val triggers = sl.interventionTriggerSource
                 val handler = EchoOutcomeHandler(
                     movement = sl.movementRepository,
@@ -59,6 +64,7 @@ object EchoOverlayStarter {
                     choiceHandler = handler,
                     squatCounter = sl.squatCounter,
                 ).also { it.start() }
+                _ready.value = true
                 Log.i(TAG, "Ozvěna připravena (fakes=${sl.useFakes})")
             }
         }
