@@ -36,6 +36,7 @@ class OverlayDebugReceiver : BroadcastReceiver() {
             scope = scope,
             choiceHandler = EchoOutcomeHandler(movement, gamification, timer, goHome = { HomeNavigator.goHome(app) }),
             squatCounter = FakeSquatCounter(scope, intervalMillis = 600),
+            gamification = gamification,
         )
         scope.launch {
             try {

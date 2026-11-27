@@ -6,10 +6,13 @@ import cz.narsil.core.EchoVideoRepository
 import cz.narsil.core.InterventionOutcome
 import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.InterventionTriggerSource
+import cz.narsil.core.GamificationEngine
+import cz.narsil.core.MovementRates
 import cz.narsil.core.MovementRepository
 import cz.narsil.core.SquatCounter
 import cz.narsil.ui.screens.echo.EchoFeeling
 import cz.narsil.ui.screens.echo.EchoScreen
+import cz.narsil.ui.screens.reward.RewardOverlay
 import cz.narsil.ui.theme.NarsilTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -40,6 +43,10 @@ class EchoOverlayController(
     private val squatCounter: SquatCounter? = null,
     /** Demo režim: ladicí ukazatel přes kameru dřepů. */
     private val demoMode: () -> Boolean = { false },
+    /** XP a úroveň před/po volbě → obrazovka odměny (321). null = bez odměny. */
+    private val gamification: GamificationEngine? = null,
+    /** Dřepy nad 20 (SPEC 8: žolík za každých 50 navíc). */
+    private val onExtraSquats: suspend (Int) -> Unit = {},
 ) {
     private var job: Job? = null
 
@@ -93,7 +100,11 @@ class EchoOverlayController(
                         window.dismiss()
                         scope.launch { showEcho(trigger) } // zpět na Ozvěnu
                     },
-                    onDone = { choose(trigger, InterventionOutcome.SQUATS, feeling) },
+                    onDone = { count ->
+                        choose(trigger, InterventionOutcome.SQUATS, feeling)
+                        val extra = count - MovementRates.SQUATS_PER_UNLOCK
+                        if (extra > 0) scope.launch { runCatching { onExtraSquats(extra) } }
+                    },
                     demoMode = demoMode(),
                 )
             }
@@ -101,11 +112,21 @@ class EchoOverlayController(
     }
 
     private fun choose(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?) {
+        val before = gamification?.state?.value
+        // Okno se schová hned (Zavřít → plocha, odemknutí → zpět do aplikace); odměna se ukáže zvlášť.
         window.dismiss()
         scope.launch {
             runCatching { choiceHandler.onChoice(trigger, outcome, feeling) }
                 .onFailure { Log.e(TAG, "volba $outcome selhala", it) }
             Log.i(TAG, "volba: $outcome, pocit: $feeling")
+            val after = gamification?.state?.value
+            val reward = RewardBuilder.build(outcome, before, after) ?: return@launch
+            Log.i(TAG, "odměna: +${reward.gainedXp} XP, úroveň ${reward.previousLevel} → ${reward.newLevel}")
+            window.show {
+                NarsilTheme {
+                    RewardOverlay(state = reward, onContinue = { window.dismiss() })
+                }
+            }
         }
     }
 
