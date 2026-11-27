@@ -1,0 +1,52 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Safe zone: 66dp centered inside 108dp (approx. coordinates 21..87) -->
+
+    <!-- Subtle twilight echo arc framing the reforged blade -->
+    <path
+        android:pathData="M29,63 A27,27 0 1,1 79,63"
+        android:strokeColor="#9FA8DA"
+        android:strokeAlpha="0.55"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round" />
+
+    <!-- Upper blade half (silver-alabaster) -->
+    <path
+        android:fillColor="#F3EFE9"
+        android:pathData="M54,24 L60,33 L58.5,48.5 L49.5,51.5 L48,33 Z" />
+
+    <!-- Lower blade half (warm steel) -->
+    <path
+        android:fillColor="#D7CEC0"
+        android:pathData="M49.5,54.5 L58.5,51.5 L58,66 L50,66 Z" />
+
+    <!-- Glowing forged-amber kintsugi seam (re-forged Narsil motif) -->
+    <path
+        android:pathData="M47,53 L61,49"
+        android:strokeColor="#F2A359"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round" />
+
+    <!-- Crossguard -->
+    <path
+        android:pathData="M41,66 L67,66"
+        android:strokeColor="#F2A359"
+        android:strokeWidth="3.6"
+        android:strokeLineCap="round" />
+
+    <!-- Grip -->
+    <path
+        android:pathData="M54,68 L54,78"
+        android:strokeColor="#C1B7AA"
+        android:strokeWidth="3.6"
+        android:strokeLineCap="round" />
+
+    <!-- Pommel spark -->
+    <path
+        android:fillColor="#5CC497"
+        android:pathData="M54,81 m-3,0 a3,3 0,1 1,6 0 a3,3 0,1 1,-6 0" />
+</vector>
