@@ -1,0 +1,38 @@
+package cz.narsil.ui.screens.home
+
+import androidx.lifecycle.ViewModel
+import cz.narsil.ui.components.AvatarState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+enum class ZoneStatus(val label: String) {
+    HOME("Doma · ochrana aktivní"),
+    AWAY("Venku · Narsil mlčí"),
+    UNKNOWN("Zóna nezjištěna")
+}
+
+data class HomeUiState(
+    val level: Int = 4,
+    val levelTitle: String = "Kovář klidu",
+    val currentXp: Int = 1860,
+    val avatarState: AvatarState = AvatarState.ENERGIZED,
+    val avatarSummary7Days: String = "Posledních 7 dní: 5 výher · 420 dřepů",
+    val reclaimedMinutesToday: Int = 45,
+    val feedMinutesToday: Int = 14,
+    val wonDaysTotal: Int = 11,
+    val streakDays: Int = 6,
+    val availableJokers: Int = 2,
+    val stepsToday: Int = 4820,
+    val stepGoal: Int = 6000,
+    val availableStepMinutes: Int = 40,
+    val debtMinutes: Int = 0,
+    val contractCompletedToday: Boolean = false,
+    val plannedContentSummary: String = "Přednáška o Rustu, 1 díl seriálu",
+    val zoneStatus: ZoneStatus = ZoneStatus.HOME
+)
+
+class HomeViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+}
