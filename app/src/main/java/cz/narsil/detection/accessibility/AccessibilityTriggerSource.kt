@@ -10,6 +10,7 @@ import cz.narsil.core.SettingsRepository
 import cz.narsil.core.Surface
 import cz.narsil.detection.youtube.EndScreenFilter
 import cz.narsil.detection.youtube.VideoChainTracker
+import cz.narsil.detection.youtube.VideoWatchTracker
 import cz.narsil.detection.youtube.YouTubePlayback
 import kotlinx.coroutines.withTimeoutOrNull
 import cz.narsil.core.TriggerReason
@@ -60,6 +61,7 @@ class AccessibilityTriggerSource(
     private val chain = VideoChainTracker()
     private val feedBehavior = FeedBehavior()
     private val endScreen = EndScreenFilter()
+    private val watch = VideoWatchTracker()
     private val lastGeneric = HashMap<String, Surface?>()
     private val lock = Mutex()
     private var last: ForegroundSnapshot? = null
@@ -72,6 +74,11 @@ class AccessibilityTriggerSource(
     /** Probíhající úsek nekonečného obsahu (pro ukládání v 121 a UI); null = žádná relace. */
     val current: StateFlow<ConsumptionEvent?> = _current.asStateFlow()
 
+    private val _videoFinished = MutableSharedFlow<VideoWatchTracker.Finished>(extraBufferCapacity = 4)
+
+    /** Dosledované video doma (156): podnět pro otázku „Co ti to video dalo?“. Hot stream bez replay. */
+    val videoFinished: Flow<VideoWatchTracker.Finished> = _videoFinished.asSharedFlow()
+
     private val _progressPercent = MutableStateFlow<Int?>(null)
 
     /**
@@ -79,6 +86,14 @@ class AccessibilityTriggerSource(
      * Zaokrouhleno na celá procenta: StateFlow vydá novou hodnotu (a overlay překreslí) jen při změně.
      */
     val progressPercent: StateFlow<Int?> = _progressPercent.asStateFlow()
+
+    private val _watchingVideo = MutableStateFlow(false)
+
+    /**
+     * Doma běží přehrávač jednoho videa (156). Přehrávač YouTube během videa nehlásí události, konec videa
+     * pro otázku „Co ti to video dalo?“ proto `EchoOverlayStarter` dočte vlastním čtením okna.
+     */
+    val watchingVideo: StateFlow<Boolean> = _watchingVideo.asStateFlow()
 
     private val _waitingForVideoEnd = MutableStateFlow(false)
 
@@ -150,7 +165,10 @@ class AccessibilityTriggerSource(
         }
         persist(now)
         // Řetězení (137): přehrávač jednoho videa doma ve sledované aplikaci (surface je null mimo sledované).
-        val newVideo = chain.observe(surface == Surface.VIDEO && context == ComfortContext.HOME, video, now)
+        val onVideoHome = surface == Surface.VIDEO && context == ComfortContext.HOME
+        watch.observe(onVideoHome, snapshot.packageName, video, now)?.let { _videoFinished.tryEmit(it) }
+        _watchingVideo.value = onVideoHome
+        val newVideo = chain.observe(onVideoHome, video, now)
         if (newVideo != null) scope.launch { evaluate(newVideo, snapshot) }
     }
 

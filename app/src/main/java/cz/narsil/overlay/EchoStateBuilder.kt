@@ -46,13 +46,15 @@ object EchoStateBuilder {
         exercise: Exercise = Exercise.SQUATS,
         /** Opakování na odemčení z Nastavení (136). */
         reps: Int = ExerciseText.target(exercise),
+        /** Věta z odpovědí „Co ti to video dalo?“ (156); má přednost před plánem v popisku. */
+        valueNote: String? = null,
     ): EchoContent {
         val firstTask = contract?.tasks?.firstOrNull()?.title ?: contract?.plannedContent?.firstOrNull()
         val fallback = firstTask?.let { "Dnes jsi chtěl: $it" }
         val minutes = (trigger.event.durationMillis / 60_000).toInt()
         val ui = EchoUiState(
             sourceAppName = appName(trigger.event.packageName),
-            videoCaption = fallback ?: "Scrolluješ už $minutes min.",
+            videoCaption = valueNote ?: fallback ?: "Scrolluješ už $minutes min.",
             // Obrazovka 310 počítá s kroky; zůstatek v minutách převedeme zpět na kroky podle kurzu.
             availableSteps = movement.balanceMinutes * MovementRates.STEPS_PER_MINUTE,
             stepCostForTenMin = MovementRates.MINUTES_PER_UNLOCK * MovementRates.STEPS_PER_MINUTE,

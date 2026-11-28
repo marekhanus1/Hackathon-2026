@@ -20,7 +20,14 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
  * „zobrazovat přes ostatní aplikace“ a na MIUI je spolehlivější), jinak `TYPE_APPLICATION_OVERLAY`
  * se `SYSTEM_ALERT_WINDOW`. Volat z hlavního vlákna (metody si to zajistí samy).
  */
-class EchoOverlayWindow(private val context: Context) {
+class EchoOverlayWindow(
+    private val context: Context,
+    /**
+     * Spodní panel (156): jen výška obsahu u dolního okraje, nebere fokus (zpět i klávesnice patří aplikaci)
+     * a dotyky mimo panel jdou do aplikace pod ním.
+     */
+    private val bottomPanel: Boolean = false,
+) {
     private val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val main = Handler(Looper.getMainLooper())
     private var view: ComposeView? = null
@@ -70,7 +77,7 @@ class EchoOverlayWindow(private val context: Context) {
         owner = null
     }
 
-    private fun layoutParams() = WindowManager.LayoutParams(
+    private fun layoutParams() = if (bottomPanel) panelParams() else WindowManager.LayoutParams(
         WindowManager.LayoutParams.MATCH_PARENT,
         WindowManager.LayoutParams.MATCH_PARENT,
         if (context is AccessibilityService) WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
@@ -81,6 +88,20 @@ class EchoOverlayWindow(private val context: Context) {
     ).apply {
         gravity = Gravity.CENTER
         softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+    }
+
+    private fun panelParams() = WindowManager.LayoutParams(
+        WindowManager.LayoutParams.MATCH_PARENT,
+        WindowManager.LayoutParams.WRAP_CONTENT,
+        if (context is AccessibilityService) WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+        else WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+        PixelFormat.TRANSLUCENT,
+    ).apply {
+        gravity = Gravity.BOTTOM
+        title = "NarsilVideoFeedback"
     }
 
     private inline fun runOnMain(crossinline block: () -> Unit) {

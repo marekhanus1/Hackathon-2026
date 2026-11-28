@@ -22,6 +22,14 @@ import cz.narsil.overlay.InterventionRecords
 import cz.narsil.overlay.HomeNavigator
 import cz.narsil.overlay.ScrollProgressOverlay
 import cz.narsil.overlay.ScrollProgressStyle
+import cz.narsil.overlay.EchoStateBuilder
+import cz.narsil.overlay.VideoFeedback
+import cz.narsil.overlay.VideoFeedbackController
+import cz.narsil.core.ComfortContext
+import cz.narsil.core.HistoryRating
+import cz.narsil.core.data.DayKey
+import cz.narsil.core.data.VideoRatingEntity
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -45,6 +53,11 @@ object EchoOverlayStarter {
     private var progressBar: ScrollProgressOverlay? = null
     private var progressJob: Job? = null
 
+    /** Otázka „Co ti to video dalo?“ (156) a její podněty (dosledované video, konec zaplaceného času). */
+    private var feedback: VideoFeedbackController? = null
+    private var feedbackJob: Job? = null
+    private var paidTimeJob: Job? = null
+
     private val _ready = MutableStateFlow(false)
 
     /** Ozvěna připravená (běží služba přístupnosti). StateFlow, ať ho Compose sleduje. */
@@ -56,6 +69,18 @@ object EchoOverlayStarter {
         c.show(trigger)
         return true
     }
+
+    /** Panel po konci videa počká, jestli ve stejné chvíli nepřijde Ozvěna. */
+    private const val FEEDBACK_DELAY_MILLIS = 2_000L
+
+    /** Po vypršení zaplaceného času dát detekci tik (5 s) na případnou Ozvěnu. */
+    private const val PAID_TIME_GRACE_MILLIS = 8_000L
+
+    /** Všechny odpovědi pro větu v Ozvěně (156). Chyba = žádné. */
+    private suspend fun loadRatings(): List<HistoryRating> = runCatching {
+        NarsilDatabase.get(ServiceLocator.appContext).videoRatingDao().observeAll().first()
+            .map { HistoryRating(it.atMillis, it.title, it.intent, it.rating) }
+    }.getOrDefault(emptyList())
 
     fun start() {
         val sl = ServiceLocator
@@ -70,7 +95,8 @@ object EchoOverlayStarter {
         // 134: během čekání na konec videa číst okno samo (YouTube při přehrávání nehlásí události).
         (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.let { source ->
             sl.appScope.launch {
-                source.waitingForVideoEnd.collectLatest { waiting ->
+                // 156: i během sledování videa doma – konec videa spouští otázku „Co ti to video dalo?“.
+                combine(source.waitingForVideoEnd, source.watchingVideo) { a, b -> a || b }.distinctUntilChanged().collectLatest { waiting ->
                     while (waiting) {
                         delay(VIDEO_POLL_MILLIS)
                         runCatching { NarsilAccessibilityService.instance?.pollForeground() }
@@ -86,6 +112,10 @@ object EchoOverlayStarter {
                 progressJob?.cancel()
                 progressBar?.dismiss()
                 progressBar = null
+                feedbackJob?.cancel()
+                paidTimeJob?.cancel()
+                feedback?.dismiss()
+                feedback = null
                 _ready.value = false
                 if (service == null) return@collect
                 val triggers = sl.interventionTriggerSource
@@ -110,6 +140,19 @@ object EchoOverlayStarter {
                     onResult = { r ->
                         if (r.accepted) {
                             NarsilDatabase.get(sl.appContext).interventionDao().insert(InterventionRecords.entity(r, System.currentTimeMillis()))
+                        }
+                        // 156: po vypršení zaplaceného času „Co ti daly ty minuty?“ (když už neběží další Ozvěna).
+                        if (r.unlockedMinutes > 0) {
+                            val app = EchoStateBuilder.appName(r.trigger.event.packageName)
+                            paidTimeJob?.cancel()
+                            paidTimeJob = sl.appScope.launch {
+                                delay(sl.unlockTimer.remainingMillis() + PAID_TIME_GRACE_MILLIS)
+                                feedback?.ask(
+                                    title = VideoFeedback.feedTitle(app),
+                                    caption = VideoFeedback.feedCaption(r.unlockedMinutes, app),
+                                    question = VideoFeedbackController.QUESTION_FEED,
+                                )
+                            }
                         }
                     },
                     squatsForUnlock = {
@@ -144,7 +187,36 @@ object EchoOverlayStarter {
                     // 157: dialog kamery až při prvních dřepech; okno Ozvěny se na jeho dobu schová.
                     requestCamera = { CameraPermissionActivity.start(service) },
                     cameraResults = CameraPermissionActivity.results,
+                    valueNote = { t ->
+                        VideoFeedback.echoNote(t, EchoStateBuilder.appName(t.event.packageName), loadRatings(), DayKey.startMillis(DayKey.today()))
+                    },
+                    onEchoShown = { feedback?.dismiss() },
                 ).also { it.start() }
+                val echo = controller
+                feedback = VideoFeedbackController(
+                    window = EchoOverlayWindow(service, bottomPanel = true),
+                    scope = sl.appScope,
+                    isEchoShowing = { echo?.isShowing == true },
+                    isHome = { sl.contextRepository.context.value == ComfortContext.HOME },
+                    dayStartMillis = { DayKey.startMillis(DayKey.today()) },
+                    onAnswer = { title, value ->
+                        NarsilDatabase.get(sl.appContext).videoRatingDao().insert(
+                            VideoRatingEntity(atMillis = System.currentTimeMillis(), title = title, intent = value.label, rating = value.rating),
+                        )
+                        sl.gamificationEngine.onVideoRated(value.rating)
+                    },
+                )
+                (triggers as? AccessibilityTriggerSource)?.let { source ->
+                    feedbackJob = sl.appScope.launch {
+                        source.videoFinished.collect { f ->
+                            // Konec videa může zároveň spustit Ozvěnu (134, 137): ta má přednost, panel počká na ni.
+                            delay(FEEDBACK_DELAY_MILLIS)
+                            val title = VideoFeedback.videoTitle(f.title)
+                            Log.i(TAG, "dosledováno: „$title“ (${f.watchedMillis / 1000} s, konec=${f.ended})")
+                            feedback?.ask(title)
+                        }
+                    }
+                }
                 _ready.value = true
                 Log.i(TAG, "Ozvěna připravena (fakes=${sl.useFakes})")
             }
