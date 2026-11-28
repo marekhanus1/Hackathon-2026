@@ -3,7 +3,7 @@ status: in-progress
 owner: stepan
 agent: codex
 branch: stepan/codex/332-flat-home
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/128
 ---
 
 # 332 – Flat redesign hlavní obrazovky
