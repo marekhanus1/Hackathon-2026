@@ -9,7 +9,7 @@ pr:
 # 120 – YouTube: název videa a řetězení
 
 ## Cíl
-Z YouTube (aplikace i web v Chrome) číst název videa přes Accessibility, sledovat řetězení neplánovaných videí a u každého volat `ContentMatcher.isPlanned(název, plán)`. Plánované video projde zdarma (PLANNED_FREE), řetězení neplánovaných spustí zásah. Jedno video z odkazu z chatu nic nespustí.
+Z YouTube (aplikace i web ve Firefoxu, viz docs/decisions.md) číst název videa přes Accessibility, sledovat řetězení neplánovaných videí a u každého volat `ContentMatcher.isPlanned(název, plán)`. Plánované video projde zdarma (PLANNED_FREE), řetězení neplánovaných spustí zásah. Jedno video z odkazu z chatu nic nespustí.
 
 ## Soubory
 - app/src/main/java/cz/narsil/detection/youtube/
