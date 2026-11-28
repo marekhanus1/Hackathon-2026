@@ -13,13 +13,20 @@ sealed class NarsilRoute(val route: String, val title: String) {
     data object Mirror : NarsilRoute("mirror", "Zrcadlo")
     data object Badges : NarsilRoute("badges", "Odznaky")
     data object Onboarding : NarsilRoute("onboarding", "Onboarding")
-    data object Verify : NarsilRoute("verify", "Ověření úkolu")
+    /** Ověření úkolu; s `?taskId=` rovnou pro konkrétní úkol (334), bez něj → [VerifyPick]. */
+    data object Verify : NarsilRoute("verify", "Ověření úkolu") {
+        const val ARG_TASK_ID = "taskId"
+        const val PATTERN = "verify?$ARG_TASK_ID={$ARG_TASK_ID}"
+        fun forTask(taskId: Long): String = "verify?$ARG_TASK_ID=$taskId"
+    }
+    /** Výběr úkolu k ověření (334). */
+    data object VerifyPick : NarsilRoute("verify_pick", "Který úkol ověříš?")
     data object Settings : NarsilRoute("settings", "Nastavení")
     data object Demo : NarsilRoute("demo", "Demo panel")
 
     companion object {
         val start: NarsilRoute get() = Home
         val all: List<NarsilRoute>
-            get() = listOf(Home, Contract, Squat, Verify, EchoPreview, Mirror, Badges, Onboarding, Settings, Demo)
+            get() = listOf(Home, Contract, Squat, Verify, VerifyPick, EchoPreview, Mirror, Badges, Onboarding, Settings, Demo)
     }
 }

@@ -28,6 +28,67 @@ enum class ProofMode(val label: String, val hint: String) {
 
 val ProofMode.isPhoto: Boolean get() = this != ProofMode.TEXT
 
+/** Stav úkolu v seznamech (domov, výběr, záložky ověření) – 334. */
+enum class TaskItemStatus { PENDING, VERIFIED, REJECTED, VERIFY_LATER, EXHAUSTED }
+
+/**
+ * Úkol dnešní smlouvy pro seznamy (334). [EXHAUSTED] = zamítnutý bez zbylých pokusů.
+ * [canVerify] = jde na něj odpovídat (tlačítko „Ověřit“).
+ */
+data class TaskItem(
+    val id: Long,
+    val title: String,
+    val type: TaskType,
+    val rewardMinutes: Int = type.defaultRewardMinutes,
+    val status: TaskItemStatus = TaskItemStatus.PENDING,
+    val attemptsUsed: Int = 0,
+    val maxAttempts: Int = 3,
+    val goal: String = "",
+) {
+    val attemptsLeft: Int get() = (maxAttempts - attemptsUsed).coerceAtLeast(0)
+    val canVerify: Boolean get() = status == TaskItemStatus.PENDING || status == TaskItemStatus.REJECTED
+    val isDone: Boolean get() = status == TaskItemStatus.VERIFIED
+
+    /** Zkratka kategorie do čtverečku („ŠK“). */
+    val short: String
+        get() = when (type) {
+            TaskType.MOVEMENT -> "PO"
+            TaskType.SCHOOL -> "ŠK"
+            TaskType.WORK -> "PR"
+            TaskType.OTHER -> "OS"
+        }
+
+    /** Krátký název do záložky (první slovo, nejvýš 12 znaků). */
+    val tabLabel: String
+        get() = title.trim().split(' ').firstOrNull().orEmpty().let { if (it.length > 12) it.take(11) + "…" else it }.ifBlank { short }
+
+    /** Druhý řádek v seznamu domova: kategorie + stav. */
+    val meta: String
+        get() = "${type.label} · " + when (status) {
+            TaskItemStatus.VERIFIED -> "ověřeno"
+            TaskItemStatus.PENDING -> "fotka nebo popis · +$rewardMinutes min"
+            TaskItemStatus.REJECTED -> "zamítnuto, ${attemptsLeftText(attemptsLeft)}"
+            TaskItemStatus.EXHAUSTED -> "zamítnuto, pokusy vyčerpány"
+            TaskItemStatus.VERIFY_LATER -> "ověří se po připojení"
+        }
+
+    /** Řádek pokusů na ověření („Pokus 1 ze 3“, „Minule zamítnuto · pokus 2 ze 3“). */
+    val attemptsLine: String
+        get() = when {
+            status == TaskItemStatus.EXHAUSTED -> "Vyčerpány všechny $maxAttempts pokusy"
+            status == TaskItemStatus.REJECTED -> "Minule zamítnuto · pokus ${attemptsUsed + 1} ze $maxAttempts"
+            else -> "Pokus ${(attemptsUsed + 1).coerceAtMost(maxAttempts)} ze $maxAttempts"
+        }
+
+    val isWarning: Boolean get() = status == TaskItemStatus.REJECTED || status == TaskItemStatus.EXHAUSTED
+}
+
+internal fun attemptsLeftText(n: Int): String = when (n) {
+    1 -> "zbývá 1 pokus"
+    in 2..4 -> "zbývají $n pokusy"
+    else -> "zbývá $n pokusů"
+}
+
 enum class VerificationStatus {
     PENDING,
     VERIFYING,
@@ -53,7 +114,11 @@ data class VerifyTaskUiState(
     /** XP za ověřený úkol (ukáže karta „Ověřeno“), 0 = neukazovat. */
     val rewardXp: Int = 0,
     /** Další neověřený úkol smlouvy (tlačítko „Další úkol“), null = žádný. */
-    val nextTaskTitle: String? = null
+    val nextTaskTitle: String? = null,
+    /** Úkoly dnešní smlouvy pro záložky nahoře (334); prázdné = bez záložek. */
+    val tasks: List<TaskItem> = emptyList(),
+    /** Úkol, na který se právě odpovídá. */
+    val selectedTaskId: Long? = null,
 ) {
     val remainingAttempts: Int
         get() = (maxAttempts - attemptsUsed).coerceAtLeast(0)
