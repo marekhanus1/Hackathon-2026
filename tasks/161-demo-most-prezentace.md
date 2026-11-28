@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/161-demo-most-prezentace
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/129
 ---
 
 # 161 – Demo most: telefon ↔ prezentace
