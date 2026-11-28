@@ -209,7 +209,11 @@ fun SettingsScreen(
             ) {
                 OptionRow(
                     label = "Cvik",
-                    hint = "Kliky počítá telefon položený na zemi pod obličejem.",
+                    hint = if (s.exercise == Exercise.SQUATS) {
+                        "Dřepy počítá kamera, telefon opři naproti sobě tak, aby tě viděl celého."
+                    } else {
+                        "Kliky počítá telefon položený na zemi pod obličejem."
+                    },
                     options = Exercise.entries,
                     selected = s.exercise,
                     recommended = Settings().exercise,
