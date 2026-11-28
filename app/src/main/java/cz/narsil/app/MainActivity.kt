@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -18,7 +19,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             NarsilTheme {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    NarsilNavHost()
+                    // Edge-to-edge: obsah všech obrazovek mimo stavovou a navigační lištu (i výřez a klávesnici).
+                    NarsilNavHost(Modifier.safeDrawingPadding())
                 }
             }
         }
