@@ -208,6 +208,17 @@ class AccessibilityTriggerSource(
     private fun isVideoSite(s: ForegroundSnapshot): Boolean =
         s.app == WatchedApp.YOUTUBE || (s.app == WatchedApp.FIREFOX && YouTubePlayback.isYouTubeUrl(s.url))
 
+    /**
+     * Čistý start pro demo / reset dne (161): relace, odemčení i okno po Zavřít pryč – první vstup do feedu
+     * dostane celý práh s ukazatelem (CLOSED by 10 min zasahoval hned).
+     */
+    suspend fun reset() = lock.withLock {
+        tracker.reset()
+        chain.resetAll()
+        _progressPercent.value = null
+        persist(clock(), force = true)
+    }
+
     /** Výsledek Ozvěny (114). [unlockMinutes] = odemčené minuty u PAID_STEPS, SQUATS, BORROWED. */
     suspend fun onOutcome(outcome: InterventionOutcome, unlockMinutes: Int = 10) = lock.withLock {
         when (outcome) {

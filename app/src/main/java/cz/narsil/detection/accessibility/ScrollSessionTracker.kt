@@ -181,6 +181,14 @@ class ScrollSessionTracker(
         lastSurface = saved.surface
     }
 
+    /** Čistý start (demo, reset dne – 161): bez relace, odemčení i okna po Zavřít (155). */
+    fun reset() {
+        endSession()
+        awaitingOutcome = false
+        unlockedUntil = 0
+        relapseUntil = 0
+    }
+
     /** Okno zavřeno bez volby (např. systémem): dovolí další zásah. */
     fun onDismissed() {
         awaitingOutcome = false

@@ -92,6 +92,9 @@ class VideoChainTracker(private val resetAfterMillis: Long = RESET_AFTER_MILLIS)
         unlockedUntil = untilMillis
     }
 
+    /** Čistý start (demo, reset dne – 161). */
+    fun resetAll() = onClosed()
+
     /** Okno zavřeno bez volby: další video může zasáhnout znovu. */
     fun onDismissed() {
         awaitingOutcome = false

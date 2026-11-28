@@ -5,7 +5,6 @@ import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.Exercise
-import cz.narsil.core.InterventionOutcome
 import cz.narsil.core.LlmProvider
 import cz.narsil.core.data.DayKey
 import cz.narsil.llm.client.BuildConfigLlmKeys
@@ -68,7 +67,8 @@ object DemoActions {
     suspend fun resetDay(steps: Int = MovementDebug.DEMO_STEPS) {
         sl.contextRepository.setManualOverride(null)
         sl.unlockTimer.clear()
-        (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.onOutcome(InterventionOutcome.CLOSED)
+        // Čistý start bez okna po Zavřít (155) – jinak by Ozvěna 10 min naskakovala hned, bez ukazatele.
+        (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.reset()
         MovementDebug.resetDay(sl.movementRepository, steps)
         GamificationDebug.resetDay(sl.gamificationEngine)
         (sl.contractRepository as? FakeContractRepository)?.save(FakeContractRepository.demoContract(DayKey.today()))

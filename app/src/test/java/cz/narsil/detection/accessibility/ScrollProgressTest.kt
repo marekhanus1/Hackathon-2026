@@ -85,6 +85,18 @@ class ScrollProgressTest {
     }
 
     @Test
+    fun resetClearsWindowAfterClose() {
+        val t = ScrollSessionTracker()
+        t.scroll(0, 5 * min)
+        assertNotNull(t.see(Surface.REELS, 5 * min))
+        t.onClosed(6 * min)
+        t.reset() // demo / reset dne (161)
+        t.see(null, 6 * min + 1_000)
+        assertNull(t.see(Surface.REELS, 7 * min)) // ne hned jako po Zavřít
+        assertEquals(0f, t.progress(7 * min, threshold, HOME)!!, 0.001f)
+    }
+
+    @Test
     fun hiddenOnVideo() {
         val t = ScrollSessionTracker()
         t.see(Surface.SHORTS, 0)
