@@ -20,7 +20,8 @@ data class DailyTrendPoint(
 data class ContentValueEntry(
     val channelOrFormat: String,
     val averageRating: Float,
-    val watchedMinutes: Int,
+    /** Kolik ohodnocených videí do skupiny patří (minuty sledování se neukládají). */
+    val videoCount: Int,
     val isLowValueTrap: Boolean
 )
 
@@ -42,10 +43,10 @@ private fun defaultWeeklyTrend(): List<DailyTrendPoint> = listOf(
 )
 
 private fun defaultValueEntries(): List<ContentValueEntry> = listOf(
-    ContentValueEntry("Přednášky a programování", averageRating = 4.7f, watchedMinutes = 210, isLowValueTrap = false),
-    ContentValueEntry("Dokumenty a rozhovory", averageRating = 4.3f, watchedMinutes = 145, isLowValueTrap = false),
-    ContentValueEntry("Krátké klipy a kompilace", averageRating = 1.6f, watchedMinutes = 185, isLowValueTrap = true),
-    ContentValueEntry("Nekonečné herní streamy v noci", averageRating = 2.0f, watchedMinutes = 110, isLowValueTrap = true)
+    ContentValueEntry("Přednášky a programování", averageRating = 4.7f, videoCount = 12, isLowValueTrap = false),
+    ContentValueEntry("Dokumenty a rozhovory", averageRating = 4.3f, videoCount = 8, isLowValueTrap = false),
+    ContentValueEntry("Krátké klipy a kompilace", averageRating = 1.6f, videoCount = 15, isLowValueTrap = true),
+    ContentValueEntry("Nekonečné herní streamy v noci", averageRating = 2.0f, videoCount = 6, isLowValueTrap = true)
 )
 
 class MirrorViewModel : ViewModel() {

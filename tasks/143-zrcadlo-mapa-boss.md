@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/143-zrcadlo-mapa-boss
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/103
 ---
 
 # 143 – Zrcadlo: mapa hodnoty a boss z databáze
@@ -17,3 +17,6 @@ ukázkových dat. Navazuje na `MirrorStats` (121) a `HistoryRepository` (140). S
 - `ui/screens/mirror/` (Jan, Marek povolil) – jen text položky mapy hodnoty
 
 ## Poznámky
+- `MirrorStats.applyHistory`: přežitý boss = dny s XP BOSS, okno pevně 21:00–22:00 (SPEC 8); mapa hodnoty z `video_ratings`
+  (skupiny podle názvu bez čísla / záměru, past = průměr ≤ 2). Prázdná historie = připravená čísla, data bez hodnocení = prázdná mapa s vysvětlením.
+- `ContentValueEntry.watchedMinutes` → `videoCount` (minuty sledování se neukládají).

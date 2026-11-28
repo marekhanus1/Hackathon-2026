@@ -7,6 +7,9 @@ import cz.narsil.core.data.ConsumptionEventEntity
 import cz.narsil.core.data.DayKey
 import cz.narsil.core.data.InterventionEntity
 import cz.narsil.gamification.GamificationRules
+import cz.narsil.core.History
+import cz.narsil.core.HistoryRating
+import cz.narsil.ui.screens.mirror.ContentValueEntry
 import cz.narsil.ui.screens.mirror.DailyTrendPoint
 import cz.narsil.ui.screens.mirror.MirrorUiState
 import java.time.LocalDate
@@ -15,7 +18,7 @@ import java.time.ZoneId
 /**
  * Zrcadlo (322) ze skutečných dat v Room (121): minuty feedu z detekce, získané minuty jako v souboji
  * (Zavřít × [GamificationRules.RECLAIMED_MINUTES_PER_CLOSE] + minuty za úkoly), dřepy ze zásahů.
- * Čistý Kotlin kvůli testům; boss a mapa hodnoty zůstávají z UI (připravená data).
+ * Čistý Kotlin kvůli testům. Boss a mapa hodnoty z [HistoryRepository] (143, viz [applyHistory]).
  */
 object MirrorStats {
     const val DAYS = 21
@@ -63,5 +66,52 @@ object MirrorStats {
             averageDailySquats = days.sumOf { it.squats } / days.size.coerceAtLeast(1),
             weeklyTrend = weeks,
         )
+    }
+
+    private val TRAILING_NUMBER = Regex("""\s*#?\d+\s*$""")
+
+    /**
+     * Boss a mapa hodnoty z historie (143). Prázdná historie (žádný den s daty, zásah ani hodnocení)
+     * = [base] beze změny, jako u [apply]. Boss má pevné okno 21:00–22:00 (SPEC 8), počítají se dny,
+     * kdy ho gamifikace připsala. Bez hodnocení zůstane mapa prázdná (obrazovka vysvětlí proč).
+     */
+    fun applyHistory(base: MirrorUiState, history: History): MirrorUiState {
+        val empty = history.days.none { it.hasData } && history.interventions.isEmpty() && history.ratings.isEmpty()
+        if (empty) return base
+        return base.copy(
+            criticalBossHour = "%d:00 – %d:00".format(GamificationRules.BOSS_START_HOUR, GamificationRules.BOSS_END_HOUR),
+            bossSurvivedDays = history.days.count { it.bossSurvived },
+            valueEntries = valueEntries(history.ratings),
+        )
+    }
+
+    /**
+     * Mapa hodnoty: videa podle názvu bez pořadového čísla („Když je pondělí #312“ → „Když je pondělí“);
+     * osamocená videa podle záměru, nebo do dvou skupin bez záměru podle hodnocení. Past = průměr ≤ 2.
+     * Kanál ani minuty sledování se neukládají (`video_ratings` má jen název, záměr a hodnocení).
+     */
+    fun valueEntries(ratings: List<HistoryRating>, limit: Int = 6): List<ContentValueEntry> {
+        if (ratings.isEmpty()) return emptyList()
+        val byStem = ratings.groupBy { it.title.replace(TRAILING_NUMBER, "").trim().ifEmpty { it.title } }
+        val groups = linkedMapOf<String, List<HistoryRating>>()
+        byStem.forEach { (stem, list) ->
+            val key = when {
+                list.size > 1 -> stem
+                list.single().intent != null -> "Se záměrem: ${list.single().intent}"
+                list.single().rating <= 2 -> "Bez záměru · hodnoceno nízko"
+                else -> "Bez záměru · ostatní"
+            }
+            groups[key] = groups[key].orEmpty() + list
+        }
+        return groups.map { (name, list) ->
+            val avg = list.map { it.rating }.average().toFloat()
+            ContentValueEntry(
+                channelOrFormat = name,
+                averageRating = Math.round(avg * 10) / 10f,
+                videoCount = list.size,
+                isLowValueTrap = avg <= 2f,
+            )
+        }.sortedWith(compareByDescending<ContentValueEntry> { it.isLowValueTrap }.thenByDescending { it.videoCount }.thenBy { it.channelOrFormat })
+            .take(limit)
     }
 }
