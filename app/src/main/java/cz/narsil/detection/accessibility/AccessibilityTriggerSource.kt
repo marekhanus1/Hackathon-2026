@@ -7,6 +7,8 @@ import cz.narsil.core.InterventionOutcome
 import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.InterventionTriggerSource
 import cz.narsil.core.SettingsRepository
+import cz.narsil.core.Surface
+import cz.narsil.detection.youtube.YouTubePlayback
 import cz.narsil.core.TriggerReason
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -63,22 +65,33 @@ class AccessibilityTriggerSource(
         val surface = SurfaceClassifier.classify(snapshot)
         val now = snapshot.atMillis
         val context = contextRepository.context.value
-        val hit = tracker.observe(snapshot.packageName, surface, context, now, thresholdMillis(), scrolled)
+        val hit = tracker.observe(
+            snapshot.packageName, surface, context, now, thresholdMillis(), scrolled,
+            video = snapshot.video,
+            onVideoSite = isVideoSite(snapshot),
+        )
         val session = tracker.session
-        _current.value = session?.takeIf { surface?.isEndless == true && context == ComfortContext.HOME }?.let {
-            ConsumptionEvent(
-                packageName = it.packageName,
-                surface = it.surface,
-                startedAtMillis = it.startedAtMillis,
-                durationMillis = now - it.startedAtMillis,
-                url = snapshot.url,
-            )
-        }
+        // Relace běží na nekonečném povrchu, nebo pokračuje na videu (134).
+        val counting = surface != null && context == ComfortContext.HOME &&
+            (surface.isEndless || (surface == Surface.VIDEO && session?.surface == Surface.VIDEO))
+        _current.value = session?.takeIf { counting }?.let { eventOf(it, now, snapshot) }
         if (hit != null) {
-            val event = _current.value ?: return@withLock
+            // Zásah na hranici videa může přijít z jiné stránky YouTube (feed): událost z relace.
+            val event = _current.value ?: eventOf(hit, now, snapshot)
             _triggers.tryEmit(InterventionTrigger(event, TriggerReason.ENDLESS_SCROLL, now))
         }
     }
+
+    private fun eventOf(s: ScrollSessionTracker.Session, now: Long, snapshot: ForegroundSnapshot) = ConsumptionEvent(
+        packageName = s.packageName,
+        surface = s.surface,
+        startedAtMillis = s.startedAtMillis,
+        durationMillis = now - s.startedAtMillis,
+        url = snapshot.url,
+    )
+
+    private fun isVideoSite(s: ForegroundSnapshot): Boolean =
+        s.app == WatchedApp.YOUTUBE || (s.app == WatchedApp.FIREFOX && YouTubePlayback.isYouTubeUrl(s.url))
 
     private fun thresholdMillis(): Long =
         settings.settings.value.demoThresholdSec?.let { it * 1_000L } ?: DEFAULT_THRESHOLD_MILLIS

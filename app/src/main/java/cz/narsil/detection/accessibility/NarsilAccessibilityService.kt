@@ -6,6 +6,8 @@ import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import cz.narsil.detection.youtube.VideoPlayback
+import cz.narsil.detection.youtube.YouTubePlayback
 import java.lang.ref.WeakReference
 
 /**
@@ -22,6 +24,8 @@ class NarsilAccessibilityService : AccessibilityService() {
     private var lastClassName: String? = null
     private var lastPackage: String? = null
     private var lastSelectedTab: String? = null
+    /** Poslední URL Firefoxu; platí, dokud je Firefox v popředí (schovaný adresní řádek, 134). */
+    private var lastFirefoxUrl: String? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -47,6 +51,7 @@ class NarsilAccessibilityService : AccessibilityService() {
         }
         val now = System.currentTimeMillis()
         val app = WatchedApp.of(pkg)
+        if (app != WatchedApp.FIREFOX && kind == SnapshotKind.WINDOW_CHANGED) lastFirefoxUrl = null
 
         if (app == null) {
             // Chat, plocha, jiná aplikace: jen balíček a jen při změně okna, obsah se nečte.
@@ -71,15 +76,16 @@ class NarsilAccessibilityService : AccessibilityService() {
         }
         val root = rootInActiveWindow
         val dumpNow = dumpTree && kind == SnapshotKind.WINDOW_CHANGED
-        var result = root?.let { runCatching { WindowReader.read(it, app, dumpToLog = dumpNow) }.getOrNull() }
+        var result = root?.let { runCatching { WindowReader.read(it, app, dumpToLog = dumpNow, fallbackUrl = lastFirefoxUrl) }.getOrNull() }
         // Přepnutí záložky v aplikaci nevyvolá WINDOW_CHANGED: při změně záložky vypsat strom znovu.
         if (result != null && result.selectedTab != lastSelectedTab) {
             lastSelectedTab = result.selectedTab
             if (dumpTree && !dumpNow) {
                 Log.d(TAG, "záložka: ${result.selectedTab}")
-                result = runCatching { WindowReader.read(root, app, dumpToLog = true) }.getOrNull() ?: result
+                result = runCatching { WindowReader.read(root, app, dumpToLog = true, fallbackUrl = lastFirefoxUrl) }.getOrNull() ?: result
             }
         }
+        if (app == WatchedApp.FIREFOX) lastFirefoxUrl = result?.url ?: lastFirefoxUrl
         val snapshot = ForegroundSnapshot(
             packageName = pkg,
             app = app,
@@ -90,11 +96,20 @@ class NarsilAccessibilityService : AccessibilityService() {
             viewIds = result?.viewIds.orEmpty(),
             texts = result?.texts.orEmpty(),
             selectedTab = result?.selectedTab,
+            video = result?.let { videoOf(app, it, now) },
         )
         AccessibilityEvents.emit(snapshot)
+        snapshot.video?.takeIf { it.ended || it.durationMillis != null }?.let { Log.d(TAG, "video: $it") }
         if (kind == SnapshotKind.WINDOW_CHANGED || snapshot.url != null) {
             Log.d(TAG, "popředí: $app ($pkg) okno=${snapshot.className} tab=${snapshot.selectedTab} url=${snapshot.url} ids=${snapshot.viewIds.size}")
         }
+    }
+
+    /** Stav přehrávače YouTube (134): aplikace z textů okna, Firefox jen na stránce jednoho videa. */
+    private fun videoOf(app: WatchedApp, r: WindowReader.Result, now: Long): VideoPlayback? = when (app) {
+        WatchedApp.YOUTUBE -> YouTubePlayback.parse(null, r.texts, now)
+        WatchedApp.FIREFOX -> YouTubePlayback.videoIdFromUrl(r.url)?.let { YouTubePlayback.parse(it, r.playerTexts, now) }
+        else -> null
     }
 
     override fun onInterrupt() = Unit
