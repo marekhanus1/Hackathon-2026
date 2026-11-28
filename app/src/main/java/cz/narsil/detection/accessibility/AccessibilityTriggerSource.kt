@@ -53,6 +53,8 @@ class AccessibilityTriggerSource(
      * Tik podle něj nepoužije zastaralý snímek sledované aplikace, když uživatel odešel (plocha bez události).
      */
     private val foreground: () -> String? = { null },
+    /** Uložení relace přes smrt procesu (MIUI); null = jen v paměti (testy). */
+    private val persistence: SessionPersistence? = null,
 ) : InterventionTriggerSource {
     private val tracker = ScrollSessionTracker()
     private val chain = VideoChainTracker()
@@ -86,7 +88,11 @@ class AccessibilityTriggerSource(
      */
     val waitingForVideoEnd: StateFlow<Boolean> = _waitingForVideoEnd.asStateFlow()
 
+    private var lastSaved: SavedSession? = null
+
     init {
+        // Po restartu procesu (systém Narsil vypnul) pokračovat v rozpracované relaci a odemčeném čase.
+        runCatching { persistence?.load() }.getOrNull()?.let { tracker.restore(it, clock()) }
         scope.launch { snapshots.collect { handle(it, scrolled = it.kind == SnapshotKind.SCROLLED) } }
         // Tik: video může běžet bez událostí (autoplay), čas relace musí běžet dál.
         scope.launch {
@@ -142,6 +148,7 @@ class AccessibilityTriggerSource(
             val event = _current.value ?: eventOf(hit, now, snapshot)
             _triggers.tryEmit(InterventionTrigger(event, TriggerReason.ENDLESS_SCROLL, now))
         }
+        persist(now)
         // Řetězení (137): přehrávač jednoho videa doma ve sledované aplikaci (surface je null mimo sledované).
         val newVideo = chain.observe(surface == Surface.VIDEO && context == ComfortContext.HOME, video, now)
         if (newVideo != null) scope.launch { evaluate(newVideo, snapshot) }
@@ -201,6 +208,23 @@ class AccessibilityTriggerSource(
             }
         }
         _progressPercent.value = null // do dalšího pozorování (snímek nebo tik) skrytý
+        persist(clock(), force = true)
+    }
+
+    /**
+     * Uloží stav relace, když se změnil (začátek, aplikace, odemčení), nebo nejvýš jednou za 15 s kvůli
+     * času posledního obsahu – zápis do SharedPreferences při každém scrollu by byl zbytečný.
+     */
+    private fun persist(now: Long, force: Boolean = false) {
+        val p = persistence ?: return
+        val current = tracker.snapshot()
+        val prev = lastSaved
+        val changed = force || current?.startedAtMillis != prev?.startedAtMillis ||
+            current?.packageName != prev?.packageName || current?.unlockedUntilMillis != prev?.unlockedUntilMillis ||
+            (current != null && prev != null && current.lastEndlessAtMillis - prev.lastEndlessAtMillis >= 15_000)
+        if (!changed) return
+        lastSaved = current
+        runCatching { p.save(current) }
     }
 
     companion object {

@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.update
 
 enum class PermissionType {
     ACCESSIBILITY,
-    OVERLAY,
     LOCATION_FOR_WIFI,
     CAMERA,
     HEALTH_CONNECT
@@ -18,7 +17,9 @@ data class PermissionItem(
     val type: PermissionType,
     val title: String,
     val oneSentenceReason: String,
-    val isGranted: Boolean
+    val isGranted: Boolean,
+    /** Nepovinné kroky průvodce nedrží; aplikace se na ně zeptá až při prvním použití. */
+    val required: Boolean = true,
 )
 
 data class OnboardingUiState(
@@ -31,11 +32,13 @@ data class OnboardingUiState(
     val miuiAutoStartDone: Boolean = false,
     val miuiBatteryDone: Boolean = false,
     val miuiBackgroundPopupDone: Boolean = false,
+    /** MIUI: Narsil zamčený v posledních aplikacích (jinak ho „Vyčistit vše“ zabije i se službou). */
+    val miuiLockDone: Boolean = false,
     /** Video pro Ozvěnu z onboardingu (SPEC 9, záloha než vznikne video ze smlouvy) – 139. */
     val video: OnboardingVideoState = OnboardingVideoState(),
 ) {
     val allRequiredGranted: Boolean
-        get() = homeWifiSsid != null && permissions.all { it.isGranted }
+        get() = homeWifiSsid != null && permissions.filter { it.required }.all { it.isGranted }
 
     /** Telefon je teď připojený k uložené domácí Wi-Fi. */
     val isOnHomeWifi: Boolean
@@ -96,12 +99,6 @@ private fun defaultPermissions(): List<PermissionItem> = listOf(
         isGranted = true
     ),
     PermissionItem(
-        type = PermissionType.OVERLAY,
-        title = "Zobrazování přes jiné aplikace",
-        oneSentenceReason = "Umožní ukázat tvoje video Ozvěny přímo přes feed v okamžiku pokušení.",
-        isGranted = false
-    ),
-    PermissionItem(
         type = PermissionType.LOCATION_FOR_WIFI,
         title = "Poloha (jen název Wi-Fi)",
         oneSentenceReason = "Android vyžaduje toto oprávnění jen proto, aby poznal domácí Wi-Fi.",
@@ -109,15 +106,17 @@ private fun defaultPermissions(): List<PermissionItem> = listOf(
     ),
     PermissionItem(
         type = PermissionType.CAMERA,
-        title = "Kamera",
-        oneSentenceReason = "Slouží pouze k večernímu videu a počítání dřepů přímo v telefonu.",
-        isGranted = false
+        title = "Kamera (nepovinné)",
+        oneSentenceReason = "Na dřepy a večerní video. Zeptáme se i sami, až ji poprvé použiješ.",
+        isGranted = false,
+        required = false,
     ),
     PermissionItem(
         type = PermissionType.HEALTH_CONNECT,
-        title = "Health Connect / Kroky",
+        title = "Kroky (nepovinné)",
         oneSentenceReason = "Načte dnešní kroky jako měnu pro odemčení odpočinku.",
-        isGranted = false
+        isGranted = false,
+        required = false,
     )
 )
 
@@ -149,6 +148,10 @@ class OnboardingViewModel : ViewModel() {
 
     fun toggleMiuiBattery() {
         _uiState.update { it.copy(miuiBatteryDone = !it.miuiBatteryDone) }
+    }
+
+    fun toggleMiuiLock() {
+        _uiState.update { it.copy(miuiLockDone = !it.miuiLockDone) }
     }
 
     fun toggleMiuiBackgroundPopup() {
