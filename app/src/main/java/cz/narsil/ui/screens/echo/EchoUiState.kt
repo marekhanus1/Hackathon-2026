@@ -17,6 +17,9 @@ enum class EchoFeeling(val label: String) {
     JINE("Jiné")
 }
 
+/** Prosba o minuty od Parťáka v Ozvěně (163): napsáno → simulovaná odpověď → odemčeno. */
+enum class FriendRequest { IDLE, ASKING, GRANTED }
+
 data class EchoUiState(
     val sourceAppName: String = "TikTok",
     val videoCaption: String = "„Večer jsi říkal, že chceš mít ráno čistou hlavu.“",
@@ -27,10 +30,12 @@ data class EchoUiState(
     val isVideoPlaying: Boolean = true,
     /** Titulek volby pohybu (232): „Udělat 20 dřepů hned“ nebo „Udělat 10 kliků hned“. */
     val exerciseOptionTitle: String = "Udělat 20 dřepů hned",
-    /** Půjčka projde: dluh po ní nepřekročí limit (SPEC 4, 5). false = tlačítko neaktivní (159). */
+    /** Parťák ještě dnes dá 10 min: nepřekročí denní limit (SPEC 4, 5, 163). false = volba neaktivní (159). */
     val canBorrow: Boolean = true,
-    /** Limit dluhu z Nastavení, pro vysvětlení u neaktivní půjčky. */
+    /** Kolik minut Parťák dá za den (Nastavení), pro vysvětlení u neaktivní volby. */
     val debtLimitMinutes: Int = 30,
+    /** Kde je prosba Parťákovi (163). */
+    val friendRequest: FriendRequest = FriendRequest.IDLE,
 )
 
 class EchoViewModel : ViewModel() {

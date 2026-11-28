@@ -260,7 +260,7 @@ private fun pageSummary(page: SettingsPage, state: SettingsUiState): Pair<String
         SettingsPage.MOVEMENT -> (
             "${if (s.exercise == Exercise.SQUATS) "Dřepy" else "Kliky"} · " +
                 "${MovementRates.STEPS_PER_MINUTE * MovementRates.MINUTES_PER_UNLOCK} kroků = ${MovementRates.MINUTES_PER_UNLOCK} min · " +
-                (if (s.debtLimitMinutes == 0) "bez půjček" else "dluh max ${s.debtLimitMinutes} min") + mark
+                (if (s.debtLimitMinutes == 0) "bez Parťáka" else "Parťák až ${s.debtLimitMinutes} min denně") + mark
             ) to false
         SettingsPage.AI -> {
             val hasKey = state.llmKeys[s.llmProvider] != false
@@ -391,12 +391,12 @@ private fun SettingsPageContent(page: SettingsPage, state: SettingsUiState, acti
                 onSelect = actions.onPushupsPerUnlock
             )
             OptionRow(
-                label = "Limit dluhu",
-                hint = "Kolik minut si můžeš půjčit. Dluh se odečte zítra, nad limit dostane zprávu Parťák.",
+                label = "Minuty od Parťáka",
+                hint = "Kolik minut ti kamarád může za den poslat, když ho v Ozvěně poprosíš. Do zítřka se nic nepřenáší.",
                 options = SettingsDefaults.DEBT_LIMIT_OPTIONS,
                 selected = s.debtLimitMinutes,
                 recommended = MovementRates.DEFAULT_DEBT_LIMIT_MINUTES,
-                format = { if (it == 0) "Nepůjčovat" else "$it min" },
+                format = { if (it == 0) "Neprosit" else "$it min" },
                 onSelect = actions.onDebtLimitMinutes
             )
         }
@@ -441,7 +441,7 @@ private fun SettingsPageContent(page: SettingsPage, state: SettingsUiState, acti
         ) {
             SwitchRow(
                 title = "Zprávy Parťákovi",
-                subtitle = "Při dluhu nad limit a při pozastavení ochrany.",
+                subtitle = "Při prosbě nad denní limit a při pozastavení ochrany.",
                 checked = s.partnerAlerts,
                 onCheckedChange = actions.onPartnerAlerts
             )
@@ -799,7 +799,7 @@ private fun SettingsDarkPreview() {
                 llmProvider = LlmProvider.GEMINI,
                 strava = StravaCardState(connected = true, demo = true),
                 protectionPausedText = "do 4:00 ráno",
-                pendingChange = PendingChange("Zvýšit limit dluhu?", listOf("Vyšší limit dluhu: 45 min místo 30 min."), 7)
+                pendingChange = PendingChange("Víc minut od Parťáka?", listOf("Víc minut od Parťáka: 45 min denně místo 30 min."), 7)
             ),
             actions = SettingsActions()
         )

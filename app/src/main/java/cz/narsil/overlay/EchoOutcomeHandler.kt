@@ -11,7 +11,7 @@ import cz.narsil.ui.screens.echo.EchoFeeling
 data class EchoResult(
     val trigger: InterventionTrigger,
     val outcome: InterventionOutcome,
-    /** Volba prošla; false = zůstatek nestačí / dluh nad limitem (nic se nestrhlo, okno jen zavřeno). */
+    /** Volba prošla; false = zůstatek nestačí / Parťák nad denním limitem (nic se nestrhlo, okno jen zavřeno). */
     val accepted: Boolean,
     val unlockedMinutes: Int,
     val xp: Int,
@@ -23,7 +23,7 @@ data class EchoResult(
  * - CLOSED: návrat na plochu, nová relace od nuly; XP čekající na potvrzení (155: po 10 min bez feedu).
  * - PAID_STEPS: strhne 10 min ze zůstatku, odemkne 10 min.
  * - SQUATS: (po 20 dřepech) zapíše dřepy, odemkne 10 min; do zůstatku se nepřičítají.
- * - BORROWED: dluh +10, odemkne 10 min; nad limitem dluhu neprojde.
+ * - BORROWED: Parťák dá 10 min na dnešek (163, dřív půjčka do zítřka); nad denním limitem neprojde.
  * Odemknutí: [timer] + [onDetectionOutcome] (`AccessibilityTriggerSource.onOutcome`). Nic nehází.
  */
 class EchoOutcomeHandler(
@@ -64,7 +64,7 @@ class EchoOutcomeHandler(
         return xp
     }
 
-    /** Půjčka projde, jen když dluh po ní nepřekročí limit (SPEC 5). */
+    /** Prosba projde, jen když minuty od Parťáka nepřekročí denní limit (SPEC 5). */
     fun canBorrow(minutes: Int = MovementRates.MINUTES_PER_UNLOCK): Boolean {
         val s = movement.state.value
         return s.debtMinutes + minutes <= s.debtLimitMinutes

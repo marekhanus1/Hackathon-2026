@@ -15,7 +15,7 @@ enum class SettingsSection(val title: String) {
 /**
  * Pravidla, aby nastavení nesloužilo jako únik z Narsilu (133).
  *
- * Zpřísnění (kratší tolerance, víc dřepů, nižší dluh, víc aplikací) platí hned. Uvolnění
+ * Zpřísnění (kratší tolerance, víc dřepů, méně minut od Parťáka, víc aplikací) platí hned. Uvolnění
  * vrací [loosenings] neprázdné a ViewModel ho pustí až po potvrzení s odpočtem [CONFIRM_DELAY_SECONDS].
  */
 object SettingsGuard {
@@ -56,7 +56,7 @@ object SettingsGuard {
             add("Méně kliků na odemčení: ${new.pushupsPerUnlock} místo ${old.pushupsPerUnlock}.")
         }
         if (new.debtLimitMinutes > old.debtLimitMinutes) {
-            add("Vyšší limit dluhu: ${new.debtLimitMinutes} min místo ${old.debtLimitMinutes} min.")
+            add("Víc minut od Parťáka: ${new.debtLimitMinutes} min denně místo ${old.debtLimitMinutes} min.")
         }
         val removed = old.trackedApps - new.trackedApps
         if (removed.isNotEmpty()) {
@@ -69,7 +69,7 @@ object SettingsGuard {
         val newPause = new.protectionPausedUntilMillis ?: 0L
         if (newPause > oldPause) add("Ochrana se pozastaví do 4:00 ráno. Ozvěna do té doby nepřijde.")
         if (old.partnerAlerts && !new.partnerAlerts) {
-            add("Parťák se nedozví o dluhu nad limit ani o pozastavení ochrany.")
+            add("Parťák se nedozví o prosbách nad limit ani o pozastavení ochrany.")
         }
     }
 

@@ -41,8 +41,8 @@ data class DayMinutes(
 /**
  * Čistá pravidla měny (SPEC 5, úkol 203):
  * `zůstatek = floor(kroky / 100) + Σ odměny úkolů − zaplacené − přenesený dluh`, nikdy pod 0.
- * Dřepy do zůstatku nejdou, odemykají hned. Dluh se na konci dne přenese do dalšího dne
- * (odečte se od jeho zůstatku) a vynuluje; co zůstatek nepokryje, propadá (nikdy netrestat).
+ * Dřepy do zůstatku nejdou, odemykají hned. Minuty od Parťáka (163, dřív půjčka) platí jen
+ * pro dnešek a do dalšího dne se nepřenáší; [DayMinutes.carriedDebt] zůstává jen pro staré záznamy.
  */
 object Currency {
     fun stepMinutes(steps: Int): Int = steps.coerceAtLeast(0) / MovementRates.STEPS_PER_MINUTE
@@ -60,12 +60,13 @@ object Currency {
     fun canPay(stepsToday: Int, day: DayMinutes, minutes: Int): Boolean =
         minutes > 0 && balance(stepsToday, day) >= minutes
 
-    /** Půjčka nepřekročí limit (SPEC 5). */
+    /** Minuty od Parťáka nepřekročí denní limit (SPEC 5). */
     fun canBorrow(debtMinutes: Int, minutes: Int, limit: Int = MovementRates.DEFAULT_DEBT_LIMIT_MINUTES): Boolean =
         debtMinutes + minutes <= limit
 
-    /** Kolik minut dluhu přejde z [yesterday] do dalšího dne. */
-    fun debtToCarry(yesterday: DayMinutes): Int = yesterday.borrowed
+    /** Kolik minut dluhu přejde z [yesterday] do dalšího dne: nic, minuty od Parťáka se nesplácí (163). */
+    @Suppress("UNUSED_PARAMETER")
+    fun debtToCarry(yesterday: DayMinutes): Int = 0
 
     /** Minuty za dřepy podle kurzu (20 dřepů = 10 min), jen celé dávky. */
     fun squatMinutes(count: Int): Int =

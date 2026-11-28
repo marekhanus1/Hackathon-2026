@@ -39,7 +39,7 @@ object BadgesMapper {
         val badges = listOf(
             badge("FIRST_CLOSE", "První odchod", "Poprvé zavřít feed při Ozvěně bez placení.", closes, 1),
             badge("CLOSE_10", "Odešel jsem sám 10×", "Zavřít feed při Ozvěně bez placení pohybem.", closes, 10),
-            badge("NO_DEBT_WEEK", "Týden bez dluhu", "Sedm dní po sobě bez půjčených minut.", noDebtRun, 7),
+            badge("NO_DEBT_WEEK", "Týden po svém", "Sedm dní po sobě bez proseb o minuty od Parťáka.", noDebtRun, 7),
             badge("SQUATS_1000", "1 000 dřepů", "Celkem tisíc dřepů spočítaných kamerou.", squats, 1_000),
             badge("PLAN_STREAK_3", "Tři smlouvy v řadě", "Tři dny po sobě splněná večerní smlouva.", game.streakDays, 3),
         ).sortedByDescending { it.isUnlocked }
