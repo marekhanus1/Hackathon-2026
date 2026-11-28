@@ -244,7 +244,7 @@ Fake: `FakeStravaRepository(connected = true)` – ranní běh 5,2 km / 28 min, 
 
 ```kotlin
 data class Settings(
-    val homeSsid: String? = null, val llmProvider: LlmProvider = LlmProvider.CLAUDE,
+    val homeSsid: String? = null, val llmProvider: LlmProvider = LlmProvider.GEMINI,
     val demoMode: Boolean = false, val demoThresholdSec: Int? = null,
     val demoContractToday: Boolean = false, val demoAlwaysYes: Boolean = false,
 )

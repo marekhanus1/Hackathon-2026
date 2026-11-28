@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
  */
 data class Settings(
     val homeSsid: String? = null,
-    val llmProvider: LlmProvider = LlmProvider.CLAUDE,
+    val llmProvider: LlmProvider = LlmProvider.GEMINI,
     val demoMode: Boolean = false,
     val demoThresholdSec: Int? = null,
     val demoContractToday: Boolean = false,

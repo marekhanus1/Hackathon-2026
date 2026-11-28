@@ -49,6 +49,7 @@ import cz.narsil.app.EchoOverlayStarter
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.LlmProvider
 import cz.narsil.detection.accessibility.AccessibilityEvents
 import cz.narsil.detection.accessibility.AccessibilityTriggerSource
 import cz.narsil.ui.components.ChoiceCard
@@ -140,6 +141,12 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                     )
                     StatusRow("Wi-Fi / domov", "${wifi ?: "žádná"} / ${settings.homeSsid ?: "neuložen"}")
                     StatusRow("Práh zásahu", settings.demoThresholdSec?.let { "$it s" } ?: "5 min")
+                    val keyOk = DemoActions.hasKey(settings.llmProvider)
+                    StatusRow(
+                        "AI ověření",
+                        "${settings.llmProvider.label()} · klíč ${if (keyOk) "ano" else "ne"}",
+                        ok = keyOk || settings.demoAlwaysYes,
+                    )
                     StatusRow(
                         "Scrollování",
                         session?.value?.let { "${it.surface.name.lowercase()} ${(now - it.startedAtMillis) / 1000} s" } ?: "nic",
@@ -191,6 +198,19 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                     ToggleRow("Smlouva platí hned", "Večerní smlouva se uloží na dnešek", settings.demoContractToday) { on ->
                         act("Smlouva ${if (on) "na dnešek" else "na zítřek"}") { DemoActions.setContractToday(on); true }
                     }
+                    HorizontalDivider()
+                    Text("AI pro ověření úkolů", style = MaterialTheme.typography.bodyLarge)
+                    val providers = LlmProvider.entries
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        providers.forEachIndexed { i, p ->
+                            SegmentedButton(
+                                selected = settings.llmProvider == p,
+                                onClick = { act("AI: ${p.label()}") { DemoActions.setLlmProvider(p); true } },
+                                shape = SegmentedButtonDefaults.itemShape(i, providers.size),
+                            ) { Text(p.label()) }
+                        }
+                    }
+                    Hint("Bez klíče v local.properties se ověření odloží na později. Pro demo bez klíče zapni „vždy ANO“ níže.")
                 }
 
                 // Pohyb a gamifikace
@@ -310,4 +330,10 @@ private fun AvatarState.label() = when (this) {
     AvatarState.OK -> "V pohodě"
     AvatarState.FIT -> "Fit"
     AvatarState.THRIVING -> "Skvělý"
+}
+
+private fun LlmProvider.label() = when (this) {
+    LlmProvider.CLAUDE -> "Claude"
+    LlmProvider.GEMINI -> "Gemini"
+    LlmProvider.OPENAI -> "ChatGPT"
 }
