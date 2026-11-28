@@ -25,12 +25,14 @@ object MovementRates {
  * @param balanceMinutes zůstatek: kroky / kurz + odměny za úkoly − zaplacené − přenesený dluh (SPEC 5)
  * @param debtMinutes vypůjčené minuty, přenáší se do zítřka
  * @param debtLimitMinutes limit dluhu pro Parťáka
+ * @param carriedDebtMinutes přenesený dluh ze včerejška, který dnešní kroky a odměny ještě nepokryly (SPEC 5)
  */
 data class MovementState(
     val stepsToday: Int = 0,
     val balanceMinutes: Int = 0,
     val debtMinutes: Int = 0,
     val debtLimitMinutes: Int = MovementRates.DEFAULT_DEBT_LIMIT_MINUTES,
+    val carriedDebtMinutes: Int = 0,
 ) {
     val isOverDebtLimit: Boolean get() = debtMinutes > debtLimitMinutes
 }

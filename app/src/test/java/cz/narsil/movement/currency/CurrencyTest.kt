@@ -26,6 +26,16 @@ class CurrencyTest {
     private val morning = LocalDateTime.of(2026, 11, 28, 10, 0)
 
     @Test
+    fun unpaidCarriedDebt() {
+        val day = DayMinutes(carriedDebt = 10)
+        assertEquals(10, Currency.unpaidCarriedDebt(51, day))
+        assertEquals(4, Currency.unpaidCarriedDebt(600, day))
+        assertEquals(0, Currency.unpaidCarriedDebt(1_000, day))
+        assertEquals(0, Currency.unpaidCarriedDebt(0, day.copy(taskRewards = 15)))
+        assertEquals(0, Currency.unpaidCarriedDebt(0, DayMinutes()))
+    }
+
+    @Test
     fun balanceFormula() {
         assertEquals(42, Currency.balance(4_299, DayMinutes()))
         assertEquals(42 + 20 - 10 - 5, Currency.balance(4_200, DayMinutes(taskRewards = 20, paid = 10, carriedDebt = 5)))
@@ -86,6 +96,8 @@ class CurrencyTest {
         val next = book.state(3_000)
         assertEquals(0, next.debtMinutes) // dluh se vynuloval…
         assertEquals(10, next.balanceMinutes) // …a odečetl od zůstatku: 30 − 20
+        assertEquals(0, next.carriedDebtMinutes) // kroky ho pokryly
+        assertEquals(20, book.state(51).carriedDebtMinutes) // 51 kroků = 0 min → dluh 20 zůstává (145)
         book.state(3_000)
         assertEquals(1, store.entries(book.today()).count { it.kind == LedgerKind.DEBT_CARRY }) // přenos jen jednou
 

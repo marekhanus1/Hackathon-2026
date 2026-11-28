@@ -1,5 +1,6 @@
 package cz.narsil.ui.screens.mirror
 
+import cz.narsil.ui.text.CzechPlural
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -100,12 +101,16 @@ private fun MirrorOverviewContent(state: MirrorUiState) {
                 verticalArrangement = Arrangement.spacedBy(spacing.xs)
             ) {
                 Text(
-                    text = "Za 21 dní sis vzal zpět ${state.totalReclaimedMinutes / 60} hodin",
+                    text = "Za 21 dní sis vzal zpět " + if (state.totalReclaimedMinutes >= 60) {
+                        CzechPlural.hoursAccusative(state.totalReclaimedMinutes / 60)
+                    } else {
+                        CzechPlural.minutesAccusative(state.totalReclaimedMinutes)
+                    },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Pasivní scrollování kleslo o ${state.feedDropPercent} % · v průměru ${state.averageDailySquats} dřepů denně.",
+                    text = "Pasivní scrollování kleslo o ${state.feedDropPercent} % · v průměru ${CzechPlural.squats(state.averageDailySquats)} denně.",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -132,7 +137,7 @@ private fun MirrorOverviewContent(state: MirrorUiState) {
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Největší pokušení přichází večer. Bez feedu přežito ${state.bossSurvivedDays} dní (+150 XP za den).",
+                    text = "Největší pokušení přichází večer. Bez feedu přežito: ${CzechPlural.days(state.bossSurvivedDays)} (+150 XP za den).",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

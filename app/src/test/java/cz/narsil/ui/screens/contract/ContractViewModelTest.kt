@@ -91,4 +91,16 @@ class ContractViewModelTest {
         assertEquals("dnes", ContractUiState(targetIsToday = true).dayWord)
         assertEquals("zítra", ContractUiState().dayWord)
     }
+
+    @Test
+    fun savedVideoKeepsItsLength() {
+        val vm = ContractViewModel()
+        vm.onRecordingState(isRecording = false, seconds = 0, hasVideo = false, error = null)
+        vm.prefill(DailyContract(LocalDate.of(2026, 11, 28), 6_000, videoUri = "file:///v.mp4"), videoSeconds = 12)
+        vm.onRecordingState(isRecording = false, seconds = 0, hasVideo = false, error = null)
+        assertEquals(12, vm.uiState.value.recordedSeconds)
+        assertTrue(vm.uiState.value.hasRecordedVideo)
+        vm.onRecordingState(isRecording = true, seconds = 3, hasVideo = false, error = null)
+        assertEquals(3, vm.uiState.value.recordedSeconds)
+    }
 }

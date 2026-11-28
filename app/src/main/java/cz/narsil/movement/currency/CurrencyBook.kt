@@ -54,6 +54,7 @@ class CurrencyBook(
             balanceMinutes = Currency.balance(stepsToday, day),
             debtMinutes = day.borrowed,
             debtLimitMinutes = debtLimitMinutes,
+            carriedDebtMinutes = Currency.unpaidCarriedDebt(stepsToday, day),
         )
     }
 

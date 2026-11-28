@@ -119,7 +119,7 @@ class ContractViewModel : ViewModel() {
     }
 
     /** Předvyplní smlouvu, která už na ten den existuje (úprava večer). */
-    fun prefill(contract: DailyContract) {
+    fun prefill(contract: DailyContract, videoSeconds: Int = 0) {
         _uiState.update { current ->
             if (current.isSubmitted) return@update current
             current.copy(
@@ -128,6 +128,7 @@ class ContractViewModel : ViewModel() {
                 plannedItems = contract.plannedContent,
                 tasks = contract.tasks.map { TaskDraft(it.type, it.title) },
                 hasRecordedVideo = contract.videoUri != null,
+                recordedSeconds = if (contract.videoUri != null) videoSeconds else 0,
             )
         }
     }
@@ -158,7 +159,9 @@ class ContractViewModel : ViewModel() {
     /** Stav skutečného nahrávání (ContractVideoRecorder) – dodá route. */
     fun onRecordingState(isRecording: Boolean, seconds: Int, hasVideo: Boolean, error: String?) {
         _uiState.update {
-            it.copy(isRecordingVideo = isRecording, recordedSeconds = seconds, hasRecordedVideo = hasVideo || (it.hasRecordedVideo && !isRecording), videoError = error)
+            // Bez nového videa zůstane délka uloženého (úprava smlouvy), jinak délka z nahrávání.
+            val keep = !isRecording && !hasVideo && it.hasRecordedVideo
+            it.copy(isRecordingVideo = isRecording, recordedSeconds = if (keep) it.recordedSeconds else seconds, hasRecordedVideo = hasVideo || (it.hasRecordedVideo && !isRecording), videoError = error)
         }
     }
 

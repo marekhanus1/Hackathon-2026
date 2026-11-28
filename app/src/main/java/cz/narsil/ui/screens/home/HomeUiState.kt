@@ -1,5 +1,6 @@
 package cz.narsil.ui.screens.home
 
+import cz.narsil.ui.text.CzechPlural
 import androidx.lifecycle.ViewModel
 import cz.narsil.ui.components.AvatarState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,8 @@ data class HomeUiState(
     val stepGoal: Int = 6000,
     val availableStepMinutes: Int = 40,
     val debtMinutes: Int = 0,
+    /** Dluh ze včerejška, který dnes ještě nepokryly kroky ani odměny. */
+    val carriedDebtMinutes: Int = 0,
     val contractCompletedToday: Boolean = false,
     /** Smlouva pro den, na který by se teď podepisovala (ráno dnešek, večer zítřek), už existuje. */
     val contractSigned: Boolean = false,
@@ -41,7 +44,7 @@ data class HomeUiState(
         get() = when {
             contractCompletedToday -> "Dnešní smlouva splněná (+100 XP)"
             contractSigned -> "Smlouva na ${if (contractSignedForToday) "dnes" else "zítra"} podepsaná · " +
-                "$contractTaskCount ${taskWord(contractTaskCount)}"
+                CzechPlural.tasks(contractTaskCount)
             else -> "Večerní smlouva čeká (2 minuty)"
         }
 
@@ -53,13 +56,18 @@ data class HomeUiState(
         }
 
     val contractDone: Boolean get() = contractCompletedToday || contractSigned
+
+    /** Řádek dluhu na kartě pohybu; null = bez dluhu. */
+    val debtLabel: String?
+        get() = when {
+            carriedDebtMinutes > 0 && debtMinutes > 0 ->
+                "Dluh ze včerejška: $carriedDebtMinutes min · dnes půjčeno $debtMinutes min"
+            carriedDebtMinutes > 0 -> "Dluh ze včerejška: $carriedDebtMinutes min"
+            debtMinutes > 0 -> "Dluh do zítřka: $debtMinutes min"
+            else -> null
+        }
 }
 
-private fun taskWord(n: Int): String = when {
-    n == 1 -> "úkol"
-    n in 2..4 -> "úkoly"
-    else -> "úkolů"
-}
 
 class HomeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())

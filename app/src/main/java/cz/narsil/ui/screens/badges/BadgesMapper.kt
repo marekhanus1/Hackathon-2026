@@ -1,5 +1,6 @@
 package cz.narsil.ui.screens.badges
 
+import cz.narsil.ui.text.CzechPlural
 import cz.narsil.core.GamificationState
 import cz.narsil.core.History
 import cz.narsil.ui.components.AvatarState
@@ -48,8 +49,8 @@ object BadgesMapper {
             .mapIndexed { i, (name, minutes) -> PartyMemberEntry(i + 1, name, minutes, isCurrentUser = name == "Ty") }
         return BadgesUiState(
             currentAvatarState = avatar,
-            avatarSummary7Days = "Posledních 7 dní: ${last7.count { it.battleWon && it.hasData }} výher · " +
-                "${last7.sumOf { it.squats }} dřepů · série ${game.streakDays}",
+            avatarSummary7Days = "Posledních 7 dní: ${CzechPlural.wins(last7.count { it.battleWon && it.hasData })} · " +
+                "${CzechPlural.squats(last7.sumOf { it.squats })} · série ${CzechPlural.days(game.streakDays)}",
             badges = badges,
             partyGoalSteps = PARTY_GOAL_STEPS,
             partyCurrentSteps = FRIENDS.sumOf { it.steps } + stepsToday.coerceAtLeast(0),

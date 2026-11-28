@@ -1,5 +1,6 @@
 package cz.narsil.ui.screens.home
 
+import cz.narsil.ui.text.CzechPlural
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -182,13 +183,14 @@ private fun MovementBalanceCard(state: HomeUiState) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "${state.stepsToday} / ${state.stepGoal} kroků",
+                    text = "${state.stepsToday} / ${CzechPlural.steps(state.stepGoal)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                if (state.debtMinutes > 0) {
+                val debtLabel = state.debtLabel
+                if (debtLabel != null) {
                     Text(
-                        text = "Dluh do zítřka: ${state.debtMinutes} min",
+                        text = debtLabel,
                         style = MaterialTheme.typography.labelMedium,
                         color = colors.debt
                     )

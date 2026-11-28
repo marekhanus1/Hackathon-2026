@@ -44,10 +44,11 @@ object VerificationModule {
         verifier: TaskVerifier,
         reward: RewardService,
         pendingTasks: (suspend () -> List<cz.narsil.core.PlanTask>)? = null,
+        reasons: VerificationReasonStore? = null,
     ): TaskVerificationService = if (pendingTasks == null) {
-        TaskVerificationService(contracts, verifier, onVerified = rewardHandoff(reward))
+        TaskVerificationService(contracts, verifier, onVerified = rewardHandoff(reward), reasons = reasons)
     } else {
-        TaskVerificationService(contracts, verifier, onVerified = rewardHandoff(reward), pendingTasks = pendingTasks)
+        TaskVerificationService(contracts, verifier, onVerified = rewardHandoff(reward), pendingTasks = pendingTasks, reasons = reasons)
     }
 
     /** Čekající úkoly ze všech dnů (Room), ať se doověří i po přelomu dne ve 4:00. */
