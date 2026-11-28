@@ -33,8 +33,13 @@ data class BorrowResult(val accepted: Boolean, val debtMinutes: Int, val partner
 class CurrencyBook(
     private val store: LedgerStore = InMemoryLedgerStore(),
     private val clock: Clock = Clock.systemDefaultZone(),
-    val debtLimitMinutes: Int = MovementRates.DEFAULT_DEBT_LIMIT_MINUTES,
+    debtLimitMinutes: Int = MovementRates.DEFAULT_DEBT_LIMIT_MINUTES,
+    /** Limit dluhu z nastavení (133), čte se při každé půjčce; null = pevný [debtLimitMinutes]. */
+    private val debtLimitProvider: (() -> Int)? = null,
 ) {
+    private val fixedDebtLimit = debtLimitMinutes
+    val debtLimitMinutes: Int get() = debtLimitProvider?.invoke() ?: fixedDebtLimit
+
     private val mutex = Mutex()
 
     fun today(): LocalDate = DayKey.of(clock.millis(), clock.zone)

@@ -2,6 +2,7 @@ package cz.narsil.ui.screens.settings
 
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.LlmProvider
+import cz.narsil.core.Settings
 
 enum class ManualZoneChoice(val label: String) {
     AUTO("Automaticky"),
@@ -12,7 +13,22 @@ enum class ManualZoneChoice(val label: String) {
 enum class SettingsPermissionType {
     ACCESSIBILITY,
     OVERLAY,
-    LOCATION
+    LOCATION,
+    CAMERA,
+    NOTIFICATIONS
+}
+
+/**
+ * Uvolnění čekající na potvrzení (133). Potvrdit jde až po odpočtu ([secondsLeft] = 0).
+ *
+ * @param reasons co se změnou uvolní, česky (z [SettingsGuard.loosenings])
+ */
+data class PendingChange(
+    val title: String,
+    val reasons: List<String>,
+    val secondsLeft: Int,
+) {
+    val canConfirm: Boolean get() = secondsLeft <= 0
 }
 
 data class SettingsPermissionItem(
@@ -45,13 +61,25 @@ data class SettingsUiState(
     val strava: StravaCardState = StravaCardState(),
     val permissions: List<SettingsPermissionItem> = defaultSettingsPermissions(),
     val homeSaveFeedback: String? = null,
-    val appVersion: String = "Narsil 1.0 · Hackathon 2026"
-)
+    val appVersion: String = "Narsil 1.0 · Hackathon 2026",
+    /** Celé nastavení (133): parametry chování v sekcích. */
+    val settings: Settings = Settings(),
+    /** Ochrana pozastavená; text „do 4:00“ apod., null = běží. */
+    val protectionPausedText: String? = null,
+    /** Má poskytovatel AI klíč v `local.properties`? Bez klíče ověření čeká (VERIFY_LATER). */
+    val llmKeys: Map<LlmProvider, Boolean> = LlmProvider.entries.associateWith { true },
+    /** Uvolnění čekající na potvrzení s odpočtem; null = žádný dialog. */
+    val pendingChange: PendingChange? = null,
+) {
+    val isProtectionPaused: Boolean get() = protectionPausedText != null
+}
 
 internal fun defaultSettingsPermissions(
     accessibilityGranted: Boolean = true,
     overlayGranted: Boolean = true,
-    locationGranted: Boolean = true
+    locationGranted: Boolean = true,
+    cameraGranted: Boolean = true,
+    notificationsGranted: Boolean = true
 ): List<SettingsPermissionItem> = listOf(
     SettingsPermissionItem(
         type = SettingsPermissionType.ACCESSIBILITY,
@@ -70,5 +98,17 @@ internal fun defaultSettingsPermissions(
         title = "Poloha (jen název Wi-Fi)",
         reason = "Systém ji vyžaduje pro zjištění domácí Wi-Fi.",
         isGranted = locationGranted
+    ),
+    SettingsPermissionItem(
+        type = SettingsPermissionType.CAMERA,
+        title = "Kamera",
+        reason = "Počítá dřepy a kliky. Obraz zůstává v telefonu.",
+        isGranted = cameraGranted
+    ),
+    SettingsPermissionItem(
+        type = SettingsPermissionType.NOTIFICATIONS,
+        title = "Notifikace",
+        reason = "Ukázková zpráva Parťákovi.",
+        isGranted = notificationsGranted
     )
 )

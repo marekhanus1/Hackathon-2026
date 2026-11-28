@@ -6,11 +6,14 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import cz.narsil.core.LlmProvider
 import cz.narsil.core.Settings
 import cz.narsil.core.SettingsRepository
+import cz.narsil.core.TrackedApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -52,6 +55,15 @@ class DataStoreSettingsRepository(
         demoAlwaysYes = this[DEMO_ALWAYS_YES] ?: false,
         exercise = enumOr(this[EXERCISE], Settings().exercise),
         showScrollProgress = this[SHOW_SCROLL_PROGRESS] ?: true,
+        toleranceMinutes = this[TOLERANCE_MINUTES] ?: DEFAULTS.toleranceMinutes,
+        videoChainLimit = this[VIDEO_CHAIN_LIMIT] ?: DEFAULTS.videoChainLimit,
+        squatsPerUnlock = this[SQUATS_PER_UNLOCK] ?: DEFAULTS.squatsPerUnlock,
+        pushupsPerUnlock = this[PUSHUPS_PER_UNLOCK] ?: DEFAULTS.pushupsPerUnlock,
+        debtLimitMinutes = this[DEBT_LIMIT_MINUTES] ?: DEFAULTS.debtLimitMinutes,
+        trackedApps = this[TRACKED_APPS]?.mapNotNull { n -> TrackedApp.entries.firstOrNull { it.name == n } }?.toSet()
+            ?: DEFAULTS.trackedApps,
+        protectionPausedUntilMillis = this[PAUSED_UNTIL],
+        partnerAlerts = this[PARTNER_ALERTS] ?: DEFAULTS.partnerAlerts,
     )
 
     private fun androidx.datastore.preferences.core.MutablePreferences.write(s: Settings) {
@@ -63,6 +75,14 @@ class DataStoreSettingsRepository(
         this[DEMO_ALWAYS_YES] = s.demoAlwaysYes
         this[EXERCISE] = s.exercise.name
         this[SHOW_SCROLL_PROGRESS] = s.showScrollProgress
+        this[TOLERANCE_MINUTES] = s.toleranceMinutes
+        this[VIDEO_CHAIN_LIMIT] = s.videoChainLimit
+        this[SQUATS_PER_UNLOCK] = s.squatsPerUnlock
+        this[PUSHUPS_PER_UNLOCK] = s.pushupsPerUnlock
+        this[DEBT_LIMIT_MINUTES] = s.debtLimitMinutes
+        this[TRACKED_APPS] = s.trackedApps.map { it.name }.toSet()
+        if (s.protectionPausedUntilMillis != null) this[PAUSED_UNTIL] = s.protectionPausedUntilMillis else remove(PAUSED_UNTIL)
+        this[PARTNER_ALERTS] = s.partnerAlerts
     }
 
     private companion object {
@@ -74,5 +94,14 @@ class DataStoreSettingsRepository(
         val DEMO_CONTRACT_TODAY = booleanPreferencesKey("demo_contract_today")
         val DEMO_ALWAYS_YES = booleanPreferencesKey("demo_always_yes")
         val SHOW_SCROLL_PROGRESS = booleanPreferencesKey("show_scroll_progress")
+        val TOLERANCE_MINUTES = intPreferencesKey("tolerance_minutes")
+        val VIDEO_CHAIN_LIMIT = intPreferencesKey("video_chain_limit")
+        val SQUATS_PER_UNLOCK = intPreferencesKey("squats_per_unlock")
+        val PUSHUPS_PER_UNLOCK = intPreferencesKey("pushups_per_unlock")
+        val DEBT_LIMIT_MINUTES = intPreferencesKey("debt_limit_minutes")
+        val TRACKED_APPS = stringSetPreferencesKey("tracked_apps")
+        val PAUSED_UNTIL = longPreferencesKey("protection_paused_until")
+        val PARTNER_ALERTS = booleanPreferencesKey("partner_alerts")
+        val DEFAULTS = Settings()
     }
 }
