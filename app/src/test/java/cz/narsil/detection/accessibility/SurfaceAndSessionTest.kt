@@ -108,11 +108,34 @@ class SurfaceAndSessionTest {
     }
 
     @Test
-    fun closedRestartsFromZero() {
+    fun closedRestartsFromZeroAfterConfirmWindow() {
         val t = ScrollSessionTracker()
         assertEquals(listOf(5 * min), t.run(ig, Surface.FEED, 0, 5 * min + step))
-        t.onClosed()
-        assertEquals(listOf(10 * min + step), t.run(ig, Surface.FEED, 5 * min + step, 12 * min))
+        t.onClosed(5 * min)
+        assertEquals(emptyList<Long>(), t.run(ig, null, 5 * min, 16 * min)) // 11 min mimo feed
+        assertEquals(listOf(21 * min), t.run(ig, Surface.FEED, 16 * min, 22 * min)) // nová tolerance od nuly
+    }
+
+    @Test
+    fun returnSoonAfterCloseTriggersImmediately() {
+        val t = ScrollSessionTracker()
+        assertEquals(listOf(5 * min), t.run(ig, Surface.FEED, 0, 5 * min + step))
+        t.onClosed(5 * min)
+        assertEquals(emptyList<Long>(), t.run(ig, null, 5 * min, 8 * min))
+        // 155: návrat po 3 min (jiná aplikace, stejně feed) – Ozvěna hned, ne až za 5 min.
+        assertEquals(listOf(8 * min), t.run(tt, Surface.FEED, 8 * min, 8 * min + step))
+        t.onUnlocked(18 * min)
+        assertEquals(emptyList<Long>(), t.run(tt, Surface.FEED, 8 * min + step, 18 * min)) // zaplaceno
+    }
+
+    @Test
+    fun relapseWindowUsedOnce() {
+        val t = ScrollSessionTracker()
+        t.run(ig, Surface.FEED, 0, 5 * min + step)
+        t.onClosed(5 * min)
+        assertNotNull(t.observe(ig, Surface.FEED, HOME, 6 * min, threshold))
+        t.onDismissed() // okno zmizelo bez volby: další zásah až po toleranci, ne v každém snímku
+        assertNull(t.observe(ig, Surface.FEED, HOME, 6 * min + step, threshold))
     }
 
     @Test
