@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/137-retezeni-videi
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/96
 ---
 
 # 137 – Řetězení neplánovaných videí (videoChainLimit)

@@ -41,6 +41,8 @@ internal object WindowReader {
         val url: String?,
         val selectedTab: String? = null,
         val playerTexts: List<String> = emptyList(),
+        /** Text uzlu WebView ve Firefoxu = titulek stránky (137). */
+        val pageTitle: String? = null,
     )
 
     /**
@@ -54,6 +56,7 @@ internal object WindowReader {
         var selectedTab: String? = null
         var visited = 0
         val webViews = mutableListOf<AccessibilityNodeInfo>()
+        var pageTitle: String? = null
         val stack = ArrayDeque<Pair<AccessibilityNodeInfo, Int>>()
         stack.addLast(root to 0)
         while (stack.isNotEmpty() && visited < MAX_NODES) {
@@ -77,6 +80,7 @@ internal object WindowReader {
             }
             // Obsah webové stránky nečíst: soukromí a stovky uzlů by vyčerpaly MAX_NODES dřív než adresní řádek.
             if (app == WatchedApp.FIREFOX && node.className?.toString() == WEBVIEW_CLASS) {
+                if (pageTitle == null) pageTitle = node.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }
                 webViews += node
                 continue
             }
@@ -87,7 +91,7 @@ internal object WindowReader {
         if (app == WatchedApp.FIREFOX && url == null) url = fallbackUrl
         // Výjimka (134): na stránce jednoho videa YouTube přečíst ovládání přehrávače (čas, „Přehrát znovu“).
         val playerTexts = if (YouTubePlayback.videoIdFromUrl(url) != null) readPlayerTexts(webViews) else emptyList()
-        return Result(ids, texts, url, selectedTab, playerTexts)
+        return Result(ids, texts, url, selectedTab, playerTexts, pageTitle)
     }
 
     /** Krátké texty viditelných uzlů stránky (ovládání přehrávače je nahoře, stačí omezený průchod). */

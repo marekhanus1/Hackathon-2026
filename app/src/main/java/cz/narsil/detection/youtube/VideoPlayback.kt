@@ -8,6 +8,7 @@ package cz.narsil.detection.youtube
  * @param durationMillis délka videa z téhož textu
  * @param ended konec videa: „Přehrát znovu“, odpočet autoplay „Další video za 5“, nebo pozice = délka
  * @param readAtMillis kdy se stav přečetl (tik opakuje starý snímek, pozice tedy stárne)
+ * @param title název videa (Firefox: titulek stránky bez „ - YouTube“), null = nečitelný; jen pro ContentMatcher (137)
  */
 data class VideoPlayback(
     val videoKey: String?,
@@ -15,6 +16,7 @@ data class VideoPlayback(
     val durationMillis: Long? = null,
     val ended: Boolean = false,
     val readAtMillis: Long = 0,
+    val title: String? = null,
 ) {
     /** Zbývající čas videa v okamžiku [readAtMillis], null = délka neznámá. */
     val remainingMillis: Long?
@@ -73,6 +75,12 @@ object YouTubePlayback {
         val noScheme = s.replaceFirst(Regex("^https?://", RegexOption.IGNORE_CASE), "")
         val hostPart = noScheme.substringBefore('/').substringBefore('?')
         return hostPart.lowercase().removePrefix("www.").removePrefix("m.") to noScheme.substring(hostPart.length)
+    }
+
+    /** Název videa z titulku stránky („Název - YouTube“). Obecné titulky („YouTube“) → null. */
+    fun titleFromPage(raw: String?): String? {
+        val t = raw?.trim()?.removeSuffix("- YouTube")?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        return t.takeUnless { it.equals("YouTube", ignoreCase = true) }
     }
 
     /** Stav přehrávače z [texts] (krátké texty a contentDescription uzlů). */

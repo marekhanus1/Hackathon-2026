@@ -99,7 +99,7 @@ class NarsilAccessibilityService : AccessibilityService() {
             video = result?.let { videoOf(app, it, now) },
         )
         AccessibilityEvents.emit(snapshot)
-        snapshot.video?.takeIf { it.ended || it.durationMillis != null }?.let { Log.d(TAG, "video: $it") }
+        snapshot.video?.takeIf { it.ended || it.durationMillis != null || kind == SnapshotKind.WINDOW_CHANGED }?.let { Log.d(TAG, "video: $it") }
         if (kind == SnapshotKind.WINDOW_CHANGED || snapshot.url != null) {
             Log.d(TAG, "popředí: $app ($pkg) okno=${snapshot.className} tab=${snapshot.selectedTab} url=${snapshot.url} ids=${snapshot.viewIds.size}")
         }
@@ -108,7 +108,9 @@ class NarsilAccessibilityService : AccessibilityService() {
     /** Stav přehrávače YouTube (134): aplikace z textů okna, Firefox jen na stránce jednoho videa. */
     private fun videoOf(app: WatchedApp, r: WindowReader.Result, now: Long): VideoPlayback? = when (app) {
         WatchedApp.YOUTUBE -> YouTubePlayback.parse(null, r.texts, now)
-        WatchedApp.FIREFOX -> YouTubePlayback.videoIdFromUrl(r.url)?.let { YouTubePlayback.parse(it, r.playerTexts, now) }
+        WatchedApp.FIREFOX -> YouTubePlayback.videoIdFromUrl(r.url)?.let {
+            YouTubePlayback.parse(it, r.playerTexts, now).copy(title = YouTubePlayback.titleFromPage(r.pageTitle))
+        }
         else -> null
     }
 
