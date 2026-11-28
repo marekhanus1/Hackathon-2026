@@ -5,7 +5,9 @@ import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.InterventionOutcome
+import cz.narsil.core.LlmProvider
 import cz.narsil.core.data.DayKey
+import cz.narsil.llm.client.BuildConfigLlmKeys
 import cz.narsil.core.fake.FakeContractRepository
 import cz.narsil.gamification.debug.GamificationDebug
 import cz.narsil.movement.debug.MovementDebug
@@ -23,6 +25,11 @@ object DemoActions {
         sl.settingsRepository.update { it.copy(demoMode = on, demoThresholdSec = if (on) DEMO_THRESHOLD_SEC else null) }
 
     suspend fun setContractToday(on: Boolean) = sl.settingsRepository.update { it.copy(demoContractToday = on) }
+
+    suspend fun setLlmProvider(provider: LlmProvider) = sl.settingsRepository.update { it.copy(llmProvider = provider) }
+
+    /** Je pro [provider] v BuildConfig klíč? Jen ano/ne, hodnota se nikdy nezobrazuje. */
+    fun hasKey(provider: LlmProvider): Boolean = !BuildConfigLlmKeys.keyFor(provider).isNullOrBlank()
 
     suspend fun setAlwaysYes(on: Boolean) = sl.settingsRepository.update { it.copy(demoAlwaysYes = on) }
 

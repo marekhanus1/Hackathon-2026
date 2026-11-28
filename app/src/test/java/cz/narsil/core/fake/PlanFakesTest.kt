@@ -82,6 +82,11 @@ class PlanFakesTest {
     }
 
     @Test
+    fun defaultLlmProviderIsGemini() {
+        assertEquals(LlmProvider.GEMINI, cz.narsil.core.Settings().llmProvider)
+    }
+
+    @Test
     fun settingsUpdate() = runTest {
         val s = FakeSettingsRepository()
         s.update { it.copy(llmProvider = LlmProvider.GEMINI, demoMode = true) }

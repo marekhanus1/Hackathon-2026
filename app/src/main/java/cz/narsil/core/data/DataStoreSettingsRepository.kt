@@ -45,7 +45,7 @@ class DataStoreSettingsRepository(
 
     private fun Preferences.toSettings() = Settings(
         homeSsid = this[HOME_SSID],
-        llmProvider = enumOr(this[LLM_PROVIDER], LlmProvider.CLAUDE),
+        llmProvider = enumOr(this[LLM_PROVIDER], Settings().llmProvider),
         demoMode = this[DEMO_MODE] ?: false,
         demoThresholdSec = this[DEMO_THRESHOLD_SEC],
         demoContractToday = this[DEMO_CONTRACT_TODAY] ?: false,
