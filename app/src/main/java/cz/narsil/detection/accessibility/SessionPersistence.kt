@@ -20,13 +20,15 @@ data class SavedSession(
     val lastEndlessAtMillis: Long,
     val unlockedUntilMillis: Long,
     val hasSession: Boolean = true,
+    /** Do kdy návrat na feed po „Zavřít“ zasáhne hned (155, 158); 0 = žádné okno. */
+    val relapseUntilMillis: Long = 0,
 )
 
 class PrefsSessionPersistence(context: Context) : SessionPersistence {
     private val prefs = context.applicationContext.getSharedPreferences("detection_session", Context.MODE_PRIVATE)
 
     override fun load(): SavedSession? = runCatching {
-        if (!prefs.contains("last")) return null
+        if (!prefs.contains("last") && !prefs.contains("relapse")) return null
         SavedSession(
             startedAtMillis = prefs.getLong("start", 0),
             packageName = prefs.getString("pkg", null).orEmpty(),
@@ -34,6 +36,7 @@ class PrefsSessionPersistence(context: Context) : SessionPersistence {
             lastEndlessAtMillis = prefs.getLong("last", 0),
             unlockedUntilMillis = prefs.getLong("unlocked", 0),
             hasSession = prefs.getBoolean("has", true),
+            relapseUntilMillis = prefs.getLong("relapse", 0),
         )
     }.getOrNull()
 
@@ -47,6 +50,7 @@ class PrefsSessionPersistence(context: Context) : SessionPersistence {
                     putLong("last", saved.lastEndlessAtMillis)
                     putLong("unlocked", saved.unlockedUntilMillis)
                     putBoolean("has", saved.hasSession)
+                    putLong("relapse", saved.relapseUntilMillis)
                 }
             }.apply()
         }
