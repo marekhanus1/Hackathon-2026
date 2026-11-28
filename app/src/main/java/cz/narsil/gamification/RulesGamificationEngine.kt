@@ -42,6 +42,16 @@ class RulesGamificationEngine(
         publish()
     }
 
+    /** Znovu načte historii z úložiště (po nahrání mock dat, 147) – zahodí mezipaměť i ladicí stav. */
+    suspend fun reload() = mutex.withLock {
+        history = null
+        avatarOverride = null
+        extraSquatsToday = 0
+        extraSquatsDay = null
+        settle()
+        publish()
+    }
+
     override suspend fun onOutcome(outcome: InterventionOutcome): Int = mutex.withLock {
         val h = history()
         val now = clock.millis()

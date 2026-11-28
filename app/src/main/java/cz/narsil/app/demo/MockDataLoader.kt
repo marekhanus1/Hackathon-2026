@@ -18,7 +18,9 @@ import java.time.temporal.ChronoUnit
  * Nahraje připravená data (SPEC 10, demo panel) do sdílené databáze: 21 dní spotřeby, zásahů a XP
  * + hodnocení videí. Data dává [MockDataGenerator] přibalený v APK (138) – žádné soubory nejsou
  * potřeba; JSON v `mockdata/` zůstávají jako podklad pro pitch. Datum se posune tak, aby poslední den
- * byl včera. Jen jednou (příznak v prefs); znovu po „smazat data aplikace“.
+ * byl včera. Před nahráním smaže historii ([clearStatements], 147), takže výsledek je vždy stejný
+ * (480 / 500 XP, série 4, 1 žolík, postava FIT) bez ohledu na to, co v telefonu bylo. Smlouvy a úkoly
+ * na dnešek a dál zůstanou.
  */
 object MockDataLoader {
     private const val PREFS = "demo"
@@ -43,6 +45,18 @@ object MockDataLoader {
 
     fun isLoaded(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_LOADED, false)
+
+    /** Mazání historie před nahráním: vše kromě smluv a úkolů od [today] dál. */
+    fun clearStatements(today: LocalDate): List<String> = listOf(
+        "DELETE FROM xp_events",
+        "DELETE FROM ledger",
+        "DELETE FROM interventions",
+        "DELETE FROM consumption_events",
+        "DELETE FROM video_ratings",
+        "DELETE FROM badges",
+        "DELETE FROM plan_tasks WHERE date < '$today'",
+        "DELETE FROM contracts WHERE date < '$today'",
+    )
 
     /** Data z [MockDataGenerator] posunutá tak, aby poslední den byl den před [today]. */
     fun rows(today: LocalDate, zone: ZoneId): Rows {
@@ -104,9 +118,11 @@ object MockDataLoader {
     }
 
     suspend fun load(context: Context, zone: ZoneId = ZoneId.systemDefault()): Result {
-        if (isLoaded(context)) return Result(0, 0, 0, alreadyLoaded = true)
         val db = NarsilDatabase.get(context.applicationContext)
-        val rows = rows(DayKey.today(zone), zone)
+        val today = DayKey.today(zone)
+        val rows = rows(today, zone)
+        // runInTransaction → Room po dokončení upozorní pozorovatele (Domov, Zrcadlo se překreslí).
+        db.runInTransaction { clearStatements(today).forEach { db.openHelper.writableDatabase.execSQL(it) } }
         rows.consumption.forEach { db.consumptionDao().insert(it) }
         rows.interventions.forEach { db.interventionDao().insert(it) }
         rows.xp.forEach { db.xpDao().insert(it) }
