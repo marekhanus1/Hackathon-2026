@@ -13,12 +13,13 @@ sealed class NarsilRoute(val route: String, val title: String) {
     data object Mirror : NarsilRoute("mirror", "Zrcadlo")
     data object Badges : NarsilRoute("badges", "Odznaky")
     data object Onboarding : NarsilRoute("onboarding", "Onboarding")
+    data object Verify : NarsilRoute("verify", "Ověření úkolu")
     data object Settings : NarsilRoute("settings", "Nastavení")
     data object Demo : NarsilRoute("demo", "Demo panel")
 
     companion object {
         val start: NarsilRoute get() = Home
         val all: List<NarsilRoute>
-            get() = listOf(Home, Contract, Squat, EchoPreview, Mirror, Badges, Onboarding, Settings, Demo)
+            get() = listOf(Home, Contract, Squat, Verify, EchoPreview, Mirror, Badges, Onboarding, Settings, Demo)
     }
 }
