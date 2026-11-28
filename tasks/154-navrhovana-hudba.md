@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/154-navrhovana-hudba
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/115
 ---
 
 # 154 – End-screen „Navrhovaná hudba“
