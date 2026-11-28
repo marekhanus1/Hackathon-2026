@@ -134,7 +134,14 @@ object ServiceLocator {
     val interventionTriggerSource: InterventionTriggerSource
         get() = cached("triggers") {
             if (useFakes) FakeInterventionTriggerSource()
-            else AccessibilityTriggerSource(contextRepository, settingsRepository, appScope)
+            else AccessibilityTriggerSource(
+                contextRepository, settingsRepository, appScope,
+                // Řetězení videí (137): video z dnešního plánu se nepočítá.
+                planCheck = { title ->
+                    val plan = contractRepository.today.value?.plannedContent.orEmpty()
+                    plan.isNotEmpty() && contentMatcher.isPlanned(title, plan).planned
+                },
+            )
         }
 
     // Pohyb, gamifikace a smlouva (Šimon, 2xx). Při useFakes ukázková data.

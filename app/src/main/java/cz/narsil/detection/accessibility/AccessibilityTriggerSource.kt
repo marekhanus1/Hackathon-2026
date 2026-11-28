@@ -8,7 +8,9 @@ import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.InterventionTriggerSource
 import cz.narsil.core.SettingsRepository
 import cz.narsil.core.Surface
+import cz.narsil.detection.youtube.VideoChainTracker
 import cz.narsil.detection.youtube.YouTubePlayback
+import kotlinx.coroutines.withTimeoutOrNull
 import cz.narsil.core.TriggerReason
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -29,17 +31,23 @@ import kotlinx.coroutines.sync.withLock
  * Práh: `Settings.toleranceMillis()` (demo práh 20 s má přednost, jinak tolerance z Nastavení, výchozí 5 min).
  * Aplikace vypnutá v Nastavení (`isTracked`) a pozastavená ochrana (`isProtectionActive`) se berou jako
  * „mimo sledované“: nic se nepočítá, žádný zásah ani ukazatel (136).
+ * Řetězení videí (137): [VideoChainTracker], limit `Settings.videoChainLimit`, plánované video podle [planCheck].
  * Instanci vytvoří ServiceLocator (124) a overlay (114) hlásí výsledek přes [onOutcome].
  */
 class AccessibilityTriggerSource(
     private val contextRepository: ContextRepository,
     private val settings: SettingsRepository,
-    scope: CoroutineScope,
+    private val scope: CoroutineScope,
     snapshots: SharedFlow<ForegroundSnapshot> = AccessibilityEvents.snapshots,
     private val clock: () -> Long = System::currentTimeMillis,
     tickMillis: Long = 5_000,
+    /** Je video s tímto názvem v dnešním plánu? (ContentMatcher, 137) null = vše neplánované. Nesmí házet. */
+    private val planCheck: (suspend (title: String) -> Boolean)? = null,
+    /** Čekání na titulek nového videu před dotazem (Firefox ho mění se zpožděním po změně URL). */
+    private val planDelayMillis: Long = 2_000,
 ) : InterventionTriggerSource {
     private val tracker = ScrollSessionTracker()
+    private val chain = VideoChainTracker()
     private val lock = Mutex()
     private var last: ForegroundSnapshot? = null
 
@@ -94,6 +102,34 @@ class AccessibilityTriggerSource(
             val event = _current.value ?: eventOf(hit, now, snapshot)
             _triggers.tryEmit(InterventionTrigger(event, TriggerReason.ENDLESS_SCROLL, now))
         }
+        // Řetězení (137): přehrávač jednoho videa doma ve sledované aplikaci (surface je null mimo sledované).
+        val newVideo = chain.observe(surface == Surface.VIDEO && context == ComfortContext.HOME, snapshot.video, now)
+        if (newVideo != null) scope.launch { evaluate(newVideo, snapshot) }
+    }
+
+    /** Je nové video plánované? Pak ho započítá a případně zasáhne (na začátku videa = hranice). */
+    private suspend fun evaluate(video: VideoChainTracker.Video, seen: ForegroundSnapshot) {
+        var title = seen.video?.title
+        val planned = planCheck?.let { check ->
+            delay(planDelayMillis)
+            last?.video?.takeIf { it.videoKey == video.key }?.title?.let { title = it }
+            title?.let { t -> withTimeoutOrNull(PLAN_TIMEOUT_MILLIS) { runCatching { check(t) }.getOrDefault(false) } }
+        } ?: false
+        lock.withLock {
+            val now = clock()
+            if (!chain.resolve(video, planned, settings.settings.value.videoChainLimit, now)) return@withLock
+            val start = chain.chainStartedAtMillis ?: video.startedAtMillis
+            val snap = last ?: seen
+            val event = ConsumptionEvent(
+                packageName = snap.packageName,
+                surface = Surface.VIDEO,
+                startedAtMillis = start,
+                durationMillis = now - start,
+                videoTitle = title,
+                url = snap.url,
+            )
+            _triggers.tryEmit(InterventionTrigger(event, TriggerReason.UNPLANNED_VIDEO_CHAIN, now))
+        }
     }
 
     private fun eventOf(s: ScrollSessionTracker.Session, now: Long, snapshot: ForegroundSnapshot) = ConsumptionEvent(
@@ -110,16 +146,28 @@ class AccessibilityTriggerSource(
     /** Výsledek Ozvěny (114). [unlockMinutes] = odemčené minuty u PAID_STEPS, SQUATS, BORROWED. */
     suspend fun onOutcome(outcome: InterventionOutcome, unlockMinutes: Int = 10) = lock.withLock {
         when (outcome) {
-            InterventionOutcome.CLOSED -> tracker.onClosed()
-            InterventionOutcome.PAID_STEPS, InterventionOutcome.SQUATS, InterventionOutcome.BORROWED ->
-                tracker.onUnlocked(clock() + unlockMinutes * 60_000L)
-            InterventionOutcome.PLANNED_FREE -> tracker.onDismissed()
+            InterventionOutcome.CLOSED -> {
+                tracker.onClosed()
+                chain.onClosed()
+            }
+            InterventionOutcome.PAID_STEPS, InterventionOutcome.SQUATS, InterventionOutcome.BORROWED -> {
+                val until = clock() + unlockMinutes * 60_000L
+                tracker.onUnlocked(until)
+                chain.onUnlocked(until)
+            }
+            InterventionOutcome.PLANNED_FREE -> {
+                tracker.onDismissed()
+                chain.onDismissed()
+            }
         }
         _progressPercent.value = null // do dalšího pozorování (snímek nebo tik) skrytý
     }
 
     companion object {
         const val DEFAULT_THRESHOLD_MILLIS = 5 * 60_000L
+
+        /** ContentMatcher má vlastní timeout 3 s; tohle je pojistka. */
+        private const val PLAN_TIMEOUT_MILLIS = 5_000L
 
         /** 0..1 → celá procenta (dolů, 100 jen při plném limitu). */
         fun toPercent(fraction: Float): Int = (fraction * 100).toInt().coerceIn(0, 100)

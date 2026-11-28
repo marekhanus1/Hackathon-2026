@@ -108,7 +108,9 @@ class NarsilAccessibilityService : AccessibilityService() {
     /** Stav přehrávače YouTube (134): aplikace z textů okna, Firefox jen na stránce jednoho videa. */
     private fun videoOf(app: WatchedApp, r: WindowReader.Result, now: Long): VideoPlayback? = when (app) {
         WatchedApp.YOUTUBE -> YouTubePlayback.parse(null, r.texts, now)
-        WatchedApp.FIREFOX -> YouTubePlayback.videoIdFromUrl(r.url)?.let { YouTubePlayback.parse(it, r.playerTexts, now) }
+        WatchedApp.FIREFOX -> YouTubePlayback.videoIdFromUrl(r.url)?.let {
+            YouTubePlayback.parse(it, r.playerTexts, now).copy(title = YouTubePlayback.titleFromPage(r.pageTitle))
+        }
         else -> null
     }
 
