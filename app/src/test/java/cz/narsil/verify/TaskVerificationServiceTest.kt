@@ -78,6 +78,17 @@ class TaskVerificationServiceTest {
     }
 
     @Test
+    fun pendingFromAllDays() = runTest {
+        val (repo, task) = setup()
+        val yesterday = task.copy(id = 99, status = TaskStatus.VERIFY_LATER, proofUri = "content://vcera")
+        val verifier = FakeTaskVerifier(nextResult = VerificationResult.YES)
+        val service = TaskVerificationService(repo, verifier, pendingTasks = { listOf(yesterday) })
+        val done = service.retryPending()
+        assertEquals(listOf(99L), done.map { it.id })
+        assertEquals(TaskStatus.VERIFIED, done.single().status)
+    }
+
+    @Test
     fun proofCodecRoundTrip() {
         assertEquals(Proof.Strava, ProofCodec.decode(ProofCodec.encode(Proof.Strava)))
         assertEquals(Proof.Text("ahoj"), ProofCodec.decode(ProofCodec.encode(Proof.Text("ahoj"))))

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import cz.narsil.llm.client.runCatchingCancellable
 
 /** Ověřovač s otiskem fotky ([LlmTaskVerifier], demo obal); obyčejný [TaskVerifier] (fake) se obalí přes [of]. */
 fun interface DetailedVerifier {
@@ -58,13 +59,18 @@ data class VerificationUiEvent(val taskId: Long, val status: TaskStatus, val rea
  *
  * - YES → VERIFIED, NO → REJECTED (pokus +1; nejvýš 3 pokusy celkem), LATER → VERIFY_LATER (pokus se nepočítá).
  * - VERIFY_LATER se zkusí znovu při další síti ([retryPending], [NetworkRetryTrigger]), nejvýš
- *   [maxAutoRetries]× automaticky; pak zůstane a UI ukáže „ověřit znovu“ ([retryNow]).
+ *   [maxAutoRetries]× automaticky za běh aplikace; pak zůstane a UI ukáže „ověřit znovu“ ([retryNow]).
+ *   Čekající úkoly bere z [pendingTasks] – v aplikaci všechny dny (`ContractDao.tasksToVerifyLater`),
+ *   aby se úkol odeslaný před 4:00 doověřil i po přelomu dne.
  */
 class TaskVerificationService(
     private val contracts: ContractRepository,
     verifier: TaskVerifier,
     private val onVerified: suspend (PlanTask) -> Unit = {},
     private val maxAutoRetries: Int = 3,
+    private val pendingTasks: suspend () -> List<PlanTask> = {
+        contracts.today.value?.tasks.orEmpty().filter { it.status == TaskStatus.VERIFY_LATER }
+    },
 ) {
     private val verifier = DetailedVerifier.of(verifier)
     private val mutex = Mutex()
@@ -90,7 +96,8 @@ class TaskVerificationService(
 
     /** Zkusí znovu dnešní úkoly ve stavu VERIFY_LATER (volá se při obnovení sítě). */
     suspend fun retryPending(): List<PlanTask> = mutex.withLock {
-        val pending = contracts.today.value?.tasks.orEmpty().filter { it.status == TaskStatus.VERIFY_LATER }
+        val pending = runCatchingCancellable { pendingTasks() }.getOrDefault(emptyList())
+            .filter { it.status == TaskStatus.VERIFY_LATER }
         pending.mapNotNull { task ->
             val tries = autoRetries[task.id] ?: 0
             val proof = ProofCodec.decode(task.proofUri)
@@ -103,7 +110,7 @@ class TaskVerificationService(
     private suspend fun submitLocked(task: PlanTask, proof: Proof): PlanTask {
         if (!task.canRetry) return task
         emit(task.id, task.status, "Ověřuji…", running = true)
-        val outcome = runCatching { verifier.verifyDetailed(task, proof) }
+        val outcome = runCatchingCancellable { verifier.verifyDetailed(task, proof) }
             .getOrElse { VerificationOutcome(VerificationResult.LATER, reason = "chyba ověření") }
         val updated = when (outcome.result) {
             VerificationResult.YES -> task.copy(status = TaskStatus.VERIFIED, attempts = task.attempts + 1)
@@ -113,10 +120,10 @@ class TaskVerificationService(
             proofUri = ProofCodec.encode(proof),
             proofHash = outcome.proofHash ?: task.proofHash.takeIf { proof !is Proof.Photo },
         )
-        runCatching { contracts.updateTask(updated) }
+        runCatchingCancellable { contracts.updateTask(updated) }
         if (updated.status == TaskStatus.VERIFIED) {
             autoRetries.remove(task.id)
-            runCatching { onVerified(updated) }
+            runCatchingCancellable { onVerified(updated) }
         }
         emit(updated.id, updated.status, reasonFor(updated, outcome))
         return updated

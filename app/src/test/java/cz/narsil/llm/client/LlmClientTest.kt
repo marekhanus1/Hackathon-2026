@@ -18,7 +18,7 @@ class LlmClientTest {
 
     private fun recorder(reply: String?): Pair<MutableList<HttpCall>, LlmTransport> {
         val calls = mutableListOf<HttpCall>()
-        return calls to LlmTransport { call, _ -> calls += call; reply }
+        return calls to LlmTransport { call, _ -> calls += call; HttpResult(200, reply) }
     }
 
     private val allKeys = LlmKeys { "klic-${it.name}" }
@@ -87,7 +87,10 @@ class LlmClientTest {
         val throwing = MultiProviderLlmClient({ LlmProvider.CLAUDE }, allKeys, LlmTransport { _, _ -> throw IllegalStateException("x") })
         assertNull(throwing.complete(LlmRequest("Q")).text)
 
-        val slow = MultiProviderLlmClient({ LlmProvider.CLAUDE }, allKeys, LlmTransport { _, _ -> delay(10_000); "{}" })
+        val status = MultiProviderLlmClient({ LlmProvider.GEMINI }, allKeys, LlmTransport { _, _ -> HttpResult(404, "{\"error\":\"model not found\"}") })
+        assertEquals("HTTP 404: {\"error\":\"model not found\"}", status.complete(LlmRequest("Q")).error)
+
+        val slow = MultiProviderLlmClient({ LlmProvider.CLAUDE }, allKeys, LlmTransport { _, _ -> delay(10_000); HttpResult(200, "{}") })
         assertNull(slow.complete(LlmRequest("Q", timeoutMillis = 5_000)).text)
     }
 
@@ -99,14 +102,29 @@ class LlmClientTest {
             LlmProvider.OPENAI to """{"choices":[{"message":{"content":"ANO"}}]}""",
         )
         val transport = LlmTransport { call, _ ->
-            when {
-                call.url.contains("anthropic") -> replies[LlmProvider.CLAUDE]
-                call.url.contains("googleapis") -> replies[LlmProvider.GEMINI]
-                else -> replies[LlmProvider.OPENAI]
-            }
+            HttpResult(
+                200,
+                when {
+                    call.url.contains("anthropic") -> replies[LlmProvider.CLAUDE]
+                    call.url.contains("googleapis") -> replies[LlmProvider.GEMINI]
+                    else -> replies[LlmProvider.OPENAI]
+                },
+            )
         }
         val client = MultiProviderLlmClient({ LlmProvider.CLAUDE }, allKeys, transport)
         val answers = LlmProvider.entries.map { client.completeWith(it, LlmRequest("Q", img)).text }
         assertEquals(listOf("ANO", "ANO", "ANO"), answers)
+    }
+
+    @Test
+    fun cancellationIsNotSwallowed() = runTest {
+        val client = MultiProviderLlmClient({ LlmProvider.CLAUDE }, allKeys, LlmTransport { _, _ -> throw kotlinx.coroutines.CancellationException("zavřeno") })
+        var cancelled = false
+        try {
+            client.complete(LlmRequest("Q"))
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            cancelled = true
+        }
+        assertTrue(cancelled)
     }
 }

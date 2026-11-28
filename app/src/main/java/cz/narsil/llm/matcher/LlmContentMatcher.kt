@@ -4,6 +4,7 @@ import cz.narsil.core.ContentMatch
 import cz.narsil.core.ContentMatcher
 import cz.narsil.llm.client.LlmClient
 import cz.narsil.llm.client.LlmRequest
+import cz.narsil.llm.client.runCatchingCancellable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -27,7 +28,7 @@ class LlmContentMatcher(
         // Jasná shoda klíčovým slovem nepotřebuje LLM (rychlejší a funguje i offline).
         val keyword = KeywordMatcher.match(title, items)
         if (keyword.planned || !isOnline()) return keyword
-        val answer = runCatching {
+        val answer = runCatchingCancellable {
             llm.complete(LlmRequest(prompt(title, items), maxTokens = 80, timeoutMillis = timeoutMillis)).text
         }.getOrNull()
         return parse(answer) ?: keyword

@@ -7,6 +7,7 @@ import cz.narsil.core.SettingsRepository
 import cz.narsil.core.StravaRepository
 import cz.narsil.core.TaskVerifier
 import cz.narsil.core.data.NarsilDatabase
+import cz.narsil.core.data.toDomain
 import cz.narsil.llm.client.MultiProviderLlmClient
 import kotlinx.coroutines.CoroutineScope
 
@@ -16,7 +17,8 @@ import kotlinx.coroutines.CoroutineScope
  *
  * ```
  * val verifier = VerificationModule.verifier(appContext, settingsRepository, stravaRepository)
- * val verification = VerificationModule.service(contractRepository, verifier, rewardService)
+ * val verification = VerificationModule.service(contractRepository, verifier, rewardService,
+ *     VerificationModule.pendingFromDatabase(appContext))
  * VerificationModule.networkTrigger(appContext, verification, appScope).start()
  * ```
  */
@@ -37,12 +39,26 @@ object VerificationModule {
     }
 
     /** Ověření + předání odměně (521). [verifier] může být i fake (`FakeTaskVerifier`). */
-    fun service(contracts: ContractRepository, verifier: TaskVerifier, reward: RewardService): TaskVerificationService =
+    fun service(
+        contracts: ContractRepository,
+        verifier: TaskVerifier,
+        reward: RewardService,
+        pendingTasks: (suspend () -> List<cz.narsil.core.PlanTask>)? = null,
+    ): TaskVerificationService = if (pendingTasks == null) {
         TaskVerificationService(contracts, verifier, onVerified = rewardHandoff(reward))
+    } else {
+        TaskVerificationService(contracts, verifier, onVerified = rewardHandoff(reward), pendingTasks = pendingTasks)
+    }
+
+    /** Čekající úkoly ze všech dnů (Room), ať se doověří i po přelomu dne ve 4:00. */
+    fun pendingFromDatabase(context: Context): suspend () -> List<cz.narsil.core.PlanTask> {
+        val dao = NarsilDatabase.get(context.applicationContext).contractDao()
+        return { dao.tasksToVerifyLater().map { it.toDomain() } }
+    }
 
     /** Předání výsledku odměnám: jen VERIFIED, chyba odměny ověření nezboří. */
     fun rewardHandoff(reward: RewardService): suspend (cz.narsil.core.PlanTask) -> Unit = { task ->
-        if (task.status == cz.narsil.core.TaskStatus.VERIFIED) runCatching { reward.reward(task) }
+        if (task.status == cz.narsil.core.TaskStatus.VERIFIED) cz.narsil.llm.client.runCatchingCancellable { reward.reward(task) }
     }
 
     fun networkTrigger(context: Context, service: TaskVerificationService, scope: CoroutineScope) =

@@ -66,7 +66,10 @@ object StravaApi {
     /** Aktivity od [afterEpochSec] (začátek dne ve 4:00), nejvýš 30. */
     fun activitiesUrl(afterEpochSec: Long): String = "$ACTIVITIES_URL?after=$afterEpochSec&per_page=30"
 
-    /** Kód z návratu `narsil://strava?code=…&scope=…`; chyba nebo zamítnutí = null. */
+    /**
+     * Kód z návratu `narsil://strava?code=…&scope=…`; chyba, zamítnutí nebo chybějící oprávnění
+     * k aktivitám (uživatel odškrtl „activity:read“) = null.
+     */
     fun codeFromRedirect(uri: String): String? {
         val query = uri.substringAfter('?', "")
         if (query.isEmpty()) return null
@@ -75,6 +78,8 @@ object StravaApi {
             if (k.isEmpty()) null else k to java.net.URLDecoder.decode(v, "UTF-8")
         }.toMap()
         if (params.containsKey("error")) return null
+        val scope = params["scope"]
+        if (scope != null && scope.split(',').none { it.trim().startsWith("activity:read") }) return null
         return params["code"]?.takeIf { it.isNotBlank() }
     }
 

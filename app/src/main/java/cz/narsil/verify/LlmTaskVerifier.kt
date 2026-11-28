@@ -8,6 +8,7 @@ import cz.narsil.core.VerificationResult
 import cz.narsil.llm.client.LlmClient
 import cz.narsil.llm.client.LlmDefaults
 import cz.narsil.llm.client.LlmRequest
+import cz.narsil.llm.client.runCatchingCancellable
 
 /** Fotka připravená pro LLM: zmenšený JPEG a otisk původního souboru. */
 class PreparedPhoto(val jpeg512: ByteArray, val sha256: String)
@@ -49,7 +50,7 @@ class LlmTaskVerifier(
 
     override suspend fun verify(task: PlanTask, proof: Proof): VerificationResult = verifyDetailed(task, proof).result
 
-    override suspend fun verifyDetailed(task: PlanTask, proof: Proof): VerificationOutcome = runCatching {
+    override suspend fun verifyDetailed(task: PlanTask, proof: Proof): VerificationOutcome = runCatchingCancellable {
         when (proof) {
             is Proof.Text -> verifyText(task, proof)
             is Proof.Photo -> verifyPhoto(task, proof)
@@ -75,7 +76,12 @@ class LlmTaskVerifier(
         val repo = strava ?: return VerificationOutcome(VerificationResult.LATER, reason = "Strava není k dispozici")
         if (!repo.isConnected.value) return VerificationOutcome(VerificationResult.LATER, reason = "Strava není připojená – pošli fotku")
         if (!network.isOnline()) return VerificationOutcome(VerificationResult.LATER, reason = "bez sítě")
-        return if (VerifyRules.stravaSatisfies(repo.todayActivities())) {
+        val activities = repo.todayActivities()
+        // Prázdný seznam = žádná aktivita, nebo chyba API (výpadek, vypršený token) – nezamítat, zkusit znovu.
+        if (activities.isEmpty()) {
+            return VerificationOutcome(VerificationResult.LATER, reason = "na Stravě zatím není dnešní aktivita – zkus později nebo pošli fotku")
+        }
+        return if (VerifyRules.stravaSatisfies(activities)) {
             VerificationOutcome(VerificationResult.YES, reason = "aktivita na Stravě")
         } else {
             VerificationOutcome(VerificationResult.NO, reason = "dnes chybí aktivita ≥ 15 min")
