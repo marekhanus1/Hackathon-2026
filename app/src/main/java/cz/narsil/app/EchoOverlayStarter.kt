@@ -1,6 +1,7 @@
 package cz.narsil.app
 
 import android.util.Log
+import cz.narsil.gamification.RulesGamificationEngine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -64,6 +65,8 @@ object EchoOverlayStarter {
                     choiceHandler = handler,
                     squatCounter = sl.squatCounter,
                     demoMode = { sl.settingsRepository.settings.value.demoMode },
+                    gamification = sl.gamificationEngine,
+                    onExtraSquats = { n -> (sl.gamificationEngine as? RulesGamificationEngine)?.onExtraSquats(n) },
                 ).also { it.start() }
                 _ready.value = true
                 Log.i(TAG, "Ozvěna připravena (fakes=${sl.useFakes})")

@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.MovementRates
+import cz.narsil.gamification.RulesGamificationEngine
 import cz.narsil.overlay.SquatOverlayContent
 import cz.narsil.overlay.hasCamera
 import kotlinx.coroutines.launch
@@ -32,9 +33,11 @@ fun SquatRoute(onBack: () -> Unit) {
     SquatOverlayContent(
         counter = sl.squatCounter,
         onCancel = onBack,
-        onDone = {
+        onDone = { count ->
             scope.launch {
-                runCatching { sl.movementRepository.recordSquats(MovementRates.SQUATS_PER_UNLOCK) }
+                runCatching { sl.movementRepository.recordSquats(count) }
+                (sl.gamificationEngine as? RulesGamificationEngine)
+                    ?.let { runCatching { it.onExtraSquats(count - MovementRates.SQUATS_PER_UNLOCK) } }
                 onBack()
             }
         },
