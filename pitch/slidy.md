@@ -89,14 +89,14 @@ Videa zůstávají jen v telefonu. Do AI posíláme jen název videa a tvůj pl�
 
 **Na slidu:**
 „4 lidé · AI agenti · 20 hodin“
-Android · Kotlin · AccessibilityService · ML Kit · Claude API
+Android · Kotlin · AccessibilityService · ML Kit · Gemini API
 Roadmapa: vlastní zóny · předpověď kritické hodiny · Netflix a hry
 
 **Obraz:** jednoduchý diagram: Detekce → Ozvěna → Pohyb → Gamifikace.
 
 **Mluví (Marek):**
 Narsil je nativní Android aplikace. Detekce pozná feed, Reels i řetězení videí přes službu přístupnosti, domov podle Wi-Fi.
-Dřepy počítá kamera přes ML Kit, plán s videem páruje Claude. Postavili jsme to ve čtyřech s týmem AI agentů za dvacet hodin – každý agent měl svůj balíček a svoje úkoly.
+Dřepy počítá kamera přes ML Kit, plán s videem páruje AI (Gemini, přepnout jde na Claude). Postavili jsme to ve čtyřech s týmem AI agentů za dvacet hodin – každý agent měl svůj balíček a svoje úkoly.
 Dál chceme vlastní zóny, předpověď nejrizikovější hodiny a další typy obsahu.
 
 ---
