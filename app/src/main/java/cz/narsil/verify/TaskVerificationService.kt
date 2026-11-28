@@ -1,6 +1,7 @@
 package cz.narsil.verify
 
 import cz.narsil.core.ContractRepository
+import cz.narsil.core.PhotoKind
 import cz.narsil.core.PlanRules
 import cz.narsil.core.PlanTask
 import cz.narsil.core.Proof
@@ -29,14 +30,15 @@ fun interface DetailedVerifier {
 
 /**
  * Uložení důkazu do `PlanTask.proofUri`, aby šlo „ověřit později“ i po restartu:
- * fotka = její URI, text = `text:` + text, Strava = `strava:`.
+ * fotka úkolu = její URI, fotka prostředí = `room:` + URI (541), text = `text:` + text, Strava = `strava:`.
  */
 object ProofCodec {
     private const val TEXT = "text:"
     private const val STRAVA = "strava:"
+    private const val ROOM = "room:"
 
     fun encode(proof: Proof): String = when (proof) {
-        is Proof.Photo -> proof.uri
+        is Proof.Photo -> if (proof.kind == PhotoKind.ROOM) ROOM + proof.uri else proof.uri
         is Proof.Text -> TEXT + VerifyRules.clampText(proof.text)
         Proof.Strava -> STRAVA
     }
@@ -45,12 +47,22 @@ object ProofCodec {
         stored.isNullOrBlank() -> null
         stored == STRAVA -> Proof.Strava
         stored.startsWith(TEXT) -> Proof.Text(stored.removePrefix(TEXT))
+        stored.startsWith(ROOM) -> Proof.Photo(stored.removePrefix(ROOM), PhotoKind.ROOM)
         else -> Proof.Photo(stored)
     }
 }
 
-/** Co UI ukáže u úkolu během a po ověření. */
-data class VerificationUiEvent(val taskId: Long, val status: TaskStatus, val reason: String, val running: Boolean = false)
+/**
+ * Co UI ukáže u úkolu během a po ověření. [reason] = hotová česká věta stavu,
+ * [feedback] = samotná zpětná vazba LLM / místní kontroly (541), prázdná když není.
+ */
+data class VerificationUiEvent(
+    val taskId: Long,
+    val status: TaskStatus,
+    val reason: String,
+    val running: Boolean = false,
+    val feedback: String = "",
+)
 
 /**
  * Ověření úkolů plánu v aplikaci (520, SPEC 6 a 7). Volá ho obrazovka ověření (Jan 324):
@@ -125,21 +137,27 @@ class TaskVerificationService(
             autoRetries.remove(task.id)
             runCatchingCancellable { onVerified(updated) }
         }
-        emit(updated.id, updated.status, reasonFor(updated, outcome))
+        emit(updated.id, updated.status, reasonFor(updated, outcome), feedback = outcome.feedback)
         return updated
     }
 
-    private fun reasonFor(task: PlanTask, outcome: VerificationOutcome): String = when (task.status) {
-        TaskStatus.VERIFIED -> "Ověřeno"
-        TaskStatus.REJECTED -> if (task.attempts >= PlanRules.MAX_ATTEMPTS) {
-            "Zamítnuto, pokusy došly"
-        } else {
-            "Zamítnuto – zkus jiný důkaz (zbývá ${PlanRules.MAX_ATTEMPTS - task.attempts})"
+    private fun reasonFor(task: PlanTask, outcome: VerificationOutcome): String {
+        val feedback = outcome.feedback.trim().trimEnd('.')
+        return when (task.status) {
+            TaskStatus.VERIFIED -> if (feedback.isEmpty()) "Ověřeno" else "Ověřeno – $feedback."
+            TaskStatus.REJECTED -> {
+                val why = feedback.ifEmpty { "zkus jiný důkaz" }
+                if (task.attempts >= PlanRules.MAX_ATTEMPTS) {
+                    "Zamítnuto – $why. Pokusy došly."
+                } else {
+                    "Zamítnuto – $why. (zbývá ${PlanRules.MAX_ATTEMPTS - task.attempts})"
+                }
+            }
+            TaskStatus.VERIFY_LATER -> outcome.reason.ifBlank { "Ověří se později, až bude síť." }
+            TaskStatus.PENDING -> ""
         }
-        TaskStatus.VERIFY_LATER -> "Ověří se později (${outcome.reason})"
-        TaskStatus.PENDING -> ""
     }
 
-    private fun emit(id: Long, status: TaskStatus, reason: String, running: Boolean = false) =
-        _events.update { it + (id to VerificationUiEvent(id, status, reason, running)) }
+    private fun emit(id: Long, status: TaskStatus, reason: String, running: Boolean = false, feedback: String = "") =
+        _events.update { it + (id to VerificationUiEvent(id, status, reason, running, feedback)) }
 }

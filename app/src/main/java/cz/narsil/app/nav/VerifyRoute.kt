@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import cz.narsil.app.ServiceLocator
+import cz.narsil.core.PhotoKind
 import cz.narsil.core.PlanRules
 import cz.narsil.core.PlanTask
 import cz.narsil.core.Proof
@@ -35,13 +36,15 @@ import cz.narsil.ui.screens.verify.TaskType as UiTaskType
 import cz.narsil.ui.screens.verify.VerificationStatus
 import cz.narsil.ui.screens.verify.VerifyTaskScreen
 import cz.narsil.ui.screens.verify.VerifyTaskUiState
+import cz.narsil.verify.VerifyRules
 import java.io.File
 import kotlinx.coroutines.launch
 
 /**
  * Ověření úkolu (324 + 520): Janova obrazovka nad skutečným [cz.narsil.verify.TaskVerificationService].
- * Úkol = první neověřený z dnešní smlouvy. Důkaz: text, fotka (systémový fotoaparát) nebo Strava
- * (pohybový úkol se ověří sám, když je Strava připojená). Demo „vždy ANO“ jde přes DemoAwareTaskVerifier.
+ * Úkol = první neověřený z dnešní smlouvy. Důkaz (541): fotka úkolu, fotka prostředí (systémový
+ * fotoaparát), vlastní popis (2–3 věty, LLM vrátí zpětnou vazbu) nebo Strava (pohybový úkol se ověří sám,
+ * když je Strava připojená). Demo „vždy ANO“ jde přes DemoAwareTaskVerifier.
  */
 @Composable
 fun VerifyRoute(onBack: () -> Unit) {
@@ -82,7 +85,7 @@ fun VerifyRoute(onBack: () -> Unit) {
     val state = VerifyTaskUiState(
         taskTitle = task.title,
         taskGoal = task.target.ifBlank {
-            if (task.method == VerificationMethod.STRAVA) "Aktivita ve Stravě (≥ 15 min), nebo snímek aktivity" else "Fotka nebo krátký popis"
+            if (task.method == VerificationMethod.STRAVA) "Aktivita ve Stravě (≥ 15 min), nebo snímek aktivity" else "Fotka, fotka prostředí nebo vlastní popis"
         },
         taskType = UiTaskType.entries.firstOrNull { it.name == task.type.name } ?: UiTaskType.OTHER,
         rewardMinutes = task.rewardMinutes,
@@ -90,6 +93,7 @@ fun VerifyRoute(onBack: () -> Unit) {
         photoCaptured = photo != null,
         textProof = text,
         maxTextLength = PlanRules.MAX_TEXT_PROOF_CHARS,
+        minTextLength = VerifyRules.MIN_TEXT_CHARS,
         status = when {
             event?.running == true -> VerificationStatus.VERIFYING
             task.status == TaskStatus.VERIFIED -> VerificationStatus.VERIFIED
@@ -104,7 +108,10 @@ fun VerifyRoute(onBack: () -> Unit) {
 
     VerifyTaskScreen(
         state = state,
-        onSelectProofMode = { proofMode = it },
+        onSelectProofMode = {
+            if (it != proofMode) photo = null // fotka úkolu ≠ fotka prostředí
+            proofMode = it
+        },
         onTextProofChange = { text = it.take(PlanRules.MAX_TEXT_PROOF_CHARS) },
         onCapturePhoto = {
             val dir = File(context.cacheDir, "proofs").apply { mkdirs() }
@@ -117,7 +124,8 @@ fun VerifyRoute(onBack: () -> Unit) {
         onSubmitProof = {
             when (proofMode) {
                 ProofMode.TEXT -> submit(Proof.Text(text.trim()))
-                ProofMode.PHOTO -> photo?.let { submit(Proof.Photo(it)) }
+                ProofMode.PHOTO -> photo?.let { submit(Proof.Photo(it, PhotoKind.TASK)) }
+                ProofMode.ROOM -> photo?.let { submit(Proof.Photo(it, PhotoKind.ROOM)) }
             }
         },
         onRetry = {

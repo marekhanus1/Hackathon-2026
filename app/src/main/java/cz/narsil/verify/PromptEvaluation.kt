@@ -52,11 +52,13 @@ object PromptEvaluation {
         Case(TaskType.MOVEMENT, "Posilování", "30 minut", "Splněno.", false),
     )
 
-    suspend fun evaluate(client: MultiProviderLlmClient, provider: LlmProvider): Report = Report(
+    /** [pauseMillis] = pauza mezi dotazy (bezplatná úroveň Gemini má limit dotazů za minutu → 429). */
+    suspend fun evaluate(client: MultiProviderLlmClient, provider: LlmProvider, pauseMillis: Long = 0): Report = Report(
         provider,
-        CASES.map { c ->
+        CASES.mapIndexed { i, c ->
+            if (i > 0 && pauseMillis > 0) kotlinx.coroutines.delay(pauseMillis)
             val task = PlanTask(type = c.type, title = c.title, target = c.target)
-            val response = client.completeWith(provider, LlmRequest(VerifyRules.prompt(task, Proof.Text(c.text))))
+            val response = client.completeWith(provider, LlmRequest(VerifyRules.prompt(task, Proof.Text(c.text)), maxTokens = VerifyRules.MAX_ANSWER_TOKENS))
             Row(c, response.text, VerifyRules.parse(response.text))
         },
     )

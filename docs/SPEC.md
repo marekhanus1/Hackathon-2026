@@ -85,6 +85,13 @@ Smlouva = krokový cíl (výchozí 6 000) + plánovaný obsah (nejvýš 5 polož
 - **Opakovaná fotka:** SHA-256 otisk souboru. Už použitý otisk (u jakéhokoli úkolu) → `REJECTED` bez volání LLM.
 - Bez sítě nikdy automaticky neschvalovat.
 
+**Režimy důkazu (541):** fotka úkolu, fotka prostředí (uklizený pokoj, rozložená podložka – LLM porovná
+s popisem úkolu) a vlastní popis (2–3 věty, aspoň 60 znaků). Prompt rozšiřuje text výše o režim a o
+odpověď na jednom řádku `ANO – věta` / `NE – věta` (věta = zpětná vazba česky, např. co popsat
+konkrétněji); parsování prvního slova zůstává. Popis se nejdřív kontroluje místně (prázdný, krátký,
+opakovaný, opsané zadání, stejný text u jiného úkolu → `REJECTED` bez LLM se zpětnou vazbou).
+Výstup nejvýš 96 tokenů. Chyba sítě nebo modelu se v UI ukazuje česky srozumitelně (ne surová chyba).
+
 **Strava (MOVEMENT):** úkol je ověřený, když dnes od 4:00 existuje aktivita typu běh, kolo, chůze nebo trénink s pohybovým časem ≥ 15 min. Když Strava není připojená nebo aktivita chybí, uživatel může dát snímek aktivity (`PHOTO`).
 
 **Odměna:** `VERIFIED` → `RewardService`: + odměna minut do zůstatku a +30 XP.

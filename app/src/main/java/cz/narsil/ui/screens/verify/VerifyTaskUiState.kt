@@ -19,10 +19,14 @@ enum class TaskType(
     OTHER("Ostatní", 10)
 }
 
-enum class ProofMode(val label: String) {
-    PHOTO("Vyfotit důkaz"),
-    TEXT("Krátký text")
+/** Způsob ověření (541): fotka výsledku, fotka prostředí, nebo vlastní popis. */
+enum class ProofMode(val label: String, val hint: String) {
+    PHOTO("Fotka úkolu", "Vyfoť výsledek – sešit s příklady, hotový výrobek, obrazovku s odevzdáním."),
+    ROOM("Fotka prostředí", "Vyfoť místo, kde jsi úkol dělal – uklizený pokoj, rozloženou podložku, připravený stůl."),
+    TEXT("Popis", "Popiš ve 2–3 větách, co přesně jsi udělal a jak to dopadlo. AI ti dá krátkou zpětnou vazbu.")
 }
+
+val ProofMode.isPhoto: Boolean get() = this != ProofMode.TEXT
 
 enum class VerificationStatus {
     PENDING,
@@ -41,6 +45,7 @@ data class VerifyTaskUiState(
     val photoCaptured: Boolean = false,
     val textProof: String = "",
     val maxTextLength: Int = 300,
+    val minTextLength: Int = 60,
     val status: VerificationStatus = VerificationStatus.PENDING,
     val attemptsUsed: Int = 0,
     val maxAttempts: Int = 3,
@@ -54,9 +59,13 @@ data class VerifyTaskUiState(
             status != VerificationStatus.VERIFIED &&
             remainingAttempts > 0 &&
             when (proofMode) {
-                ProofMode.PHOTO -> photoCaptured
-                ProofMode.TEXT -> textProof.isNotBlank()
+                ProofMode.PHOTO, ProofMode.ROOM -> photoCaptured
+                ProofMode.TEXT -> textProof.trim().length >= minTextLength
             }
+
+    /** Kolik znaků popisu ještě chybí do minima (0 = dost). */
+    val missingTextChars: Int
+        get() = (minTextLength - textProof.trim().length).coerceAtLeast(0)
 }
 
 class VerifyTaskViewModel : ViewModel() {
@@ -86,8 +95,8 @@ class VerifyTaskViewModel : ViewModel() {
             if (!current.canSubmit) return@update current
             val nextAttempts = current.attemptsUsed + 1
             val looksValid = when (current.proofMode) {
-                ProofMode.PHOTO -> current.photoCaptured
-                ProofMode.TEXT -> current.textProof.trim().length >= 8
+                ProofMode.PHOTO, ProofMode.ROOM -> current.photoCaptured
+                ProofMode.TEXT -> current.textProof.trim().length >= current.minTextLength
             }
             if (looksValid) {
                 current.copy(

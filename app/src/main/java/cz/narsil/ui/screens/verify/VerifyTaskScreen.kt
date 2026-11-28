@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -44,7 +45,8 @@ import androidx.compose.ui.unit.dp
 import cz.narsil.ui.theme.NarsilTheme
 
 /**
- * Task verification screen supporting photo or short text (<= 300 chars) proof,
+ * Task verification screen supporting task photo, room/environment photo or own description
+ * (2–3 sentences, <= 300 chars) proof (541),
  * plus PENDING / VERIFYING / VERIFIED / REJECTED / VERIFY_LATER states.
  * Ready for TaskVerifier wiring in task 520.
  */
@@ -172,17 +174,32 @@ private fun PendingProofSection(
     val spacing = NarsilTheme.spacing
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
-            ProofMode.entries.forEach { mode ->
-                FilterChip(
-                    selected = state.proofMode == mode,
-                    onClick = { onSelectProofMode(mode) },
-                    label = { Text(mode.label) }
-                )
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.xxs)) {
+            Text(
+                text = "Jak chceš splnění doložit?",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(spacing.xs)
+            ) {
+                ProofMode.entries.forEach { mode ->
+                    FilterChip(
+                        selected = state.proofMode == mode,
+                        onClick = { onSelectProofMode(mode) },
+                        label = { Text(mode.label) }
+                    )
+                }
             }
+            Text(
+                text = state.proofMode.hint,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
-        if (state.proofMode == ProofMode.PHOTO) {
+        if (state.proofMode.isPhoto) {
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -219,25 +236,50 @@ private fun PendingProofSection(
                 onClick = if (state.photoCaptured) onRetakePhoto else onCapturePhoto,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (state.photoCaptured) "Vyfotit znovu" else "Vyfotit důkaz")
+                Text(
+                    when {
+                        state.photoCaptured -> "Vyfotit znovu"
+                        state.proofMode == ProofMode.ROOM -> "Vyfotit prostředí"
+                        else -> "Vyfotit důkaz"
+                    }
+                )
             }
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(spacing.xxs)) {
                 OutlinedTextField(
                     value = state.textProof,
                     onValueChange = onTextProofChange,
-                    label = { Text("Popiš, co se povedlo dokončit") },
-                    placeholder = { Text("Např. Odevzdal jsem úlohu #3 v IS a prošly všechny dotazy.") },
+                    label = { Text("Popiš, co jsi udělal a jak to dopadlo") },
+                    placeholder = {
+                        Text("Např. Odevzdal jsem úlohu #3 v IS. Prošly všechny dotazy kromě posledního, ten jsem opravil podle cvičení.")
+                    },
                     minLines = 4,
                     maxLines = 6,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text(
-                    text = "${state.textProof.length} / ${state.maxTextLength} znaků",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.align(Alignment.End)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = if (state.missingTextChars > 0) {
+                            "Ještě aspoň ${state.missingTextChars} znaků (2–3 věty)"
+                        } else {
+                            "Délka stačí"
+                        },
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (state.missingTextChars > 0) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            colors.positive
+                        }
+                    )
+                    Text(
+                        text = "${state.textProof.length} / ${state.maxTextLength} znaků",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
@@ -415,7 +457,7 @@ private fun RejectedCard(
             )
             Text(
                 text = state.statusMessage.ifBlank {
-                    "Zkus vyfotit jasnější detail nebo napsat krátký popis, co přesně je hotové."
+                    "Zkus vyfotit jasnější detail, prostředí, nebo popsat ve 2–3 větách, co přesně je hotové."
                 },
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -523,6 +565,23 @@ private fun VerifyPendingLightPreview() {
     NarsilTheme(darkTheme = false) {
         VerifyTaskScreen(
             state = VerifyTaskUiState(),
+            onSelectProofMode = {},
+            onTextProofChange = {},
+            onCapturePhoto = {},
+            onRetakePhoto = {},
+            onSubmitProof = {},
+            onRetry = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(name = "Ověření – Popis (Světlý)", showBackground = true)
+@Composable
+private fun VerifyTextLightPreview() {
+    NarsilTheme(darkTheme = false) {
+        VerifyTaskScreen(
+            state = VerifyTaskUiState(proofMode = ProofMode.TEXT, textProof = "Spočítal jsem příklady 1–10."),
             onSelectProofMode = {},
             onTextProofChange = {},
             onCapturePhoto = {},
