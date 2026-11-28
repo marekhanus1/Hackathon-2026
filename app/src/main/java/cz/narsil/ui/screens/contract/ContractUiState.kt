@@ -1,6 +1,10 @@
 package cz.narsil.ui.screens.contract
 
 import androidx.lifecycle.ViewModel
+import cz.narsil.core.DailyContract
+import cz.narsil.core.PlanRules
+import cz.narsil.core.PlanTask
+import cz.narsil.core.TaskType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,8 +13,25 @@ import kotlinx.coroutines.flow.update
 enum class ContractStep(val index: Int, val title: String) {
     MOVEMENT_GOAL(1, "Pohybový cíl na zítřek"),
     PLANNED_CONTENT(2, "Plánovaný obsah zdarma"),
-    ECHO_VIDEO(3, "Tvoje 15s Ozvěna")
+    TASKS(3, "Úkoly na zítřek"),
+    ECHO_VIDEO(4, "Tvoje 15s Ozvěna")
 }
+
+/** Úkol rozepsaný ve smlouvě (139). Odměna a ověření podle [TaskType] (SPEC 6). */
+data class TaskDraft(val type: TaskType, val title: String) {
+    val rewardMinutes: Int get() = type.defaultRewardMinutes
+
+    fun toPlanTask(): PlanTask = PlanTask(type = type, title = title)
+}
+
+/** Popisky typů úkolů v UI. */
+val TaskType.label: String
+    get() = when (this) {
+        TaskType.MOVEMENT -> "Pohyb"
+        TaskType.SCHOOL -> "Škola"
+        TaskType.WORK -> "Práce"
+        TaskType.OTHER -> "Jiné"
+    }
 
 enum class MovementGoalType(
     val label: String,
@@ -34,8 +55,16 @@ data class ContractUiState(
     val recordedSeconds: Int = 0,
     val maxVideoSeconds: Int = 15,
     val hasRecordedVideo: Boolean = false,
-    val isSubmitted: Boolean = false
-)
+    val isSubmitted: Boolean = false,
+    /** Úkoly smlouvy (139), nejvýš [PlanRules.MAX_TASKS]. */
+    val tasks: List<TaskDraft> = emptyList(),
+    val taskDraftType: TaskType = TaskType.MOVEMENT,
+    val taskDraftText: String = "",
+    /** Hláška kamery (chybí oprávnění, nahrávání selhalo), null = nic. */
+    val videoError: String? = null,
+) {
+    val canAddTask: Boolean get() = tasks.size < PlanRules.MAX_TASKS
+}
 
 class ContractViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ContractUiState())
@@ -80,6 +109,51 @@ class ContractViewModel : ViewModel() {
         }
     }
 
+    /** Předvyplní smlouvu, která už na ten den existuje (úprava večer). */
+    fun prefill(contract: DailyContract) {
+        _uiState.update { current ->
+            if (current.isSubmitted) return@update current
+            current.copy(
+                goalType = MovementGoalType.STEPS,
+                goalAmount = contract.stepGoal,
+                plannedItems = contract.plannedContent,
+                tasks = contract.tasks.map { TaskDraft(it.type, it.title) },
+                hasRecordedVideo = contract.videoUri != null,
+            )
+        }
+    }
+
+    fun selectTaskType(type: TaskType) {
+        _uiState.update { it.copy(taskDraftType = type) }
+    }
+
+    fun updateTaskDraftText(text: String) {
+        _uiState.update { it.copy(taskDraftText = text) }
+    }
+
+    /** Přidá úkol (bez prázdných a duplicit, nejvýš [PlanRules.MAX_TASKS]). */
+    fun addTask(type: TaskType = _uiState.value.taskDraftType, title: String = _uiState.value.taskDraftText) {
+        val clean = title.trim()
+        if (clean.isEmpty()) return
+        _uiState.update { current ->
+            val duplicate = current.tasks.any { it.title.equals(clean, ignoreCase = true) }
+            if (duplicate || !current.canAddTask) current.copy(taskDraftText = "")
+            else current.copy(tasks = current.tasks + TaskDraft(type, clean), taskDraftText = "")
+        }
+    }
+
+    fun removeTask(task: TaskDraft) {
+        _uiState.update { it.copy(tasks = it.tasks - task) }
+    }
+
+    /** Stav skutečného nahrávání (ContractVideoRecorder) – dodá route. */
+    fun onRecordingState(isRecording: Boolean, seconds: Int, hasVideo: Boolean, error: String?) {
+        _uiState.update {
+            it.copy(isRecordingVideo = isRecording, recordedSeconds = seconds, hasRecordedVideo = hasVideo || (it.hasRecordedVideo && !isRecording), videoError = error)
+        }
+    }
+
+    /** Simulace nahrávání pro náhledy (bez kamery). Skutečné nahrávání řídí route. */
     fun toggleRecording() {
         _uiState.update { current ->
             if (current.isRecordingVideo) {
@@ -101,7 +175,8 @@ class ContractViewModel : ViewModel() {
         _uiState.update { current ->
             val next = when (current.currentStep) {
                 ContractStep.MOVEMENT_GOAL -> ContractStep.PLANNED_CONTENT
-                ContractStep.PLANNED_CONTENT -> ContractStep.ECHO_VIDEO
+                ContractStep.PLANNED_CONTENT -> ContractStep.TASKS
+                ContractStep.TASKS -> ContractStep.ECHO_VIDEO
                 ContractStep.ECHO_VIDEO -> ContractStep.ECHO_VIDEO
             }
             current.copy(currentStep = next)
@@ -113,13 +188,14 @@ class ContractViewModel : ViewModel() {
             val prev = when (current.currentStep) {
                 ContractStep.MOVEMENT_GOAL -> ContractStep.MOVEMENT_GOAL
                 ContractStep.PLANNED_CONTENT -> ContractStep.MOVEMENT_GOAL
-                ContractStep.ECHO_VIDEO -> ContractStep.PLANNED_CONTENT
+                ContractStep.TASKS -> ContractStep.PLANNED_CONTENT
+                ContractStep.ECHO_VIDEO -> ContractStep.TASKS
             }
             current.copy(currentStep = prev)
         }
     }
 
     fun submitContract() {
-        _uiState.update { it.copy(isSubmitted = true, hasRecordedVideo = true) }
+        _uiState.update { it.copy(isSubmitted = true) }
     }
 }
