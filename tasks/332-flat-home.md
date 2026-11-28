@@ -1,8 +1,8 @@
 ---
-status: todo
-owner:
-agent:
-branch:
+status: in-progress
+owner: stepan
+agent: codex
+branch: stepan/codex/332-flat-home
 pr:
 ---
 
