@@ -52,6 +52,9 @@ class YouTubePlaybackTest {
         assertTrue(YouTubePlayback.parse(null, listOf("Navrhovaná hudba", "Zavřít", "Přehrát"), 0).ended)
         assertTrue(YouTubePlayback.parse(null, listOf("Suggested video", "Close", "Play"), 0).ended)
         assertFalse(YouTubePlayback.parse(null, listOf("Navrhovaná videa", "Odebírat", "1:00 / 4:32"), 0).ended)
+        // Pozastavené video: „Přehrát“ bez „Zavřít“ konec není.
+        assertFalse(YouTubePlayback.parse(null, listOf("Navrhovaná videa", "Přehrát", "1:00 / 4:32"), 0).ended)
+        assertTrue(YouTubePlayback.parse(null, listOf("Navrhovaná hudba", "Zavřít"), 0).ended)
         // Tlačítko „Další video“ a přepínač autoplay jsou vidět i během přehrávání.
         assertFalse(YouTubePlayback.parse("id", listOf("Další video", "Automatické přehrávání je zapnuto", "1:00 / 4:32"), 0).ended)
     }

@@ -44,11 +44,12 @@ object YouTubePlayback {
 
     /**
      * End-screen aplikace YouTube (Nothing 3a, 11/2026): „Navrhované video · Zavřít · Přehrát“, u hudby
-     * „Navrhovaná hudba“ (154). Konec = „Navrhovan…“ / „Suggested“ spolu s tlačítkem Zavřít nebo Přehrát;
+     * „Navrhovaná hudba“ (154). Konec = „Navrhovan…“ / „Suggested“ spolu s tlačítkem Zavřít (Close/Cancel);
      * samotné slovo nestačí (může být i jinde na stránce).
      */
     private val SUGGESTED_HEADINGS = listOf("navrhovan", "suggested")
-    private val SUGGESTED_BUTTONS = listOf("zavřít", "přehrát", "close", "play", "cancel")
+    // Jen zavírací tlačítko (je jen na end-screenu); „Přehrát“ je i u pozastaveného videa → falešný konec.
+    private val SUGGESTED_BUTTONS = listOf("zavřít", "close", "cancel")
 
     /** Odpočet autoplay: „Další video za 5“, „Up next in 8“. Samotné tlačítko „Další video“ konec neznamená. */
     private val AUTOPLAY_COUNTDOWN = Regex("""(další video|následující video|up next|next video|playing next)\D{0,8}\b(za|in)\s*\d{1,2}\b""")
