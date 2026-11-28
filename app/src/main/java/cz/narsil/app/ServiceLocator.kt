@@ -17,7 +17,6 @@ import cz.narsil.core.TaskVerifier
 import cz.narsil.core.fake.FakeContentMatcher
 import cz.narsil.core.fake.FakeStravaRepository
 import cz.narsil.core.fake.FakeTaskVerifier
-import cz.narsil.integrations.strava.HttpStravaRepository
 import cz.narsil.llm.client.MultiProviderLlmClient
 import cz.narsil.llm.matcher.LlmContentMatcher
 import cz.narsil.verify.AndroidNetworkStatus
@@ -204,7 +203,10 @@ object ServiceLocator {
         }
 
     val stravaRepository: StravaRepository
-        get() = cached("strava") { if (useFakes) FakeStravaRepository() else HttpStravaRepository.create(appContext) }
+        get() = cached("strava") {
+            // Strava se nepoužije (146, API vyžaduje předplatné): nepřipojený fake, nic se nevolá.
+            FakeStravaRepository(connected = false, activities = emptyList())
+        }
 
     /** Ověřovač úkolů (501/522) včetně demo přepínače „vždy ANO“ (DemoAwareTaskVerifier). */
     val taskVerifier: TaskVerifier
