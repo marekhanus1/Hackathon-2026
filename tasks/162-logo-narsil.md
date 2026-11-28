@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/162-logo-narsil
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/131
 ---
 
 # 162 – Logo Narsilu (zlomený meč)
