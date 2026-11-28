@@ -19,15 +19,21 @@ sealed interface WifiReading {
  * ruční přepínač → HOME/AWAY; jinak domácí Wi-Fi → HOME, jiná / žádná → AWAY
  * (i když domov ještě není uložený); neznámý název sítě (oprávnění, poloha) → UNKNOWN.
  * AWAY i UNKNOWN znamenají nezasahovat.
+ * Neznámý název + otisk sítě shodný s domovem ([NetworkFingerprint], vypnutá poloha) → HOME.
  */
 object ContextResolver {
-    fun resolve(manual: ComfortContext?, wifi: WifiReading, homeSsid: String?): ComfortContext {
+    fun resolve(
+        manual: ComfortContext?,
+        wifi: WifiReading,
+        homeSsid: String?,
+        fingerprintMatchesHome: Boolean = false,
+    ): ComfortContext {
         if (manual != null) return manual
         val home = normalize(homeSsid)
         return when (wifi) {
             is WifiReading.Connected -> if (home != null && normalize(wifi.ssid) == home) ComfortContext.HOME else ComfortContext.AWAY
             WifiReading.NotOnWifi -> ComfortContext.AWAY
-            WifiReading.Unknown -> ComfortContext.UNKNOWN
+            WifiReading.Unknown -> if (home != null && fingerprintMatchesHome) ComfortContext.HOME else ComfortContext.UNKNOWN
         }
     }
 

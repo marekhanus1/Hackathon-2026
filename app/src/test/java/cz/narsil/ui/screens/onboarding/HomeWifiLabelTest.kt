@@ -20,4 +20,16 @@ class HomeWifiLabelTest {
         assertEquals("Uložit jako domov: Kavárna", other.homeWifiButtonLabel)
         assertEquals("Domov: Doma · teď jsi na: Kavárna", other.homeWifiStatusText)
     }
+
+    @Test
+    fun vypnuta_poloha() {
+        val noHome = OnboardingUiState(detectedWifiSsid = null, locationServiceOff = true)
+        assertEquals("Zapnout polohu", noHome.homeWifiButtonLabel)
+        assertTrue(noHome.homeWifiButtonEnabled)
+        assertTrue(noHome.homeWifiStatusText.startsWith("Poloha v telefonu je vypnutá"))
+        val saved = OnboardingUiState(detectedWifiSsid = null, homeWifiSsid = "Doma", locationServiceOff = true)
+        assertEquals("Domov uložen: Doma", saved.homeWifiButtonLabel)
+        assertFalse(saved.homeWifiButtonEnabled)
+        assertEquals("Domov: Doma · poloha je vypnutá, domov poznám podle sítě", saved.homeWifiStatusText)
+    }
 }

@@ -74,6 +74,8 @@ fun OnboardingRoute(onDone: () -> Unit) {
     }
 
     val wifi by sl.contextRepository.currentWifiSsid.collectAsState()
+    val locationFlow = remember { (sl.contextRepository as? WifiContextRepository)?.locationServiceOn ?: kotlinx.coroutines.flow.MutableStateFlow(true) }
+    val locationOn by locationFlow.collectAsState()
     val settings by sl.settingsRepository.settings.collectAsState()
 
     // Kroky MIUI nejdou ověřit: označí se jako hotové po otevření nastavení (uživatel je může odškrtnout).
@@ -86,11 +88,12 @@ fun OnboardingRoute(onDone: () -> Unit) {
     fun granted(step: PermissionStep) = PermissionChecker.isGranted(context, step) == true
     val stepsGranted = granted(PermissionStep.STEPS)
 
-    val state = remember(refresh, wifi, settings.homeSsid, healthGranted, miuiExpanded, miuiAutoStart, miuiBattery, miuiPopup, miuiLock) {
+    val state = remember(refresh, wifi, locationOn, settings.homeSsid, healthGranted, miuiExpanded, miuiAutoStart, miuiBattery, miuiPopup, miuiLock) {
         val base = OnboardingUiState()
         OnboardingUiState(
             detectedWifiSsid = wifi,
             homeWifiSsid = settings.homeSsid,
+            locationServiceOff = !locationOn,
             permissions = base.permissions.map { item ->
                 item.copy(
                     isGranted = when (item.type) {
@@ -134,7 +137,10 @@ fun OnboardingRoute(onDone: () -> Unit) {
         videoCameraSlot = { RecorderPreview(recorder, cameraAllowed) },
         onConfirmHomeWifi = {
             scope.launch {
-                if (!sl.contextRepository.saveCurrentWifiAsHome()) {
+                if (!locationOn && granted(PermissionStep.LOCATION)) {
+                    // Oprávnění máme, jen je vypnutý přepínač polohy v systému.
+                    runCatching { context.startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+                } else if (!sl.contextRepository.saveCurrentWifiAsHome()) {
                     // Bez polohy Android název Wi-Fi neprozradí: rovnou o ni požádat.
                     runtime.launch(PermissionStep.LOCATION.runtime.toTypedArray())
                 }
@@ -170,12 +176,12 @@ fun OnboardingRoute(onDone: () -> Unit) {
             OnboardingPrefs.setMiuiStep(context, "lock", miuiLock)
         },
         onFinishOnboarding = {
-            // Notifikace (zpráva Parťákovi) a mikrofon (video smlouvy) jsou nepovinné: jedna žádost na konci.
+            // Notifikace (hlídání, zpráva Parťákovi) jsou nepovinné: jedna žádost na konci. Mikrofon se žádá
+            // až s kamerou při natáčení videa (smlouva, video pro Ozvěnu), ne tady.
             val optional = buildList {
                 if (Build.VERSION.SDK_INT >= 33 && !PermissionChecker.has(context, Manifest.permission.POST_NOTIFICATIONS)) {
                     add(Manifest.permission.POST_NOTIFICATIONS)
                 }
-                if (!PermissionChecker.has(context, Manifest.permission.RECORD_AUDIO)) add(Manifest.permission.RECORD_AUDIO)
             }
             if (optional.isNotEmpty()) runtime.launch(optional.toTypedArray())
             OnboardingPrefs.setDone(context)
