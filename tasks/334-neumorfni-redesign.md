@@ -1,8 +1,8 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:              # jméno člověka
-agent:              # claude | gemini | human
-branch:
+status: in-progress
+owner: marek
+agent: claude
+branch: marek/claude/334-neumorfni-redesign
 pr:
 ---
 
