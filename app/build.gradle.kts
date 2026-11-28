@@ -41,6 +41,9 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    // Připravená data Štěpána (430) jako assets: mockdata/ zůstává jediný zdroj (schema.md).
+    sourceSets["main"].assets.srcDir(rootProject.file("mockdata"))
+
     buildFeatures {
         compose = true
         buildConfig = true

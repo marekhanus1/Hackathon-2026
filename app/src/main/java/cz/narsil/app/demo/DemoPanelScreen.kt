@@ -259,7 +259,17 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                     onClick = { act("Den resetován") { DemoActions.resetDay(); true } },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("Reset dne") }
-                Hint("Mock data (430) zatím nejsou. Při zapnutých fake jsou pohyb a XP ukázková data.")
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            val msg = DemoActions.loadMockData()
+                            snackbar.currentSnackbarData?.dismiss()
+                            snackbar.showSnackbar(msg)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Nahrát mock data (21 dní historie)") }
+                Hint("Jednou: zásahy, minuty feedu, XP a série za 21 dní + hodnocení videí z mockdata/.")
             }
         }
     }
