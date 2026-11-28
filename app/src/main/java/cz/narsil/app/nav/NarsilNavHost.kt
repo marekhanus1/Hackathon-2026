@@ -65,6 +65,9 @@ fun NarsilNavHost(
         composable(NarsilRoute.Verify.route) {
             VerifyRoute(onBack = back)
         }
+        composable(NarsilRoute.Pet.route) {
+            PetRoute(onBack = back)
+        }
         composable(NarsilRoute.Settings.route) {
             SettingsRoute(onNavigate = navigate, onBack = back)
         }
