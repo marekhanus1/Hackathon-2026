@@ -12,6 +12,7 @@ import cz.narsil.detection.accessibility.AccessibilityTriggerSource
 import cz.narsil.overlay.EchoOutcomeHandler
 import cz.narsil.overlay.EchoOverlayController
 import cz.narsil.overlay.EchoOverlayWindow
+import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.HomeNavigator
 import cz.narsil.overlay.ScrollProgressOverlay
 import kotlinx.coroutines.Job
@@ -72,6 +73,10 @@ object EchoOverlayStarter {
                     onDetectionOutcome = { outcome, minutes ->
                         (triggers as? AccessibilityTriggerSource)?.onOutcome(outcome, minutes)
                     },
+                    squatsForUnlock = {
+                        val st = sl.settingsRepository.settings.value
+                        ExerciseText.squatEquivalent(st.exercise, st.repsPerUnlock())
+                    },
                 )
                 controller = EchoOverlayController(
                     window = EchoOverlayWindow(service),
@@ -84,6 +89,7 @@ object EchoOverlayStarter {
                     squatCounter = sl.squatCounter,
                     pushupCounter = sl.pushupCounter,
                     exercise = { sl.settingsRepository.settings.value.exercise },
+                    repsPerUnlock = { ex -> sl.settingsRepository.settings.value.repsPerUnlock(ex) },
                     demoMode = { sl.settingsRepository.settings.value.demoMode },
                     gamification = sl.gamificationEngine,
                     onExtraSquats = { n -> (sl.gamificationEngine as? RulesGamificationEngine)?.onExtraSquats(n) },

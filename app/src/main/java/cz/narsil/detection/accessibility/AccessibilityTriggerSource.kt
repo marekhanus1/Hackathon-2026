@@ -26,7 +26,9 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * Skutečný zdroj zásahů (111): snímky 110 → [SurfaceClassifier] → [ScrollSessionTracker] → [triggers].
- * Práh: `Settings.demoThresholdSec` (demo 20 s), jinak [DEFAULT_THRESHOLD_MILLIS] (5 min).
+ * Práh: `Settings.toleranceMillis()` (demo práh 20 s má přednost, jinak tolerance z Nastavení, výchozí 5 min).
+ * Aplikace vypnutá v Nastavení (`isTracked`) a pozastavená ochrana (`isProtectionActive`) se berou jako
+ * „mimo sledované“: nic se nepočítá, žádný zásah ani ukazatel (136).
  * Instanci vytvoří ServiceLocator (124) a overlay (114) hlásí výsledek přes [onOutcome].
  */
 class AccessibilityTriggerSource(
@@ -70,14 +72,16 @@ class AccessibilityTriggerSource(
 
     private suspend fun handle(snapshot: ForegroundSnapshot, scrolled: Boolean) = lock.withLock {
         last = snapshot
-        val surface = SurfaceClassifier.classify(snapshot)
         val now = snapshot.atMillis
+        val prefs = settings.settings.value
+        val active = snapshot.app?.let { prefs.isTracked(it.name) } == true && prefs.isProtectionActive(now)
+        val surface = if (active) SurfaceClassifier.classify(snapshot) else null
         val context = contextRepository.context.value
-        val threshold = thresholdMillis()
+        val threshold = prefs.toleranceMillis()
         val hit = tracker.observe(
             snapshot.packageName, surface, context, now, threshold, scrolled,
             video = snapshot.video,
-            onVideoSite = isVideoSite(snapshot),
+            onVideoSite = active && isVideoSite(snapshot),
         )
         _progressPercent.value = tracker.progress(now, threshold, context)?.let(::toPercent)
         val session = tracker.session
@@ -102,9 +106,6 @@ class AccessibilityTriggerSource(
 
     private fun isVideoSite(s: ForegroundSnapshot): Boolean =
         s.app == WatchedApp.YOUTUBE || (s.app == WatchedApp.FIREFOX && YouTubePlayback.isYouTubeUrl(s.url))
-
-    private fun thresholdMillis(): Long =
-        settings.settings.value.demoThresholdSec?.let { it * 1_000L } ?: DEFAULT_THRESHOLD_MILLIS
 
     /** Výsledek Ozvěny (114). [unlockMinutes] = odemčené minuty u PAID_STEPS, SQUATS, BORROWED. */
     suspend fun onOutcome(outcome: InterventionOutcome, unlockMinutes: Int = 10) = lock.withLock {

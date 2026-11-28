@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import cz.narsil.app.ServiceLocator
-import cz.narsil.core.MovementRates
 import cz.narsil.gamification.RulesGamificationEngine
 import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.SquatOverlayContent
@@ -41,12 +40,13 @@ fun SquatRoute(onBack: () -> Unit) {
                 val squats = ExerciseText.squatEquivalent(exercise, count)
                 runCatching { sl.movementRepository.recordSquats(squats) }
                 (sl.gamificationEngine as? RulesGamificationEngine)
-                    ?.let { runCatching { it.onExtraSquats(squats - MovementRates.SQUATS_PER_UNLOCK) } }
+                    ?.let { runCatching { it.onExtraSquats(ExerciseText.squatEquivalent(exercise, count - settings.repsPerUnlock(exercise))) } }
                 onBack()
             }
         },
         demoMode = settings.demoMode,
         onRequestPermission = { permission.launch(Manifest.permission.CAMERA) },
         exercise = exercise,
+        target = settings.repsPerUnlock(exercise),
     )
 }

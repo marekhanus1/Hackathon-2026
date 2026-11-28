@@ -8,6 +8,7 @@ import cz.narsil.core.MovementRates
  * kliky se proto převádějí na „dřepový ekvivalent“ (10 kliků = 20 dřepů = 10 minut).
  */
 object ExerciseText {
+    /** Výchozí počet na odemčení (SPEC). Skutečný počet z Nastavení: `Settings.repsPerUnlock()` (136). */
     fun target(e: Exercise): Int = when (e) {
         Exercise.SQUATS -> MovementRates.SQUATS_PER_UNLOCK
         Exercise.PUSHUPS -> MovementRates.PUSHUPS_PER_UNLOCK
@@ -26,10 +27,10 @@ object ExerciseText {
     }
 
     /** Titulek volby v Ozvěně. */
-    fun echoOption(e: Exercise): String = "Udělat ${target(e)} ${plural(e)} hned"
+    fun echoOption(e: Exercise, reps: Int = target(e)): String = "Udělat $reps ${plural(e)} hned"
 
     /** Titulek odměny po dokončení. */
-    fun doneTitle(e: Exercise): String = "${target(e)} ${plural(e)} hotovo!"
+    fun doneTitle(e: Exercise, reps: Int = target(e)): String = "$reps ${plural(e)} hotovo!"
 
     /** Počet opakování převedený na dřepy pro pohyb a gamifikaci. */
     fun squatEquivalent(e: Exercise, count: Int): Int = when (e) {
