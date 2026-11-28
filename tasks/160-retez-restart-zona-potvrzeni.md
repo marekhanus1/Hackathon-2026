@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/160-retez-restart-zona-potvrzeni
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/127
 ---
 
 # 160 – Řetěz videí přes restart, zóna a domov s potvrzením
@@ -22,3 +22,5 @@ pr:
 - app/src/test/java/cz/narsil/… (testy)
 
 ## Poznámky
+- SettingsViewModel je v ui/ (Jan), ale logika potvrzení je 133 (Marek).
+- Aplikace YouTube: video rozkoukané při restartu se započte znovu (bez ID videa).
