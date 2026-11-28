@@ -1,6 +1,20 @@
 package cz.narsil.llm.client
 
 import cz.narsil.core.LlmProvider
+import kotlin.coroutines.cancellation.CancellationException
+
+/**
+ * Jako `runCatching`, ale zrušení korutiny ([CancellationException]) nepolyká – zavřená obrazovka
+ * nebo zrušený scope opravdu skončí. Používá se ve všech „nikdy nehází“ místech 5xx.
+ */
+inline fun <T> runCatchingCancellable(block: () -> T): Result<T> =
+    try {
+        Result.success(block())
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        Result.failure(e)
+    }
 
 /**
  * Jeden krátký dotaz na LLM (ověření úkolu, párování obsahu).

@@ -16,9 +16,14 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 
-/** Odeslání [HttpCall]; vrací tělo odpovědi při HTTP 2xx, jinak null. Testy dosadí falešný transport. */
+/** Odpověď HTTP: [code] a tělo (i u chyby – kvůli diagnostice). */
+data class HttpResult(val code: Int, val body: String?) {
+    val isSuccess: Boolean get() = code in 200..299
+}
+
+/** Odeslání [HttpCall]; null = síťová chyba nebo timeout. Testy dosadí falešný transport. */
 fun interface LlmTransport {
-    suspend fun post(call: HttpCall, timeoutMillis: Long): String?
+    suspend fun post(call: HttpCall, timeoutMillis: Long): HttpResult?
 }
 
 /** API klíče (jen z `local.properties` přes BuildConfig, nikdy v gitu). Prázdný = poskytovatel nepoužitelný. */
@@ -46,7 +51,7 @@ object BuildConfigLlmKeys : LlmKeys {
 class OkHttpTransport(base: OkHttpClient = OkHttpClient()) : LlmTransport {
     private val client = base
 
-    override suspend fun post(call: HttpCall, timeoutMillis: Long): String? = withContext(Dispatchers.IO) {
+    override suspend fun post(call: HttpCall, timeoutMillis: Long): HttpResult? = withContext(Dispatchers.IO) {
         val http = client.newBuilder().callTimeout(timeoutMillis, TimeUnit.MILLISECONDS).build()
         val request = Request.Builder()
             .url(call.url)
@@ -62,8 +67,8 @@ class OkHttpTransport(base: OkHttpClient = OkHttpClient()) : LlmTransport {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    val body = response.use { r -> if (r.isSuccessful) r.body?.string() else null }
-                    if (cont.isActive) cont.resume(body)
+                    val result = runCatching { response.use { r -> HttpResult(r.code, r.body?.string()) } }.getOrNull()
+                    if (cont.isActive) cont.resume(result)
                 }
             })
         }
@@ -89,13 +94,17 @@ class MultiProviderLlmClient(
 
     /** Dotaz na konkrétního poskytovatele (porovnání tří poskytovatelů v 530). */
     suspend fun completeWith(p: LlmProvider, request: LlmRequest): LlmResponse {
-        val key = runCatching { keys.keyFor(p) }.getOrNull()
+        val key = runCatchingCancellable { keys.keyFor(p) }.getOrNull()
             ?: return LlmResponse(p, null, "chybí API klíč pro $p (local.properties)")
-        return runCatching {
+        return runCatchingCancellable {
             val call = LlmProtocols.build(p, request, key)
-            val body = withTimeoutOrNull(request.timeoutMillis) { transport.post(call, request.timeoutMillis) }
-                ?: return LlmResponse(p, null, "chyba sítě, HTTP chyba nebo timeout")
-            val text = LlmProtocols.parse(p, body) ?: return LlmResponse(p, null, "prázdná nebo odmítnutá odpověď")
+            val http = withTimeoutOrNull(request.timeoutMillis) { transport.post(call, request.timeoutMillis) }
+                ?: return LlmResponse(p, null, "chyba sítě nebo timeout")
+            if (!http.isSuccess) {
+                return LlmResponse(p, null, "HTTP ${http.code}: ${http.body.orEmpty().take(200)}")
+            }
+            val text = http.body?.let { LlmProtocols.parse(p, it) }
+                ?: return LlmResponse(p, null, "prázdná nebo odmítnutá odpověď")
             LlmResponse(p, text)
         }.getOrElse { LlmResponse(p, null, it.message ?: "chyba") }
     }
