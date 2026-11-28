@@ -18,6 +18,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 
@@ -62,6 +66,13 @@ class EchoOverlayController(
     private val isInForeground: (InterventionTrigger) -> Boolean = { true },
     /** Zásah zahozen, protože uživatel už je jinde: detekce ho zopakuje po návratu do feedu. */
     private val onSkipped: suspend (InterventionTrigger) -> Unit = {},
+    /**
+     * Systémový dialog kamery (157): spustí `CameraPermissionActivity`, false = nešlo. Okno Ozvěny leží nad
+     * všemi aplikacemi, proto se na dobu dialogu schová. null = slot dřepů si poradí sám (nastavení aplikace).
+     */
+    private val requestCamera: (() -> Boolean)? = null,
+    /** Odpověď z dialogu kamery (true = povoleno). */
+    private val cameraResults: Flow<Boolean> = emptyFlow(),
 ) {
     private var job: Job? = null
 
@@ -165,10 +176,22 @@ class EchoOverlayController(
                         if (extra > 0) scope.launch { runCatching { onExtraSquats(extra) } }
                     },
                     demoMode = demoMode(),
+                    onRequestPermission = requestCamera?.let { { askCamera(trigger, feeling) } },
                     exercise = ex,
                     target = reps,
                 )
             }
+        }
+    }
+
+    /** Schová okno dřepů, ukáže systémový dialog kamery a po odpovědi (nejvýš [CAMERA_WAIT_MILLIS]) okno vrátí. */
+    private fun askCamera(trigger: InterventionTrigger, feeling: EchoFeeling?) {
+        window.dismiss()
+        scope.launch {
+            val started = runCatching { requestCamera?.invoke() == true }.getOrDefault(false)
+            val granted = if (started) withTimeoutOrNull(CAMERA_WAIT_MILLIS) { cameraResults.first() } else null
+            Log.i(TAG, "kamera: dialog=${started}, povoleno=$granted")
+            startSquats(trigger, feeling)
         }
     }
 
@@ -195,5 +218,6 @@ class EchoOverlayController(
 
     private companion object {
         const val TAG = "NarsilOverlay"
+        const val CAMERA_WAIT_MILLIS = 60_000L
     }
 }
