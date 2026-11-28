@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -57,6 +58,7 @@ fun OnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .systemBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.md)
@@ -178,8 +180,10 @@ fun OnboardingScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.large,
-                    colors = CardDefaults.cardColors(containerColor = colors.emberContainer),
-                    contentColor = colors.onEmberContainer
+                    colors = CardDefaults.cardColors(
+                        containerColor = colors.emberContainer,
+                        contentColor = colors.onEmberContainer
+                    )
                 ) {
                     Column(
                         modifier = Modifier
