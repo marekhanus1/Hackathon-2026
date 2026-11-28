@@ -60,6 +60,7 @@ data class SettingsActions(
     val onPushupsPerUnlock: (Int) -> Unit = {},
     val onDebtLimitMinutes: (Int) -> Unit = {},
     val onAppTracked: (TrackedApp, Boolean) -> Unit = { _, _ -> },
+    val onTrackOtherFeedApps: (Boolean) -> Unit = {},
     val onPartnerAlerts: (Boolean) -> Unit = {},
     val onShowScrollProgress: (Boolean) -> Unit = {},
     val onPauseProtection: () -> Unit = {},
@@ -175,14 +176,23 @@ fun SettingsScreen(
                 settings = s,
                 onReset = actions.onResetSection
             ) {
-                TrackedApp.entries.forEach { app ->
-                    SwitchRow(
-                        title = SettingsGuard.appLabel(app),
-                        subtitle = appHint(app),
-                        checked = app in s.trackedApps,
-                        onCheckedChange = { actions.onAppTracked(app, it) }
-                    )
-                }
+                // Vlastní pravidla vždy, ostatní sítě (149) jen nainstalované.
+                TrackedApp.entries
+                    .filter { it in SettingsGuard.CORE_APPS || state.installedApps?.contains(it) != false }
+                    .forEach { app ->
+                        SwitchRow(
+                            title = SettingsGuard.appLabel(app),
+                            subtitle = appHint(app),
+                            checked = app in s.trackedApps,
+                            onCheckedChange = { actions.onAppTracked(app, it) }
+                        )
+                    }
+                SwitchRow(
+                    title = "Další aplikace s nekonečným feedem",
+                    subtitle = "Pozná feed podle opakovaného scrollování v jakékoli jiné aplikaci. Chaty, systém a klávesnice ne.",
+                    checked = s.trackOtherFeedApps,
+                    onCheckedChange = actions.onTrackOtherFeedApps
+                )
             }
 
             HomeCard(state, actions)
@@ -653,7 +663,8 @@ private fun appHint(app: TrackedApp): String = when (app) {
     TrackedApp.INSTAGRAM -> "Feed a Reels. Zprávy ne."
     TrackedApp.TIKTOK -> "Pro tebe a Sledované."
     TrackedApp.YOUTUBE -> "Shorts a řetězení videí. Plánovaná videa projdou."
-    TrackedApp.FIREFOX -> "YouTube, Instagram a TikTok na webu."
+    TrackedApp.FIREFOX -> "YouTube, Instagram, TikTok, X a Reddit na webu."
+    else -> "Feed podle scrollování. Zprávy a hledání ne."
 }
 
 private fun providerLabel(provider: LlmProvider): String = when (provider) {

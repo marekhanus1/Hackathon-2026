@@ -17,7 +17,29 @@ object SurfaceClassifier {
         WatchedApp.INSTAGRAM -> classifyInstagram(s)
         // TikTok má obfuskovaná ID: hlavní obrazovka je feed, pokud nejde zjevně o zprávy/profil.
         WatchedApp.TIKTOK -> classifyByIds(s, SurfaceRules.TIKTOK, default = Surface.FEED)
-        WatchedApp.YOUTUBE -> classifyByIds(s, SurfaceRules.YOUTUBE, default = Surface.MESSAGES)
+        // Domovský feed a ostatní obrazovky YouTube: null = rozhodne chování scrollu (149), ne „zprávy“.
+        WatchedApp.YOUTUBE -> classifyByIdsOrNull(s, SurfaceRules.YOUTUBE)
+        // 149: obecně jen zprávy a hledání; feed rozhodne chování scrollu (FeedBehavior v AccessibilityTriggerSource).
+        WatchedApp.X, WatchedApp.REDDIT, WatchedApp.FACEBOOK, WatchedApp.THREADS, WatchedApp.PINTEREST,
+        WatchedApp.NINEGAG, WatchedApp.TUMBLR, WatchedApp.LINKEDIN, WatchedApp.BLUESKY, WatchedApp.OTHER -> classifyGeneric(s)
+    }
+
+    /**
+     * Obecná aplikace (149): rozhovor → MESSAGES (nikdy nezasahovat), hledání → SEARCH, jinak null
+     * (feed se pozná podle chování, ne z jednoho snímku).
+     *
+     * Rozhovor: viditelné pole s nápovědou pro zprávu („Napište zprávu“, „Start a message“), nebo ID / okno
+     * typické pro konverzaci. Tlačítka, záložky a ikony („chat_tab“ ve spodní liště je vidět všude) se nepočítají.
+     */
+    fun classifyGeneric(s: ForegroundSnapshot): Surface? {
+        val ids = idHaystack(s)
+        val edits = s.editFields
+        val chat = SurfaceRules.CHAT_IDS.matches(ids) ||
+            edits.any { e -> SurfaceRules.CHAT_HINTS.any { e.contains(it) } }
+        if (chat) return Surface.MESSAGES
+        val search = edits.any { e -> SurfaceRules.SEARCH_HINTS.any { e.contains(it) } } ||
+            SurfaceClassifier.Rule(Surface.SEARCH, SurfaceRules.SEARCH_FRAGMENTS, SurfaceRules.SEARCH_EXCLUDE).matches(ids)
+        return if (search) Surface.SEARCH else null
     }
 
     /**
@@ -40,6 +62,11 @@ object SurfaceClassifier {
     private fun idHaystack(s: ForegroundSnapshot): List<String> = buildList {
         s.className?.let { add(it.lowercase()) }
         s.viewIds.mapTo(this) { it.substringAfter(":id/").lowercase() }
+    }
+
+    private fun classifyByIdsOrNull(s: ForegroundSnapshot, rules: List<Rule>): Surface? {
+        val haystack = idHaystack(s)
+        return rules.firstOrNull { rule -> rule.matches(haystack) }?.surface
     }
 
     private fun classifyByIds(s: ForegroundSnapshot, rules: List<Rule>, default: Surface): Surface {
@@ -139,6 +166,19 @@ object SurfaceRules {
      * tlačítka, ikony, položky menu a záložky s „search“ v ID se nepočítají.
      */
     val SEARCH_FRAGMENTS = listOf("search")
+
+    /** Obecná aplikace (149): nápověda pole hledání (malými písmeny). */
+    val SEARCH_HINTS = listOf("hledat", "vyhled", "search")
+
+    /** Obecná aplikace (149): nápověda pole pro zprávu. */
+    val CHAT_HINTS = listOf("zpráv", "message", "napiš", "napište", "chat", "odpověz soukrom")
+
+    /** Obecná aplikace (149): ID / okno konverzace; bez tlačítek, záložek a ikon. */
+    val CHAT_IDS = SurfaceClassifier.Rule(
+        Surface.MESSAGES,
+        listOf("conversation", "chat", "direct_message", "dm_", "dms_", "message_list", "messages_list", "message_input", "messaging", "inbox_thread"),
+        exclude = listOf("tab", "nav", "button", "icon", "badge", "menu", "fab", "count", "indicator", "bottom_bar", "toolbar_action"),
+    )
     val SEARCH_EXCLUDE = listOf("button", "icon", "menu", "tab", "voice", "action_search", "_hint")
 
     /**

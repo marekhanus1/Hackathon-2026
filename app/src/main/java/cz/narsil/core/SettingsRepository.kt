@@ -42,6 +42,8 @@ data class Settings(
     val protectionPausedUntilMillis: Long? = null,
     /** Zpráva Parťákovi při dluhu nad limit a při pozastavení ochrany. */
     val partnerAlerts: Boolean = true,
+    /** „Další aplikace s nekonečným feedem“ (149): neznámé aplikace podle chování scrollu. Výchozí vypnuto. */
+    val trackOtherFeedApps: Boolean = false,
 ) {
     /** Práh zásahu u nekonečného feedu: demo panel (20 s), jinak [toleranceMinutes]. */
     fun toleranceMillis(): Long = demoThresholdSec?.let { it * 1_000L } ?: toleranceMinutes * 60_000L
@@ -49,8 +51,12 @@ data class Settings(
     /** Zasahuje Narsil teď? false = uživatel ochranu pozastavil (do [protectionPausedUntilMillis]). */
     fun isProtectionActive(nowMillis: Long): Boolean = protectionPausedUntilMillis?.let { nowMillis >= it } ?: true
 
-    /** Sleduje se aplikace? [appName] = název `WatchedApp` z detekce (INSTAGRAM, TIKTOK, YOUTUBE, FIREFOX). */
-    fun isTracked(appName: String): Boolean = trackedApps.any { it.name == appName }
+    /**
+     * Sleduje se aplikace? [appName] = název `WatchedApp` z detekce (INSTAGRAM, …, X, REDDIT, …);
+     * „OTHER“ = ostatní aplikace podle [trackOtherFeedApps] (149).
+     */
+    fun isTracked(appName: String): Boolean =
+        if (appName == OTHER_APPS) trackOtherFeedApps else trackedApps.any { it.name == appName }
 
     /** Opakování na odemčení pro [exercise]. */
     fun repsPerUnlock(exercise: Exercise = this.exercise): Int = when (exercise) {
@@ -59,8 +65,14 @@ data class Settings(
     }
 }
 
-/** Sledovatelné aplikace (133). Názvy odpovídají `cz.narsil.detection.accessibility.WatchedApp`. */
-enum class TrackedApp { INSTAGRAM, TIKTOK, YOUTUBE, FIREFOX }
+/** Název `WatchedApp.OTHER` pro [Settings.isTracked] (149). */
+const val OTHER_APPS = "OTHER"
+
+/**
+ * Sledovatelné aplikace (133). Názvy odpovídají `cz.narsil.detection.accessibility.WatchedApp`.
+ * Od X dál (149) obecná detekce feedu podle chování; v Nastavení jen ty nainstalované.
+ */
+enum class TrackedApp { INSTAGRAM, TIKTOK, YOUTUBE, FIREFOX, X, REDDIT, FACEBOOK, THREADS, PINTEREST, NINEGAG, TUMBLR, LINKEDIN, BLUESKY }
 
 /** Výchozí hodnoty a povolené volby nastavení (133). Výchozí hodnota je vždy ve volbách. */
 object SettingsDefaults {

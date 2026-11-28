@@ -3,6 +3,7 @@ package cz.narsil.ui.screens.settings
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.LlmProvider
 import cz.narsil.core.Settings
+import cz.narsil.core.TrackedApp
 
 enum class ManualZoneChoice(val label: String) {
     AUTO("Automaticky"),
@@ -70,6 +71,8 @@ data class SettingsUiState(
     val llmKeys: Map<LlmProvider, Boolean> = LlmProvider.entries.associateWith { true },
     /** Uvolnění čekající na potvrzení s odpočtem; null = žádný dialog. */
     val pendingChange: PendingChange? = null,
+    /** Nainstalované sítě s obecnou detekcí (149); null = nezjištěno → ukázat všechny. */
+    val installedApps: Set<TrackedApp>? = null,
 ) {
     val isProtectionPaused: Boolean get() = protectionPausedText != null
 }

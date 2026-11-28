@@ -143,6 +143,9 @@ class SettingsViewModel(
         it.copy(trackedApps = if (tracked) it.trackedApps + app else it.trackedApps - app)
     }
 
+    /** Další aplikace s nekonečným feedem (149): zapnutí je zpřísnění, vypnutí uvolnění s potvrzením. */
+    fun setTrackOtherFeedApps(enabled: Boolean) = change("Přestat hlídat další aplikace?") { it.copy(trackOtherFeedApps = enabled) }
+
     /** Ukazatel limitu při scrollování (135): jen informace, vypnutí nic neuvolňuje. */
     fun setShowScrollProgress(show: Boolean) = change("Ukazatel limitu") { it.copy(showScrollProgress = show) }
 

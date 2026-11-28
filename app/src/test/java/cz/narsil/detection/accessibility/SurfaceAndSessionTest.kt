@@ -50,7 +50,7 @@ class SurfaceAndSessionTest {
         assertNull(SurfaceClassifier.classify(snap("com.whatsapp", setOf("conversation"))))
         val yt = "com.google.android.youtube"
         val ytShell = setOf("watch_while_layout_coordinator_layout")
-        assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(yt, ytShell + "results"))) // domovská stránka
+        assertNull(SurfaceClassifier.classify(snap(yt, ytShell + "results"))) // domovská stránka: rozhodne scroll (149)
         assertEquals(Surface.VIDEO, SurfaceClassifier.classify(snap(yt, ytShell + "watch_player")))
         assertEquals(Surface.SHORTS, SurfaceClassifier.classify(snap(yt, ytShell + setOf("reel_recycler", "reel_watch_player"))))
         assertEquals(Surface.REELS, SurfaceClassifier.classifyUrl("instagram.com/reels/abc"))

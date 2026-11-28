@@ -45,9 +45,13 @@ class AccessibilityTriggerSource(
     private val planCheck: (suspend (title: String) -> Boolean)? = null,
     /** Čekání na titulek nového videu před dotazem (Firefox ho mění se zpožděním po změně URL). */
     private val planDelayMillis: Long = 2_000,
+    /** Ladicí výpis (149): změny obecné detekce feedu. ServiceLocator → Log.d. */
+    private val onDebug: (String) -> Unit = {},
 ) : InterventionTriggerSource {
     private val tracker = ScrollSessionTracker()
     private val chain = VideoChainTracker()
+    private val feedBehavior = FeedBehavior()
+    private val lastGeneric = HashMap<String, Surface?>()
     private val lock = Mutex()
     private var last: ForegroundSnapshot? = null
 
@@ -67,6 +71,14 @@ class AccessibilityTriggerSource(
      */
     val progressPercent: StateFlow<Int?> = _progressPercent.asStateFlow()
 
+    private val _waitingForVideoEnd = MutableStateFlow(false)
+
+    /**
+     * Limit vypršel během videa a čeká se na jeho konec (134). Mezitím `EchoOverlayStarter` čte okno sám
+     * (`NarsilAccessibilityService.pollForeground`): přehrávač YouTube během videa nehlásí žádné události.
+     */
+    val waitingForVideoEnd: StateFlow<Boolean> = _waitingForVideoEnd.asStateFlow()
+
     init {
         scope.launch { snapshots.collect { handle(it, scrolled = it.kind == SnapshotKind.SCROLLED) } }
         // Tik: video může běžet bez událostí (autoplay), čas relace musí běžet dál.
@@ -83,15 +95,28 @@ class AccessibilityTriggerSource(
         val now = snapshot.atMillis
         val prefs = settings.settings.value
         val active = snapshot.app?.let { prefs.isTracked(it.name) } == true && prefs.isProtectionActive(now)
-        val surface = if (active) SurfaceClassifier.classify(snapshot) else null
+        // 149: obecné aplikace a aplikace YouTube mimo přehrávač/hledání (domovský feed) – feed podle chování scrollu.
+        val generic = snapshot.app?.generic == true || snapshot.app == WatchedApp.YOUTUBE
+        // 149: obecné aplikace – feed podle chování scrollu; zprávy a hledání rozhodne snímek.
+        if (active && generic && scrolled) snapshot.scroll?.let { feedBehavior.onScroll(snapshot.packageName, it, now) }
+        val surface = when {
+            !active -> null
+            generic -> SurfaceClassifier.classify(snapshot) ?: feedBehavior.surface(snapshot.packageName, now)
+            else -> SurfaceClassifier.classify(snapshot)
+        }
+        if (active && generic && lastGeneric.put(snapshot.packageName, surface) != surface) {
+            onDebug("obecná detekce ${snapshot.packageName}: $surface (${feedBehavior.describe(snapshot.packageName)})")
+        }
         val context = contextRepository.context.value
         val threshold = prefs.toleranceMillis()
         val hit = tracker.observe(
             snapshot.packageName, surface, context, now, threshold, scrolled,
             video = snapshot.video,
             onVideoSite = active && isVideoSite(snapshot),
+            startedAtHint = if (generic) feedBehavior.streakStart(snapshot.packageName, now) else null,
         )
         _progressPercent.value = tracker.progress(now, threshold, context)?.let(::toPercent)
+        _waitingForVideoEnd.value = tracker.isWaitingForVideoEnd
         val session = tracker.session
         // Relace běží na nekonečném povrchu, nebo pokračuje na videu (134).
         val counting = surface != null && context == ComfortContext.HOME &&

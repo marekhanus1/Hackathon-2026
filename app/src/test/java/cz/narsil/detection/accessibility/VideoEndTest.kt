@@ -184,9 +184,11 @@ class VideoEndTest {
         advanceTimeBy(60_000) // limit 20 s dávno pryč, video běží (tiky)
         runCurrent()
         assertEquals(0, got.size)
+        assertTrue(source.waitingForVideoEnd.value) // EchoOverlayStarter teď čte okno sám
         snapshots.emit(snap("m.youtube.com/watch?v=BBBBBBBBBBB", YouTubePlayback.parse("BBBBBBBBBBB", emptyList(), testScheduler.currentTime)))
         runCurrent()
         assertEquals(1, got.size)
         assertEquals(Surface.VIDEO, got[0].event.surface)
+        assertEquals(false, source.waitingForVideoEnd.value)
     }
 }

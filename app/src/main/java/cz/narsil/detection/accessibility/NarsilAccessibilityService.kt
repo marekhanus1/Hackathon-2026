@@ -50,11 +50,19 @@ class NarsilAccessibilityService : AccessibilityService() {
             lastPackage = pkg
         }
         val now = System.currentTimeMillis()
-        val app = WatchedApp.of(pkg)
+        // 149: neznámá aplikace jako OTHER jen se zapnutou volbou „Další aplikace s nekonečným feedem“.
+        val app = WatchedApp.of(pkg) ?: WatchedApp.OTHER.takeIf { trackOtherApps && WatchedApp.isOtherCandidate(pkg, packageName) }
+        val scroll = if (kind == SnapshotKind.SCROLLED) scrollSample(event) else null
         if (app != WatchedApp.FIREFOX && kind == SnapshotKind.WINDOW_CHANGED) lastFirefoxUrl = null
 
         if (app == null) {
             // Chat, plocha, jiná aplikace: jen balíček a jen při změně okna, obsah se nečte.
+            // 149: překryvné okno jiné služby přístupnosti (Minimalist launcher), systému nebo klávesnice
+            // nad sledovanou aplikací není změna popředí – jinak by přerušilo relaci.
+            if (kind == SnapshotKind.WINDOW_CHANGED && !isAppWindow(event)) {
+                Log.d(TAG, "okno $pkg není aplikace (typ ${windowType(event)}), popředí se nemění")
+                return
+            }
             if (kind == SnapshotKind.WINDOW_CHANGED && throttle.shouldSnapshot(pkg, kind, now)) {
                 AccessibilityEvents.emit(ForegroundSnapshot(pkg, null, kind, now))
                 Log.d(TAG, "popředí: ${if (WatchedApp.isIgnored(pkg)) "chat (ignorováno)" else pkg}")
@@ -62,19 +70,50 @@ class NarsilAccessibilityService : AccessibilityService() {
             return
         }
 
+        if (scroll != null && app.generic) logScroll(pkg, scroll, now)
         // Scroll se hlásí vždy (heuristika 111 počítá aktivitu), strom se čte omezeně.
         val readTree = throttle.shouldSnapshot(pkg, kind, now)
         if (!readTree) {
             if (kind == SnapshotKind.SCROLLED) {
                 val prev = AccessibilityEvents.latest.value
                 AccessibilityEvents.emit(
-                    if (prev != null && prev.packageName == pkg) prev.copy(kind = kind, atMillis = now)
-                    else ForegroundSnapshot(pkg, app, kind, now, lastClassName),
+                    if (prev != null && prev.packageName == pkg) prev.copy(kind = kind, atMillis = now, scroll = scroll)
+                    else ForegroundSnapshot(pkg, app, kind, now, lastClassName, scroll = scroll),
                 )
             }
             return
         }
-        val root = rootInActiveWindow
+        lastWatchedPackage = pkg
+        readAndEmit(pkg, app, kind, now, scroll)
+    }
+
+    /** Naposledy sledovaná aplikace v popředí (pro [pollForeground]). */
+    @Volatile
+    private var lastWatchedPackage: String? = null
+
+    /**
+     * Přečte okno sledované aplikace bez události (134): YouTube během přehrávání nehlásí změny,
+     * end-screen by se jinak nepoznal. Volá `EchoOverlayStarter` každé ~2,5 s, jen když brána čeká na konec videa.
+     */
+    fun pollForeground() {
+        val pkg = lastWatchedPackage ?: return
+        val app = WatchedApp.of(pkg) ?: return
+        val now = System.currentTimeMillis()
+        val snapshot = readAndEmit(pkg, app, SnapshotKind.CONTENT_CHANGED, now, scroll = null, requireApp = true) ?: return
+        Log.d(TAG, "tik okna $pkg: povrch=${SurfaceClassifier.classify(snapshot)} video=${snapshot.video}")
+    }
+
+    private fun readAndEmit(
+        pkg: String,
+        app: WatchedApp,
+        kind: SnapshotKind,
+        now: Long,
+        scroll: ScrollSample?,
+        requireApp: Boolean = false,
+    ): ForegroundSnapshot? {
+        val root = appRoot(pkg)
+        // Tik: aplikace už není v popředí (okno nenalezeno) → nic, další událost řekne, kde uživatel je.
+        if (requireApp && root?.packageName?.toString() != pkg) return null
         val dumpNow = dumpTree && kind == SnapshotKind.WINDOW_CHANGED
         var result = root?.let { runCatching { WindowReader.read(it, app, dumpToLog = dumpNow, fallbackUrl = lastFirefoxUrl) }.getOrNull() }
         // Přepnutí záložky v aplikaci nevyvolá WINDOW_CHANGED: při změně záložky vypsat strom znovu.
@@ -82,7 +121,7 @@ class NarsilAccessibilityService : AccessibilityService() {
             lastSelectedTab = result.selectedTab
             if (dumpTree && !dumpNow) {
                 Log.d(TAG, "záložka: ${result.selectedTab}")
-                result = runCatching { WindowReader.read(root, app, dumpToLog = true, fallbackUrl = lastFirefoxUrl) }.getOrNull() ?: result
+                result = root?.let { runCatching { WindowReader.read(it, app, dumpToLog = true, fallbackUrl = lastFirefoxUrl) }.getOrNull() } ?: result
             }
         }
         if (app == WatchedApp.FIREFOX) lastFirefoxUrl = result?.url ?: lastFirefoxUrl
@@ -97,21 +136,78 @@ class NarsilAccessibilityService : AccessibilityService() {
             texts = result?.texts.orEmpty(),
             selectedTab = result?.selectedTab,
             video = result?.let { videoOf(app, it, now) },
+            editFields = result?.editFields.orEmpty(),
+            scroll = scroll,
         )
         AccessibilityEvents.emit(snapshot)
         snapshot.video?.takeIf { it.ended || it.durationMillis != null || kind == SnapshotKind.WINDOW_CHANGED }?.let { Log.d(TAG, "video: $it") }
         if (kind == SnapshotKind.WINDOW_CHANGED || snapshot.url != null) {
             Log.d(TAG, "popředí: $app ($pkg) okno=${snapshot.className} tab=${snapshot.selectedTab} url=${snapshot.url} ids=${snapshot.viewIds.size} povrch=${SurfaceClassifier.classify(snapshot)} (${SurfaceClassifier.explain(snapshot)})")
         }
+        return snapshot
     }
 
     /** Stav přehrávače YouTube (134): aplikace z textů okna, Firefox jen na stránce jednoho videa. */
     private fun videoOf(app: WatchedApp, r: WindowReader.Result, now: Long): VideoPlayback? = when (app) {
-        WatchedApp.YOUTUBE -> YouTubePlayback.parse(null, r.texts, now)
+        // Krátké texty celého okna (čas, end-screen); prvních 20 textů bývá jen lišta a název.
+        WatchedApp.YOUTUBE -> YouTubePlayback.parse(null, r.playerTexts.ifEmpty { r.texts }, now)
         WatchedApp.FIREFOX -> YouTubePlayback.videoIdFromUrl(r.url)?.let {
             YouTubePlayback.parse(it, r.playerTexts, now).copy(title = YouTubePlayback.titleFromPage(r.pageTitle))
         }
         else -> null
+    }
+
+    /** Scroll bez obsahu (149): třída prvku, posun, indexy položek, pozice. */
+    private fun scrollSample(e: AccessibilityEvent) = ScrollSample(
+        className = e.className?.toString(),
+        deltaX = e.scrollDeltaX,
+        deltaY = e.scrollDeltaY,
+        fromIndex = e.fromIndex,
+        toIndex = e.toIndex,
+        itemCount = e.itemCount,
+        scrollY = e.scrollY.takeIf { e.maxScrollY > 0 || it > 0 } ?: -1,
+    )
+
+    private var lastScrollLogAt = 0L
+
+    /** Scroll v obecné aplikaci do logu, nejvýš 1× za s (ladění 149). */
+    private fun logScroll(pkg: String, s: ScrollSample, now: Long) {
+        if (now - lastScrollLogAt < 1_000) return
+        lastScrollLogAt = now
+        Log.d(TAG, "scroll: $pkg ${s.className?.substringAfterLast('.')} dY=${s.deltaY} dX=${s.deltaX} y=${s.scrollY} " +
+            "položky=${s.fromIndex}–${s.toIndex}/${s.itemCount}")
+    }
+
+    /**
+     * Kořen okna aplikace [pkg] (149). Nad aplikací může viset cizí překryv s fokusem (dialog Minimalist
+     * launcheru „Jak dlouho chcete být na X?“), [rootInActiveWindow] by pak vrátil jeho strom.
+     * Proto okno TYPE_APPLICATION s balíčkem [pkg] (nejvyšší vrstva); jinak aktivní okno jako dřív.
+     */
+    private fun appRoot(pkg: String): android.view.accessibility.AccessibilityNodeInfo? {
+        val active = rootInActiveWindow
+        if (active?.packageName?.toString() == pkg) return active
+        val fromWindows = runCatching {
+            windows.filter { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_APPLICATION }
+                .sortedByDescending { it.layer }
+                .firstNotNullOfOrNull { w -> w.root?.takeIf { it.packageName?.toString() == pkg } }
+        }.getOrNull()
+        if (fromWindows != null && active != null) {
+            Log.d(TAG, "strom z okna $pkg, aktivní je překryv ${active.packageName}")
+        }
+        return fromWindows ?: active
+    }
+
+    /** Typ okna události (getWindows, flagRetrieveInteractiveWindows), null = nezjištěno. */
+    private fun windowType(e: AccessibilityEvent): Int? =
+        runCatching { windows.firstOrNull { it.id == e.windowId }?.type }.getOrNull()
+
+    /** Okno aplikace (nebo nezjištěno). Překryv služby přístupnosti, systém, klávesnice → false. */
+    private fun isAppWindow(e: AccessibilityEvent): Boolean {
+        val type = windowType(e)
+        if (type != null) return type == android.view.accessibility.AccessibilityWindowInfo.TYPE_APPLICATION
+        // Okno v seznamu není: když má fokus pořád sledovaná aplikace, je tohle překryv nad ní.
+        val active = runCatching { rootInActiveWindow?.packageName?.toString() }.getOrNull()
+        return active == null || active == e.packageName?.toString() || WatchedApp.of(active) == null
     }
 
     override fun onInterrupt() = Unit
@@ -132,6 +228,10 @@ class NarsilAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val TAG = "NarsilA11y"
+
+        /** „Další aplikace s nekonečným feedem“ (149), nastavuje `EchoOverlayStarter` podle `Settings`. */
+        @Volatile
+        var trackOtherApps: Boolean = false
 
         /** Vypisovat strom okna do logu (ladění ID prvků pro 111). Vypnout pro demo. */
         @Volatile

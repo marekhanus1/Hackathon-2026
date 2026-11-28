@@ -270,6 +270,7 @@ data class Settings(
     val trackedApps: Set<TrackedApp> = TrackedApp.entries.toSet(),
     val protectionPausedUntilMillis: Long? = null,     // pozastavení nejdéle do 4:00
     val partnerAlerts: Boolean = true,
+    val trackOtherFeedApps: Boolean = false,           // 149: další aplikace s nekonečným feedem
 ) {
     fun toleranceMillis(): Long                        // demo práh, jinak toleranceMinutes
     fun isProtectionActive(nowMillis: Long): Boolean
@@ -277,7 +278,7 @@ data class Settings(
     fun repsPerUnlock(exercise: Exercise = this.exercise): Int
 }
 enum class Exercise { SQUATS, PUSHUPS } // 232: odemčení 20 dřepů nebo 10 kliků (MovementRates.PUSHUPS_PER_UNLOCK)
-enum class TrackedApp { INSTAGRAM, TIKTOK, YOUTUBE, FIREFOX } // 133: názvy = WatchedApp
+enum class TrackedApp { INSTAGRAM, TIKTOK, YOUTUBE, FIREFOX, X, REDDIT, FACEBOOK, THREADS, PINTEREST, NINEGAG, TUMBLR, LINKEDIN, BLUESKY } // 133, 149: názvy = WatchedApp; isTracked("OTHER") = trackOtherFeedApps
 object SettingsDefaults { /* volby pro UI: TOLERANCE_OPTIONS, VIDEO_CHAIN_OPTIONS, SQUATS_OPTIONS, PUSHUPS_OPTIONS, DEBT_LIMIT_OPTIONS */ }
 interface SettingsRepository { val settings: StateFlow<Settings>; suspend fun update(change: (Settings) -> Settings) }
 ```
