@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/133-nastaveni-prehled
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/93
 ---
 
 # 133 – Přehledné a podrobné nastavení
