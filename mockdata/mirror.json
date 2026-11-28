@@ -55,8 +55,8 @@
       "reclaimed_minutes": 0,
       "planned_minutes": 30,
       "by_app": {
-        "tiktok": 90,
-        "youtube": 45
+        "firefox": 45,
+        "tiktok": 90
       },
       "interventions": [
         {
@@ -75,7 +75,7 @@
         },
         {
           "time": "22:05",
-          "app": "youtube",
+          "app": "firefox",
           "surface": "SHORTS",
           "outcome": "BORROWED",
           "avoiding": "unava"
@@ -241,15 +241,15 @@
       "reclaimed_minutes": 15,
       "planned_minutes": 25,
       "by_app": {
+        "firefox": 35,
         "instagram": 35,
-        "tiktok": 35,
-        "youtube": 34
+        "tiktok": 34
       },
       "interventions": [
         {
           "time": "19:30",
-          "app": "youtube",
-          "surface": "SHORTS",
+          "app": "firefox",
+          "surface": "VIDEO",
           "outcome": "PAID_STEPS",
           "avoiding": "nuda"
         },
@@ -388,8 +388,8 @@
       "reclaimed_minutes": 65,
       "planned_minutes": 45,
       "by_app": {
-        "tiktok": 33,
-        "youtube": 33
+        "firefox": 33,
+        "tiktok": 33
       },
       "interventions": [
         {
@@ -401,7 +401,7 @@
         },
         {
           "time": "21:45",
-          "app": "youtube",
+          "app": "firefox",
           "surface": "SHORTS",
           "outcome": "SQUATS",
           "avoiding": "unava"
