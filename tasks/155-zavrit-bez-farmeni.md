@@ -1,8 +1,8 @@
 ---
-status: todo
-owner:
-agent:
-branch:
+status: in-progress
+owner: marek
+agent: claude
+branch: marek/claude/155-zavrit-bez-farmeni
 pr:
 ---
 
