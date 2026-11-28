@@ -14,6 +14,8 @@ import cz.narsil.overlay.EchoOverlayController
 import cz.narsil.overlay.EchoOverlayWindow
 import cz.narsil.core.data.ConsumptionRecorder
 import cz.narsil.core.data.NarsilDatabase
+import cz.narsil.overlay.EchoSessionStore
+import cz.narsil.core.InterventionOutcome
 import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.InterventionRecords
 import cz.narsil.overlay.HomeNavigator
@@ -32,6 +34,9 @@ import kotlinx.coroutines.launch
 object EchoOverlayStarter {
     private const val TAG = "NarsilApp"
     private var controller: EchoOverlayController? = null
+
+    /** Rozdělaná Ozvěna přežije výměnu instance služby (141): nový ovladač ji obnoví. */
+    private val echoSession = EchoSessionStore()
     private var progressBar: ScrollProgressOverlay? = null
     private var progressJob: Job? = null
 
@@ -105,6 +110,9 @@ object EchoOverlayStarter {
                     repsPerUnlock = { ex -> sl.settingsRepository.settings.value.repsPerUnlock(ex) },
                     demoMode = { sl.settingsRepository.settings.value.demoMode },
                     gamification = sl.gamificationEngine,
+                    session = echoSession,
+                    // Prošlá rozdělaná Ozvěna: okno zmizelo bez volby, detekce smí zasáhnout znovu.
+                    onRestoreExpired = { (triggers as? AccessibilityTriggerSource)?.onOutcome(InterventionOutcome.PLANNED_FREE) },
                     onExtraSquats = { n -> (sl.gamificationEngine as? RulesGamificationEngine)?.onExtraSquats(n) },
                 ).also { it.start() }
                 _ready.value = true
