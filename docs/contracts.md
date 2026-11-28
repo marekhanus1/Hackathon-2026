@@ -212,13 +212,26 @@ Fake: `FakeRewardService(movement, gamification)`.
 ```kotlin
 enum class LlmProvider { CLAUDE, GEMINI, OPENAI }
 enum class VerificationResult { YES, NO, LATER }   // → VERIFIED / REJECTED / VERIFY_LATER
+enum class PhotoKind { TASK, ROOM }                // 541: výsledek úkolu / prostředí
 sealed interface Proof {
-    data class Photo(val uri: String) : Proof
-    data class Text(val text: String) : Proof
+    data class Photo(val uri: String, val kind: PhotoKind = PhotoKind.TASK) : Proof
+    data class Text(val text: String) : Proof     // vlastní popis, ≤ 300 znaků, od 541 aspoň 2 věty
     data object Strava : Proof
 }
 interface TaskVerifier { suspend fun verify(task: PlanTask, proof: Proof): VerificationResult }
 ```
+
+**Režimy ověření (541).** Uživatel vybírá: fotka úkolu (`Photo(uri)`), fotka prostředí
+(`Photo(uri, PhotoKind.ROOM)` – uklizený pokoj, rozložená podložka; LLM porovná s popisem úkolu) a vlastní
+popis (`Text`). Rozšíření je zpětně kompatibilní: `Photo(uri)` = fotka úkolu.
+LLM odpovídá na jednom řádku `ANO – věta` / `NE – věta` (`POZDĚJI` nebo cokoli jiného = `LATER`);
+věta je zpětná vazba pro uživatele. Detail v `cz.narsil.verify`:
+`VerificationOutcome(result, proofHash, reason, feedback = "", detail = "")` (reason = česká věta pro UI,
+u `LATER` srozumitelný důvod místo surové chyby; detail = technická chyba do logu) a
+`VerificationUiEvent(..., feedback = "")`. Popis se před LLM kontroluje místně (prázdný, kratší než
+60 znaků / 2 věty, opakovaný, opsané zadání → `NO` se zpětnou vazbou, i offline) a otiskem
+(`VerifyRules.textHash` → `proofHash`, stejný text u jiného úkolu = `NO`).
+`PlanTask.proofUri`: fotka prostředí se ukládá jako `room:` + URI.
 
 Nikdy nehází: chyba, timeout (5 s) nebo nejasná odpověď = `LATER`. Bez sítě nikdy `YES`. Opakovaná fotka (`ContractDao.isProofHashUsed`) = `NO` bez LLM.
 Prompt a parsování: SPEC 7. Stav a pokusy úkolu zapisuje volající (520) přes `ContractRepository.updateTask`, při `YES` zavolá `RewardService`.

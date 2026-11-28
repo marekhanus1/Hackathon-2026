@@ -13,6 +13,7 @@ import cz.narsil.verify.TaskVerificationService
 import java.time.LocalDate
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DemoAwareTaskVerifierTest {
@@ -46,6 +47,31 @@ class DemoAwareTaskVerifierTest {
     @Test
     fun demoTextsAreConsistent() {
         assertEquals(2, DemoProofs.TEXT_EXAMPLES.count { it.expected })
-        assertEquals(2, DemoProofs.TEXT_EXAMPLES.count { !it.expected })
+        assertEquals(3, DemoProofs.TEXT_EXAMPLES.count { !it.expected })
+        // Kladné ukázky projdou místní kontrolou popisu (jinak by je demo zamítlo).
+        DemoProofs.TEXT_EXAMPLES.filter { it.expected }.forEach { ex ->
+            val t = PlanTask(type = TaskType.OTHER, title = ex.taskTitle, target = ex.target)
+            assertEquals(ex.note, null, cz.narsil.verify.VerifyRules.textIssue(t, (ex.proof as Proof.Text).text))
+        }
+        assertEquals(1, DemoProofs.ROOM_EXAMPLES.count { it.expected })
+        DemoProofs.ROOM_EXAMPLES.forEach { assertEquals(cz.narsil.core.PhotoKind.ROOM, (it.proof as Proof.Photo).kind) }
+    }
+
+    @Test
+    fun demoModesWithoutNetwork() = runTest {
+        val settings = FakeSettingsRepository().apply { update { it.copy(demoAlwaysYes = true) } }
+        val demo = DemoAwareTaskVerifier(FakeTaskVerifier(nextResult = VerificationResult.LATER), settings, fakeDelayMillis = 0)
+        val room = demo.verifyDetailed(task, Proof.Photo("content://pokoj", cz.narsil.core.PhotoKind.ROOM))
+        assertEquals(VerificationResult.YES, room.result)
+        assertEquals("Prostředí na fotce odpovídá splněnému úkolu.", room.feedback)
+        val short = demo.verifyDetailed(task, Proof.Text("jo uklizeno"))
+        assertEquals(VerificationResult.NO, short.result)
+        assertTrue(short.feedback.contains("2–3 věty"))
+        val good = demo.verifyDetailed(
+            task,
+            Proof.Text("Vysál jsem koberec a složil oblečení do skříně. Vynesl jsem dva pytle odpadků a utřel prach na stole."),
+        )
+        assertEquals(VerificationResult.YES, good.result)
+        assertTrue(good.feedback.startsWith("Popis je konkrétní"))
     }
 }
