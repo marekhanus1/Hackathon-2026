@@ -98,5 +98,16 @@
                 <action android:name="cz.narsil.DEBUG_CONTEXT" />
             </intent-filter>
         </receiver>
+
+        <!-- 124: fotka důkazu ze systémového fotoaparátu (ověření úkolů) -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/narsil_file_paths" />
+        </provider>
     </application>
 </manifest>
