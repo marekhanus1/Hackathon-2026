@@ -11,6 +11,9 @@ import cz.narsil.core.Surface
  * - pager s jednou položkou na obrazovku (krátká videa): aspoň [pagerMinBeats] taktů a rozpětí ≥ [pagerMinSpanMillis],
  * - po splnění platí [holdMillis] od posledního posunu dopředu (dívá se na položku), pak zase nic.
  * Nepočítá se: vodorovný posun (karusel, záložky), posun zpět, dlouhý text (ScrollView, WebView).
+ * Vodorovný prvek se pozná i bez posunu (RecyclerView ho často neposílá) podle [ScrollSample.orientation].
+ * Indexy a pozice se pamatují pro každý posouvaný prvek zvlášť ([ScrollSample.sourceKey]): hlavní feed
+ * a karusel v něm jsou často stejná třída a jinak by si míchaly směr.
  */
 class FeedBehavior(
     private val windowMillis: Long = 90_000,
@@ -40,11 +43,13 @@ class FeedBehavior(
         val dx = sample.deltaX
         val dy = sample.deltaY
         if (kotlin.math.abs(dx) > 1 && kotlin.math.abs(dx) > kotlin.math.abs(dy)) return // vodorovně
+        if (sample.orientation == ScrollOrientation.HORIZONTAL) return // karusel bez údaje o posunu
         val state = states.getOrPut(packageName) { State() }
-        val prevTo = state.lastToIndex[cls]
-        val prevY = state.lastScrollY[cls]
-        if (sample.toIndex >= 0) state.lastToIndex[cls] = sample.toIndex
-        if (sample.scrollY >= 0) state.lastScrollY[cls] = sample.scrollY
+        val key = if (sample.sourceKey != 0) "$cls#${sample.sourceKey}" else cls
+        val prevTo = state.lastToIndex[key]
+        val prevY = state.lastScrollY[key]
+        if (sample.toIndex >= 0) state.lastToIndex[key] = sample.toIndex
+        if (sample.scrollY >= 0) state.lastScrollY[key] = sample.scrollY
         val forward = when {
             dy > 1 -> true
             dy < -1 -> false

@@ -45,6 +45,13 @@ data class ForegroundSnapshot(
  */
 data class ScrollSample(
     val className: String?,
+    /**
+     * Který prvek se posunul (okno + třída + počet položek), 0 = neznámý. Hlavní seznam a karusel v něm
+     * bývají stejná třída (RecyclerView) – bez toho by se jim míchaly indexy a směr posunu.
+     */
+    val sourceKey: Int = 0,
+    /** Orientace posouvaného prvku podle CollectionInfo / akcí uzlu, null = neznámá. */
+    val orientation: ScrollOrientation? = null,
     val deltaX: Int = 0,
     val deltaY: Int = 0,
     val fromIndex: Int = -1,
@@ -53,3 +60,6 @@ data class ScrollSample(
     /** Svislá pozice posouvaného prvku (Compose ji hlásí místo posunu), −1 = neznámá. */
     val scrollY: Int = -1,
 )
+
+/** Směr, kterým se prvek posouvá (z uzlu události, ne z posunu – ten často chybí). */
+enum class ScrollOrientation { VERTICAL, HORIZONTAL }
