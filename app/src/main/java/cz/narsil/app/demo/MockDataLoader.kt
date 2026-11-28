@@ -36,7 +36,7 @@ object MockDataLoader {
         "instagram" to "com.instagram.android",
         "tiktok" to "com.zhiliaoapp.musically",
         "youtube" to "com.google.android.youtube",
-        "chrome" to "com.android.chrome",
+        "firefox" to "org.mozilla.firefox",
     )
 
     data class Result(val days: Int, val interventions: Int, val ratings: Int, val alreadyLoaded: Boolean = false)

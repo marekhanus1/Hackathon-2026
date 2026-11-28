@@ -9,7 +9,7 @@ import android.view.accessibility.AccessibilityEvent
 import java.lang.ref.WeakReference
 
 /**
- * Detekce (110): sleduje změny oken a scrollování, zjistí aplikaci v popředí, URL v Chrome
+ * Detekce (110): sleduje změny oken a scrollování, zjistí aplikaci v popředí, URL ve Firefoxu
  * a ID prvků obrazovky. Výstup jde do [AccessibilityEvents]; klasifikaci dělá 111.
  *
  * Chaty ([WatchedApp.IGNORED_PACKAGES]) a nesledované aplikace se nečtou – jen se zapíše balíček,

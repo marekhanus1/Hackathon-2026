@@ -13,7 +13,7 @@ object SurfaceClassifier {
 
     fun classify(s: ForegroundSnapshot): Surface? = when (s.app) {
         null -> null
-        WatchedApp.CHROME -> s.url?.let(::classifyUrl)
+        WatchedApp.FIREFOX -> s.url?.let(::classifyUrl)
         WatchedApp.INSTAGRAM -> classifyInstagram(s)
         // TikTok má obfuskovaná ID: hlavní obrazovka je feed, pokud nejde zjevně o zprávy/profil.
         WatchedApp.TIKTOK -> classifyByIds(s, SurfaceRules.TIKTOK, default = Surface.FEED)
@@ -48,7 +48,7 @@ object SurfaceClassifier {
         return rules.firstOrNull { rule -> rule.fragments.any { f -> haystack.any { it.contains(f) } } }?.surface ?: default
     }
 
-    /** Web v Chrome podle URL (bez schématu, jak ho ukazuje adresní řádek). */
+    /** Web ve Firefoxu podle URL (bez schématu, jak ho ukazuje adresní řádek). */
     fun classifyUrl(raw: String): Surface? {
         val url = raw.lowercase().removePrefix("https://").removePrefix("http://").removePrefix("www.").removePrefix("m.")
         val host = url.substringBefore('/')

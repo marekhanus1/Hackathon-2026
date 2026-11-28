@@ -10,7 +10,7 @@ enum class SnapshotKind { WINDOW_CHANGED, SCROLLED, CONTENT_CHANGED }
  *   ale [viewIds] a [url] jsou vždy prázdné
  * @param app sledovaná aplikace, null = nesledovaná / chat / plocha
  * @param className třída okna z TYPE_WINDOW_STATE_CHANGED (např. aktivita), jinak poslední známá
- * @param url adresa z adresního řádku Chrome, jinak null
+ * @param url adresa z adresního řádku Firefoxu, jinak null
  * @param viewIds ID prvků (viewIdResourceName) viditelného okna – podle nich 111 pozná feed/Reels/Shorts/zprávy
  * @param texts krátké texty a contentDescription vybraných prvků (název videa YouTube pro 120); u chatů prázdné
  * @param selectedTab ID (bez balíčku) vybrané záložky ve spodní liště, např. "feed_tab", "clips_tab"; null = nezjištěno
