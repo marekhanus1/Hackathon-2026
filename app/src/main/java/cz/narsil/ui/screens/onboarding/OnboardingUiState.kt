@@ -22,7 +22,8 @@ data class PermissionItem(
 )
 
 data class OnboardingUiState(
-    val detectedWifiSsid: String = "Domov_5G",
+    /** Aktuální Wi-Fi; null = žádná, nebo chybí poloha (Android název bez ní neprozradí). */
+    val detectedWifiSsid: String? = "Domov_5G",
     val homeWifiSsid: String? = null,
     val permissions: List<PermissionItem> = defaultPermissions(),
     val isMiuiDevice: Boolean = true,
@@ -33,6 +34,32 @@ data class OnboardingUiState(
 ) {
     val allRequiredGranted: Boolean
         get() = homeWifiSsid != null && permissions.all { it.isGranted }
+
+    /** Telefon je teď připojený k uložené domácí Wi-Fi. */
+    val isOnHomeWifi: Boolean
+        get() = homeWifiSsid != null && detectedWifiSsid == homeWifiSsid
+
+    /**
+     * Text tlačítka domácí Wi-Fi (138). Bez Wi-Fi nebo bez polohy tlačítko požádá o polohu,
+     * proto nesmí slibovat „Aktualizovat na žádná Wi-Fi“.
+     */
+    val homeWifiButtonLabel: String
+        get() = when {
+            detectedWifiSsid == null -> "Najít moji Wi-Fi (povolit polohu)"
+            homeWifiSsid == null -> "Tohle je můj domov: $detectedWifiSsid"
+            isOnHomeWifi -> "Domov uložen: $homeWifiSsid"
+            else -> "Uložit jako domov: $detectedWifiSsid"
+        }
+
+    /** Řádek nad tlačítkem. */
+    val homeWifiStatusText: String
+        get() = when {
+            homeWifiSsid != null && detectedWifiSsid != null && !isOnHomeWifi ->
+                "Domov: $homeWifiSsid · teď jsi na: $detectedWifiSsid"
+            homeWifiSsid != null -> "Domov: $homeWifiSsid"
+            detectedWifiSsid == null -> "Nevidím žádnou Wi-Fi. Připoj se k domácí síti, nebo povol polohu."
+            else -> "Teď jsi připojený k: $detectedWifiSsid"
+        }
 }
 
 private fun defaultPermissions(): List<PermissionItem> = listOf(

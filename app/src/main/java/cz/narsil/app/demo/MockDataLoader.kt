@@ -13,26 +13,18 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * Nahraje připravená data Štěpána (430, `mockdata/`, schéma `mockdata/schema.md`) do sdílené databáze
- * (SPEC 10, demo panel): 21 dní spotřeby, zásahů a XP + hodnocení videí. Datum se posune tak, aby
- * poslední den byl včera. Jen jednou (příznak v prefs); znovu po „smazat data aplikace“.
+ * Nahraje připravená data (SPEC 10, demo panel) do sdílené databáze: 21 dní spotřeby, zásahů a XP
+ * + hodnocení videí. Data dává [MockDataGenerator] přibalený v APK (138) – žádné soubory nejsou
+ * potřeba; JSON v `mockdata/` zůstávají jako podklad pro pitch. Datum se posune tak, aby poslední den
+ * byl včera. Jen jednou (příznak v prefs); znovu po „smazat data aplikace“.
  */
 object MockDataLoader {
     private const val PREFS = "demo"
     private const val KEY_LOADED = "mock_loaded"
 
-    private val PACKAGES = mapOf(
+    val PACKAGES = mapOf(
         "instagram" to "com.instagram.android",
         "tiktok" to "com.zhiliaoapp.musically",
         "youtube" to "com.google.android.youtube",
@@ -41,96 +33,85 @@ object MockDataLoader {
 
     data class Result(val days: Int, val interventions: Int, val ratings: Int, val alreadyLoaded: Boolean = false)
 
+    /** Řádky pro databázi – čistý Kotlin, testovatelné bez Androidu. */
+    data class Rows(
+        val consumption: List<ConsumptionEventEntity>,
+        val interventions: List<InterventionEntity>,
+        val xp: List<XpEventEntity>,
+        val ratings: List<VideoRatingEntity>,
+    )
+
     fun isLoaded(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_LOADED, false)
 
-    suspend fun load(context: Context, zone: ZoneId = ZoneId.systemDefault()): Result {
-        if (isLoaded(context)) return Result(0, 0, 0, alreadyLoaded = true)
-        val app = context.applicationContext
-        val db = NarsilDatabase.get(app)
-        val json = Json { ignoreUnknownKeys = true }
-        val mirror = json.parseToJsonElement(app.assets.open("mirror.json").bufferedReader().use { it.readText() }).jsonObject
-        val days = mirror["days"]?.jsonArray.orEmpty().map { it.jsonObject }
-        if (days.isEmpty()) return Result(0, 0, 0)
-
-        // Posun: poslední den v datech = včera.
-        val lastDate = days.maxOf { LocalDate.parse(it.str("date")) }
-        val shift = ChronoUnit.DAYS.between(lastDate, DayKey.today(zone).minusDays(1))
-        fun shifted(date: String) = LocalDate.parse(date).plusDays(shift)
+    /** Data z [MockDataGenerator] posunutá tak, aby poslední den byl den před [today]. */
+    fun rows(today: LocalDate, zone: ZoneId): Rows {
+        val days = MockDataGenerator.days()
+        val shift = ChronoUnit.DAYS.between(days.last().date, today.minusDays(1))
         fun millis(date: LocalDate, time: String) = date.atTime(LocalTime.parse(time)).atZone(zone).toInstant().toEpochMilli()
-
-        var interventions = 0
+        val consumption = mutableListOf<ConsumptionEventEntity>()
+        val interventions = mutableListOf<InterventionEntity>()
+        val xp = mutableListOf<XpEventEntity>()
         for (day in days) {
-            val date = shifted(day.str("date"))
+            val date = day.date.plusDays(shift)
             val key = date.toString()
             // Spotřeba po aplikacích (feed doma, neplánovaná) – souboj s algoritmem a Zrcadlo.
-            day["by_app"]?.jsonObject?.forEach { (appName, minutes) ->
-                val min = minutes.jsonPrimitive.intOrNull ?: return@forEach
-                db.consumptionDao().insert(
-                    ConsumptionEventEntity(
-                        packageName = PACKAGES[appName] ?: appName,
-                        surface = "FEED",
-                        startedAtMillis = millis(date, "20:00"),
-                        durationMillis = min * 60_000L,
-                        planned = false,
-                        context = "HOME",
-                    ),
+            day.byApp.forEach { (appName, min) ->
+                consumption += ConsumptionEventEntity(
+                    packageName = PACKAGES[appName] ?: appName,
+                    surface = "FEED",
+                    startedAtMillis = millis(date, "20:00"),
+                    durationMillis = min * 60_000L,
+                    planned = false,
+                    context = "HOME",
                 )
             }
-            // Zásahy + XP podle pravidel gamifikace (Zavřít 50, dřepy 20, kroky 10, půjčka 0).
-            day["interventions"]?.jsonArray?.forEach { el ->
-                val i = el.jsonObject
-                val at = millis(date, i.str("time"))
-                val outcome = i.str("outcome")
-                val xp = when (outcome) {
-                    XpSource.CLOSED -> GamificationRules.XP_CLOSED
-                    XpSource.SQUATS -> GamificationRules.XP_SQUATS
-                    XpSource.PAID_STEPS -> GamificationRules.XP_PAID_STEPS
-                    else -> 0
-                }
-                db.interventionDao().insert(
-                    InterventionEntity(
-                        atMillis = at,
-                        packageName = PACKAGES[i.str("app")] ?: i.str("app"),
-                        reason = "ENDLESS_SCROLL",
-                        feeling = i["avoiding"]?.jsonPrimitive?.contentOrNull,
-                        outcome = outcome,
-                        xpGained = xp,
-                    ),
+            // Zásahy + XP podle pravidel gamifikace (Zavřít 50 nejvýš 5× denně, dřepy 20, kroky 10, půjčka 0).
+            var closes = 0
+            day.interventions.forEach { i ->
+                val at = millis(date, i.time)
+                val reward = if (i.outcome == XpSource.CLOSED) closes++ < GamificationRules.CLOSED_MAX_REWARDED_PER_DAY else true
+                val gained = if (reward) MockDataGenerator.xpFor(i.outcome) else 0
+                interventions += InterventionEntity(
+                    atMillis = at,
+                    packageName = PACKAGES[i.app] ?: i.app,
+                    reason = "ENDLESS_SCROLL",
+                    feeling = i.avoiding,
+                    outcome = i.outcome,
+                    xpGained = gained,
                 )
-                db.xpDao().insert(XpEventEntity(date = key, atMillis = at, source = outcome, xp = xp))
-                interventions++
+                xp += XpEventEntity(date = key, atMillis = at, source = i.outcome, xp = gained)
+            }
+            if (day.extraSquats >= GamificationRules.SQUATS_PER_JOKER) {
+                xp += XpEventEntity(date = key, atMillis = millis(date, "18:00"), source = XpSource.JOKER, xp = 0)
+            }
+            if (day.bossSurvived) {
+                xp += XpEventEntity(date = key, atMillis = millis(date, "22:00"), source = XpSource.BOSS, xp = GamificationRules.XP_BOSS)
             }
             // Splněná smlouva: +100 XP a den do série / postavy.
-            if (day["contract_fulfilled"]?.jsonPrimitive?.booleanOrNull == true) {
-                db.xpDao().insert(
-                    XpEventEntity(date = key, atMillis = millis(date, "23:00"), source = XpSource.CONTRACT, xp = GamificationRules.XP_CONTRACT),
-                )
+            if (day.contractFulfilled) {
+                xp += XpEventEntity(date = key, atMillis = millis(date, "23:00"), source = XpSource.CONTRACT, xp = GamificationRules.XP_CONTRACT)
             }
         }
-
-        // Hodnocení videí (mapa hodnoty), stejný posun data.
-        var ratings = 0
-        runCatching {
-            val valueMap = json.parseToJsonElement(app.assets.open("value_map.json").bufferedReader().use { it.readText() }).jsonObject
-            valueMap["ratings"]?.jsonArray?.forEachIndexed { index, el ->
-                val r = el.jsonObject
-                db.videoRatingDao().insert(
-                    VideoRatingEntity(
-                        atMillis = millis(shifted(r.str("date")), "19:00") + index * 60_000L,
-                        title = r.str("title"),
-                        intent = r["intent"]?.jsonPrimitive?.contentOrNull?.ifBlank { null },
-                        rating = r["rating"]?.jsonPrimitive?.intOrNull ?: 3,
-                    ),
-                )
-                ratings++
-            }
+        // Hodnocení videí (mapa hodnoty), stejný posun data; +5 XP nejvýš 10× denně.
+        val ratings = MockDataGenerator.RATINGS.mapIndexed { index, r ->
+            val date = MockDataGenerator.START.plusDays(r.day - 1L + shift)
+            val at = millis(date, "19:00") + index * 60_000L
+            xp += XpEventEntity(date = date.toString(), atMillis = at, source = XpSource.VIDEO_RATED, xp = GamificationRules.XP_VIDEO_RATED)
+            VideoRatingEntity(atMillis = at, title = r.title, intent = r.intent.ifBlank { null }, rating = r.rating)
         }
-
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_LOADED, true).apply()
-        return Result(days.size, interventions, ratings)
+        return Rows(consumption, interventions, xp, ratings)
     }
 
-    private fun JsonObject.str(key: String): String = this[key]?.jsonPrimitive?.contentOrNull.orEmpty()
-    private fun JsonArray?.orEmpty(): List<kotlinx.serialization.json.JsonElement> = this ?: emptyList()
+    suspend fun load(context: Context, zone: ZoneId = ZoneId.systemDefault()): Result {
+        if (isLoaded(context)) return Result(0, 0, 0, alreadyLoaded = true)
+        val db = NarsilDatabase.get(context.applicationContext)
+        val rows = rows(DayKey.today(zone), zone)
+        rows.consumption.forEach { db.consumptionDao().insert(it) }
+        rows.interventions.forEach { db.interventionDao().insert(it) }
+        rows.xp.forEach { db.xpDao().insert(it) }
+        rows.ratings.forEach { db.videoRatingDao().insert(it) }
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_LOADED, true).apply()
+        return Result(MockDataGenerator.DAYS, rows.interventions.size, rows.ratings.size)
+    }
 }
