@@ -20,6 +20,7 @@ import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.InterventionRecords
 import cz.narsil.overlay.HomeNavigator
 import cz.narsil.overlay.ScrollProgressOverlay
+import cz.narsil.overlay.ScrollProgressStyle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -73,9 +74,10 @@ object EchoOverlayStarter {
                 val bar = ScrollProgressOverlay(service).also { progressBar = it }
                 val percent = (triggers as? AccessibilityTriggerSource)?.progressPercent ?: flowOf(null)
                 progressJob = sl.appScope.launch {
-                    combine(percent, sl.settingsRepository.settings) { p, s -> p.takeIf { s.showScrollProgress } }
+                    // Štítek „Ozvěna za 0:15“ (148): zbývající čas z procenta a prahu relace (Settings.toleranceMillis).
+                    combine(percent, sl.settingsRepository.settings) { p, s -> p?.takeIf { s.showScrollProgress }?.let { it to s.toleranceMillis() } }
                         .distinctUntilChanged()
-                        .collect { bar.update(it) }
+                        .collect { v -> bar.update(v?.first, v?.let { ScrollProgressStyle.remainingMillis(it.first, it.second) }) }
                 }
                 val handler = EchoOutcomeHandler(
                     movement = sl.movementRepository,
