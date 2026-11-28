@@ -1,34 +1,24 @@
 package cz.narsil.ui.screens.verify
 
-import android.content.res.Configuration
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,18 +27,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cz.narsil.ui.components.NeuHeader
+import cz.narsil.ui.components.NeuIcons
+import cz.narsil.ui.components.NeuLabel
+import cz.narsil.ui.components.NeuPanel
+import cz.narsil.ui.components.NeuPrimaryButton
+import cz.narsil.ui.components.NeuScreen
+import cz.narsil.ui.components.NeuSegmented
+import cz.narsil.ui.components.NeuSmallButton
+import cz.narsil.ui.components.NeuText
+import cz.narsil.ui.components.NeuTextField
 import cz.narsil.ui.theme.NarsilTheme
+import cz.narsil.ui.theme.NeuColors
+import cz.narsil.ui.theme.NeuDepth
+import cz.narsil.ui.theme.neuInset
 
 /**
- * Task verification screen supporting task photo, room/environment photo or own description
- * (2–3 sentences, <= 300 chars) proof (541),
- * plus PENDING / VERIFYING / VERIFIED / REJECTED / VERIFY_LATER states.
- * Ready for TaskVerifier wiring in task 520.
+ * Ověření úkolu ve stylu E (334, dříve 324/541). Nahoře záložky úkolů dnešní smlouvy – jde přepnout,
+ * na co odpovídáš. Důkaz: fotka úkolu, fotka prostředí nebo vlastní popis; stavy
+ * PENDING / VERIFYING / VERIFIED / REJECTED / VERIFY_LATER. Obrazovka se neposouvá.
  */
 @Composable
 fun VerifyTaskScreen(
@@ -64,602 +68,329 @@ fun VerifyTaskScreen(
     cameraPreviewSlot: @Composable () -> Unit = { DefaultVerifyCameraPlaceholder(state) },
     animateRewardOnVerified: Boolean = true,
     /** „Pokračovat“ / „Další úkol“ na kartě ověřeného úkolu; výchozí = zpět. */
-    onContinue: () -> Unit = onBack
+    onContinue: () -> Unit = onBack,
+    /** Přepnutí úkolu v záložkách nahoře. */
+    onSelectTask: (Long) -> Unit = {},
 ) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
+    NeuScreen(modifier, gap = 14.dp) {
+        NeuHeader(title = "Ověření úkolu", onBack = onBack, backDescription = "Zpět")
 
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .verticalScroll(rememberScrollState())
-                .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.md)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = colors.echoContainer,
-                    contentColor = colors.onEchoContainer
-                ) {
-                    Text(
-                        text = state.taskType.label,
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
+        val tabs = state.tasks.filter { it.canVerify || it.id == state.selectedTaskId }
+        if (tabs.size > 1) {
+            NeuSegmented(
+                options = tabs.map { it.id },
+                selected = state.selectedTaskId,
+                label = { id -> tabs.first { it.id == id }.tabLabel },
+                onSelect = onSelectTask,
+            )
+        }
+
+        TaskCard(state)
+
+        when (state.status) {
+            VerificationStatus.PENDING -> PendingSection(
+                state, onSelectProofMode, onTextProofChange, onCapturePhoto, onRetakePhoto, onSubmitProof, cameraPreviewSlot,
+            )
+            VerificationStatus.VERIFYING -> {
+                StatusPanel {
+                    CircularProgressIndicator(color = NeuColors.Accent, modifier = Modifier.size(44.dp))
+                    NeuText("Ověřuji důkaz…", size = 16.sp, weight = FontWeight.ExtraBold)
+                    NeuText(
+                        "Chvilku strpení, kontrolujeme splnění úkolu.",
+                        size = 13.sp,
+                        weight = FontWeight.Medium,
+                        color = NeuColors.Muted,
+                        align = TextAlign.Center,
                     )
                 }
-
-                Surface(
-                    shape = CircleShape,
-                    color = colors.positiveContainer,
-                    contentColor = colors.onPositiveContainer
-                ) {
-                    Text(
-                        text = "+${state.rewardMinutes} min",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
+                NeuPrimaryButton("Ověřuji…", onClick = {}, enabled = false)
+            }
+            VerificationStatus.VERIFIED -> {
+                VerifiedPanel(state, animateRewardOnVerified)
+                NeuPrimaryButton(
+                    if (state.nextTaskTitle != null) "Další úkol: ${state.nextTaskTitle}" else "Pokračovat",
+                    onClick = onContinue,
+                    color = NeuColors.Success,
+                    contentColor = NeuColors.OnSuccess,
+                )
+            }
+            VerificationStatus.REJECTED -> {
+                StatusPanel {
+                    StatusIcon { Icon(NeuIcons.Close, null, tint = NeuColors.Error, modifier = Modifier.size(30.dp)) }
+                    NeuText("Důkaz zatím nestačil", size = 16.sp, weight = FontWeight.ExtraBold)
+                    NeuText(
+                        state.statusMessage.ifBlank {
+                            "Zkus vyfotit jasnější detail, prostředí, nebo popsat ve 2–3 větách, co přesně je hotové."
+                        },
+                        size = 13.sp,
+                        weight = FontWeight.Medium,
+                        color = NeuColors.Muted,
+                        align = TextAlign.Center,
+                        lineHeight = 19.sp,
+                    )
+                    NeuText(
+                        if (state.remainingAttempts > 0) "Zbývající pokusy: ${state.remainingAttempts} z ${state.maxAttempts}"
+                        else "Vyčerpány všechny ${state.maxAttempts} pokusy pro tento úkol.",
+                        size = 12.sp,
+                        weight = FontWeight.Bold,
+                        color = NeuColors.Error,
                     )
                 }
+                if (state.remainingAttempts > 0) NeuPrimaryButton("Zkusit znovu", onClick = onRetry)
+                else NeuPrimaryButton("Zpět", onClick = onBack)
             }
-
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.xxs)) {
-                Text(
-                    text = state.taskTitle,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = state.taskGoal,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            when (state.status) {
-                VerificationStatus.VERIFIED -> VerifiedRewardCard(
-                    state = state,
-                    animateOnStart = animateRewardOnVerified,
-                    onBack = onContinue
-                )
-
-                VerificationStatus.VERIFYING -> VerifyingCard()
-
-                VerificationStatus.REJECTED -> RejectedCard(
-                    state = state,
-                    onRetry = onRetry,
-                    onBack = onBack
-                )
-
-                VerificationStatus.VERIFY_LATER -> VerifyLaterCard(
-                    state = state,
-                    onBack = onBack
-                )
-
-                VerificationStatus.PENDING -> PendingProofSection(
-                    state = state,
-                    onSelectProofMode = onSelectProofMode,
-                    onTextProofChange = onTextProofChange,
-                    onCapturePhoto = onCapturePhoto,
-                    onRetakePhoto = onRetakePhoto,
-                    onSubmitProof = onSubmitProof,
-                    onBack = onBack,
-                    cameraPreviewSlot = cameraPreviewSlot
-                )
+            VerificationStatus.VERIFY_LATER -> {
+                StatusPanel {
+                    StatusIcon { Icon(NeuIcons.Pause, null, tint = NeuColors.Muted, modifier = Modifier.size(28.dp)) }
+                    NeuText("Důkaz uložen – ověříme později", size = 16.sp, weight = FontWeight.ExtraBold, align = TextAlign.Center)
+                    NeuText(
+                        state.statusMessage.ifBlank {
+                            "Momentálně není dostupné spojení. Jakmile se telefon připojí, úkol automaticky zkontrolujeme " +
+                                "a odměnu (+${state.rewardMinutes} min) připíšeme."
+                        },
+                        size = 13.sp,
+                        weight = FontWeight.Medium,
+                        color = NeuColors.Muted,
+                        align = TextAlign.Center,
+                        lineHeight = 19.sp,
+                    )
+                }
+                NeuPrimaryButton("Zpět na přehled", onClick = onBack)
             }
         }
     }
 }
 
 @Composable
-private fun PendingProofSection(
+private fun TaskCard(state: VerifyTaskUiState) {
+    val item = state.tasks.firstOrNull { it.id == state.selectedTaskId }
+    NeuPanel(Modifier.fillMaxWidth(), radius = 24.dp, padding = PaddingValues(16.dp), gap = 6.dp) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            NeuLabel(state.taskType.label)
+            NeuText("+${state.rewardMinutes} min", size = 13.sp, weight = FontWeight.ExtraBold, color = NeuColors.Success)
+        }
+        NeuText(state.taskTitle, size = 18.sp, weight = FontWeight.ExtraBold, lineHeight = 23.sp, maxLines = 3)
+        if (state.taskGoal.isNotBlank()) {
+            NeuText(state.taskGoal, size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted, maxLines = 2)
+        }
+        val attempts = when {
+            state.status == VerificationStatus.VERIFIED -> null
+            item != null -> item.attemptsLine
+            state.attemptsUsed > 0 -> "Pokus ${(state.attemptsUsed + 1).coerceAtMost(state.maxAttempts)} ze ${state.maxAttempts}"
+            else -> "Pokus 1 ze ${state.maxAttempts}"
+        }
+        if (attempts != null) {
+            NeuText(
+                attempts,
+                size = 12.sp,
+                weight = FontWeight.Bold,
+                color = if (item?.isWarning == true || state.status == VerificationStatus.REJECTED) NeuColors.Error else NeuColors.Muted,
+            )
+        }
+    }
+}
+
+private val ProofMode.tabLabel: String
+    get() = when (this) {
+        ProofMode.PHOTO -> "Fotka úkolu"
+        ProofMode.ROOM -> "Prostředí"
+        ProofMode.TEXT -> "Popis"
+    }
+
+@Composable
+private fun ColumnScope.PendingSection(
     state: VerifyTaskUiState,
     onSelectProofMode: (ProofMode) -> Unit,
     onTextProofChange: (String) -> Unit,
     onCapturePhoto: () -> Unit,
     onRetakePhoto: () -> Unit,
     onSubmitProof: () -> Unit,
-    onBack: () -> Unit,
-    cameraPreviewSlot: @Composable () -> Unit
+    cameraPreviewSlot: @Composable () -> Unit,
 ) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
-        Column(verticalArrangement = Arrangement.spacedBy(spacing.xxs)) {
-            Text(
-                text = "Jak chceš splnění doložit?",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(spacing.xs)
-            ) {
-                ProofMode.entries.forEach { mode ->
-                    FilterChip(
-                        selected = state.proofMode == mode,
-                        onClick = { onSelectProofMode(mode) },
-                        label = { Text(mode.label) }
-                    )
-                }
-            }
-            Text(
-                text = state.proofMode.hint,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        if (state.proofMode.isPhoto) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(4f / 3f),
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = if (state.photoCaptured) colors.positive else MaterialTheme.colorScheme.outlineVariant
-                )
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    cameraPreviewSlot()
-                    if (state.photoCaptured) {
-                        Surface(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(spacing.sm),
-                            shape = CircleShape,
-                            color = colors.positive,
-                            contentColor = colors.onPositive
-                        ) {
-                            Text(
-                                text = "Fotka připravena",
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
-                            )
-                        }
-                    }
-                }
-            }
-
-            OutlinedButton(
-                onClick = if (state.photoCaptured) onRetakePhoto else onCapturePhoto,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    when {
-                        state.photoCaptured -> "Vyfotit znovu"
-                        state.proofMode == ProofMode.ROOM -> "Vyfotit prostředí"
-                        else -> "Vyfotit důkaz"
-                    }
-                )
-            }
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.xxs)) {
-                OutlinedTextField(
-                    value = state.textProof,
-                    onValueChange = onTextProofChange,
-                    label = { Text("Popiš, co jsi udělal a jak to dopadlo") },
-                    placeholder = {
-                        Text("Např. Odevzdal jsem úlohu #3 v IS. Prošly všechny dotazy kromě posledního, ten jsem opravil podle cvičení.")
-                    },
-                    minLines = 4,
-                    maxLines = 6,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = if (state.missingTextChars > 0) {
-                            "Ještě aspoň ${state.missingTextChars} znaků (2–3 věty)"
-                        } else {
-                            "Délka stačí"
-                        },
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (state.missingTextChars > 0) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            colors.positive
-                        }
-                    )
-                    Text(
-                        text = "${state.textProof.length} / ${state.maxTextLength} znaků",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing.sm)
-        ) {
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("Zpět")
-            }
-            Button(
-                onClick = onSubmitProof,
-                enabled = state.canSubmit,
-                modifier = Modifier.weight(1.6f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.positive,
-                    contentColor = colors.onPositive
-                )
-            ) {
-                Text("Odeslat k ověření")
-            }
-        }
-    }
-}
-
-@Composable
-private fun VerifyingCard() {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = colors.echoContainer,
-            contentColor = colors.onEchoContainer
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.lg),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(spacing.md)
-        ) {
-            CircularProgressIndicator(color = colors.echo)
-            Text(
-                text = "Ověřuji důkaz…",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "Chvilku strpení, kontrolujeme splnění úkolu.",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun VerifiedRewardCard(
-    state: VerifyTaskUiState,
-    animateOnStart: Boolean,
-    onBack: () -> Unit
-) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    var appeared by remember { mutableStateOf(!animateOnStart) }
-    LaunchedEffect(Unit) {
-        appeared = true
-    }
-
-    val scale by animateFloatAsState(
-        targetValue = if (appeared) 1f else 0.92f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "verifyRewardScale"
+    NeuSegmented(
+        options = ProofMode.entries.toList(),
+        selected = state.proofMode,
+        label = { it.tabLabel },
+        onSelect = onSelectProofMode,
     )
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            },
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = colors.positiveContainer,
-            contentColor = colors.onPositiveContainer
-        ),
-        border = BorderStroke(2.dp, colors.positive)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.lg),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(spacing.md)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = colors.positive,
-                contentColor = colors.onPositive
-            ) {
-                Text(
-                    text = if (state.rewardXp > 0) "+${state.rewardMinutes} min · +${state.rewardXp} XP" else "+${state.rewardMinutes} min",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm)
-                )
-            }
-            Text(
-                text = "Úkol splněn a ověřen!",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = state.statusMessage.ifBlank {
-                    "Odměna se připsala do tvého dnešního rozpočtu. Dobrá práce!"
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
-            Button(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.positive,
-                    contentColor = colors.onPositive
-                )
-            ) {
-                Text(if (state.nextTaskTitle != null) "Další úkol: ${state.nextTaskTitle}" else "Pokračovat")
-            }
-        }
-    }
-}
-
-@Composable
-private fun RejectedCard(
-    state: VerifyTaskUiState,
-    onRetry: () -> Unit,
-    onBack: () -> Unit
-) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = colors.debtContainer,
-            contentColor = colors.onDebtContainer
-        ),
-        border = BorderStroke(1.dp, colors.debt)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm)
-        ) {
-            Text(
-                text = "Důkaz zatím nestačil",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = state.statusMessage.ifBlank {
-                    "Zkus vyfotit jasnější detail, prostředí, nebo popsat ve 2–3 větách, co přesně je hotové."
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = if (state.remainingAttempts > 0) {
-                    "Zbývající pokusy: ${state.remainingAttempts} z ${state.maxAttempts}"
-                } else {
-                    "Vyčerpány všechny ${state.maxAttempts} pokusy pro tento úkol."
-                },
-                style = MaterialTheme.typography.labelLarge
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.sm)
-            ) {
-                OutlinedButton(
-                    onClick = onBack,
-                    modifier = Modifier.weight(1f)
+    if (state.proofMode.isPhoto) {
+        Box(Modifier.weight(1f).fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp)).clip(RoundedCornerShape(28.dp))) {
+            if (state.photoCaptured) {
+                Box(Modifier.fillMaxSize()) { cameraPreviewSlot() }
+                Column(
+                    Modifier.fillMaxSize().padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text("Zpět")
+                    StatusIcon { Icon(NeuIcons.Check, null, tint = NeuColors.Success, modifier = Modifier.size(30.dp)) }
+                    NeuText("Fotka připravena", size = 15.sp, weight = FontWeight.ExtraBold)
+                    NeuSmallButton("Vyfotit znovu", onRetakePhoto)
                 }
-                if (state.remainingAttempts > 0) {
-                    Button(
-                        onClick = onRetry,
-                        modifier = Modifier.weight(1.4f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colors.ember,
-                            contentColor = colors.onEmber
-                        )
-                    ) {
-                        Text("Zkusit znovu")
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun VerifyLaterCard(
-    state: VerifyTaskUiState,
-    onBack: () -> Unit
-) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = colors.echoContainer,
-            contentColor = colors.onEchoContainer
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm)
-        ) {
-            Text(
-                text = "Důkaz uložen – ověříme později",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = state.statusMessage.ifBlank {
-                    "Momentálně není dostupné spojení. Jakmile se telefon připojí, úkol automaticky zkontrolujeme a odměnu (+${state.rewardMinutes} min) připíšeme."
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Button(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Zpět na přehled")
-            }
-        }
-    }
-}
-
-@Composable
-private fun DefaultVerifyCameraPlaceholder(state: VerifyTaskUiState) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = if (state.photoCaptured) {
-                "Snímek důkazu zachycen\n(zmenšeno na 512 px JPEG)"
             } else {
-                "Náhled kamery pro vyfocení důkazu"
-            },
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
+                Column(
+                    Modifier.fillMaxSize().padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    StatusIcon { Icon(NeuIcons.Camera, null, tint = NeuColors.Accent, modifier = Modifier.size(34.dp)) }
+                    NeuText(
+                        state.proofMode.hint,
+                        Modifier.widthIn(max = 280.dp),
+                        size = 13.sp,
+                        weight = FontWeight.Medium,
+                        color = NeuColors.Muted,
+                        align = TextAlign.Center,
+                        lineHeight = 19.sp,
+                    )
+                }
+            }
+        }
+        if (state.photoCaptured) {
+            NeuPrimaryButton("Odeslat k ověření", onClick = onSubmitProof, enabled = state.canSubmit)
+        } else {
+            NeuPrimaryButton("Vyfotit a ověřit", onClick = onCapturePhoto, enabled = state.remainingAttempts > 0)
+        }
+    } else {
+        Column(Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            NeuText(state.proofMode.hint, Modifier.padding(horizontal = 4.dp), size = 12.sp, weight = FontWeight.Bold, color = NeuColors.Muted)
+            NeuTextField(
+                value = state.textProof,
+                onValueChange = onTextProofChange,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                placeholder = "Např. Odevzdal jsem úlohu #3 v IS. Prošly všechny dotazy kromě posledního, ten jsem opravil podle cvičení.",
+                singleLine = false,
+                radius = 24.dp,
+            )
+            NeuText(
+                "${state.textProof.length} / ${state.maxTextLength} znaků · " +
+                    if (state.missingTextChars > 0) "ještě ${state.missingTextChars}" else "délka stačí",
+                Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                size = 11.sp,
+                weight = FontWeight.SemiBold,
+                color = if (state.missingTextChars > 0) NeuColors.Muted else NeuColors.Success,
+                align = TextAlign.End,
+            )
+        }
+        NeuPrimaryButton("Odeslat k ověření", onClick = onSubmitProof, enabled = state.canSubmit)
     }
 }
 
-@Preview(name = "Ověření – Foto (Světlý)", showBackground = true)
 @Composable
-private fun VerifyPendingLightPreview() {
-    NarsilTheme(darkTheme = false) {
-        VerifyTaskScreen(
-            state = VerifyTaskUiState(),
-            onSelectProofMode = {},
-            onTextProofChange = {},
-            onCapturePhoto = {},
-            onRetakePhoto = {},
-            onSubmitProof = {},
-            onRetry = {},
-            onBack = {}
-        )
-    }
+private fun ColumnScope.StatusPanel(content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        Modifier.weight(1f).fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp)).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        content = content,
+    )
 }
 
-@Preview(name = "Ověření – Popis (Světlý)", showBackground = true)
 @Composable
-private fun VerifyTextLightPreview() {
-    NarsilTheme(darkTheme = false) {
-        VerifyTaskScreen(
-            state = VerifyTaskUiState(proofMode = ProofMode.TEXT, textProof = "Spočítal jsem příklady 1–10."),
-            onSelectProofMode = {},
-            onTextProofChange = {},
-            onCapturePhoto = {},
-            onRetakePhoto = {},
-            onSubmitProof = {},
-            onRetry = {},
-            onBack = {}
+private fun StatusIcon(content: @Composable () -> Unit) {
+    Box(Modifier.size(84.dp).neuInset(NeuDepth.Deep, CircleShape), contentAlignment = Alignment.Center) { content() }
+}
+
+@Composable
+private fun ColumnScope.VerifiedPanel(state: VerifyTaskUiState, animateOnStart: Boolean) {
+    var appeared by remember { mutableStateOf(!animateOnStart) }
+    LaunchedEffect(Unit) { appeared = true }
+    val scale by animateFloatAsState(
+        targetValue = if (appeared) 1f else 0.92f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMediumLow),
+        label = "verifyRewardScale",
+    )
+    Column(
+        Modifier
+            .weight(1f)
+            .fillMaxWidth()
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp))
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(Modifier.size(72.dp).clip(CircleShape).background(NeuColors.Success), contentAlignment = Alignment.Center) {
+            Icon(NeuIcons.Check, null, tint = NeuColors.OnSuccess, modifier = Modifier.size(34.dp))
+        }
+        NeuText(
+            if (state.rewardXp > 0) "+${state.rewardMinutes} min · +${state.rewardXp} XP" else "+${state.rewardMinutes} min",
+            size = 22.sp,
+            weight = FontWeight.ExtraBold,
+            color = NeuColors.Success,
+        )
+        NeuText("Úkol splněn a ověřen!", size = 16.sp, weight = FontWeight.ExtraBold)
+        NeuText(
+            state.statusMessage.ifBlank { "Odměna se připsala do tvého dnešního rozpočtu. Dobrá práce!" },
+            size = 13.sp,
+            weight = FontWeight.Medium,
+            color = NeuColors.Muted,
+            align = TextAlign.Center,
+            lineHeight = 19.sp,
         )
     }
 }
 
-@Preview(
-    name = "Ověření – Splněno (Tmavý)",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+@Composable
+private fun DefaultVerifyCameraPlaceholder(@Suppress("UNUSED_PARAMETER") state: VerifyTaskUiState) {
+    // Fotka z systémového fotoaparátu se nenáhleduje; stav ukazuje „Fotka připravena“.
+}
+
+private fun previewTasks() = listOf(
+    TaskItem(2, "Laboratorní úloha z databází", TaskType.SCHOOL, goal = "Odevzdaný SQL skript nebo zápisky z cvičení"),
+    TaskItem(3, "Dopsat report do práce", TaskType.WORK, status = TaskItemStatus.REJECTED, attemptsUsed = 1),
+    TaskItem(4, "Uklidit pokoj", TaskType.OTHER),
 )
+
+@Preview(name = "Ověření – fotka", widthDp = 390, heightDp = 844)
 @Composable
-private fun VerifyVerifiedDarkPreview() {
-    NarsilTheme(darkTheme = true) {
+private fun VerifyPendingPreview() {
+    NarsilTheme {
         VerifyTaskScreen(
-            state = VerifyTaskUiState(
-                status = VerificationStatus.VERIFIED,
-                attemptsUsed = 1
-            ),
-            onSelectProofMode = {},
-            onTextProofChange = {},
-            onCapturePhoto = {},
-            onRetakePhoto = {},
-            onSubmitProof = {},
-            onRetry = {},
-            onBack = {},
-            animateRewardOnVerified = false
+            state = VerifyTaskUiState(tasks = previewTasks(), selectedTaskId = 2),
+            onSelectProofMode = {}, onTextProofChange = {}, onCapturePhoto = {}, onRetakePhoto = {},
+            onSubmitProof = {}, onRetry = {}, onBack = {},
         )
     }
 }
 
-@Preview(name = "Ověření – Zamítnuto (Světlý)", showBackground = true)
+@Preview(name = "Ověření – popis", widthDp = 390, heightDp = 844)
 @Composable
-private fun VerifyRejectedLightPreview() {
-    NarsilTheme(darkTheme = false) {
+private fun VerifyTextPreview() {
+    NarsilTheme {
         VerifyTaskScreen(
             state = VerifyTaskUiState(
                 proofMode = ProofMode.TEXT,
-                status = VerificationStatus.REJECTED,
-                attemptsUsed = 1
+                textProof = "Dopsal jsem tři SQL dotazy na spojení tabulek a odevzdal je do Moodlu.",
+                tasks = previewTasks(),
+                selectedTaskId = 2,
             ),
-            onSelectProofMode = {},
-            onTextProofChange = {},
-            onCapturePhoto = {},
-            onRetakePhoto = {},
-            onSubmitProof = {},
-            onRetry = {},
-            onBack = {}
+            onSelectProofMode = {}, onTextProofChange = {}, onCapturePhoto = {}, onRetakePhoto = {},
+            onSubmitProof = {}, onRetry = {}, onBack = {},
         )
     }
 }
 
-@Preview(
-    name = "Ověření – Později (Tmavý)",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview(name = "Ověření – splněno", widthDp = 390, heightDp = 844)
 @Composable
-private fun VerifyLaterDarkPreview() {
-    NarsilTheme(darkTheme = true) {
+private fun VerifyVerifiedPreview() {
+    NarsilTheme {
         VerifyTaskScreen(
-            state = VerifyTaskUiState(
-                status = VerificationStatus.VERIFY_LATER
-            ),
-            onSelectProofMode = {},
-            onTextProofChange = {},
-            onCapturePhoto = {},
-            onRetakePhoto = {},
-            onSubmitProof = {},
-            onRetry = {},
-            onBack = {}
+            state = VerifyTaskUiState(status = VerificationStatus.VERIFIED, attemptsUsed = 1, rewardXp = 30),
+            onSelectProofMode = {}, onTextProofChange = {}, onCapturePhoto = {}, onRetakePhoto = {},
+            onSubmitProof = {}, onRetry = {}, onBack = {}, animateRewardOnVerified = false,
+        )
+    }
+}
+
+@Preview(name = "Ověření – zamítnuto", widthDp = 390, heightDp = 844)
+@Composable
+private fun VerifyRejectedPreview() {
+    NarsilTheme {
+        VerifyTaskScreen(
+            state = VerifyTaskUiState(status = VerificationStatus.REJECTED, attemptsUsed = 1),
+            onSelectProofMode = {}, onTextProofChange = {}, onCapturePhoto = {}, onRetakePhoto = {},
+            onSubmitProof = {}, onRetry = {}, onBack = {},
         )
     }
 }

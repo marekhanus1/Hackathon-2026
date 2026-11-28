@@ -3,6 +3,7 @@ package cz.narsil.ui.screens.home
 import cz.narsil.ui.text.CzechPlural
 import androidx.lifecycle.ViewModel
 import cz.narsil.ui.components.AvatarState
+import cz.narsil.ui.screens.verify.TaskItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,8 +38,13 @@ data class HomeUiState(
     val contractSignedForToday: Boolean = true,
     val contractTaskCount: Int = 0,
     val plannedContentSummary: String = "Přednáška o Rustu, 1 díl seriálu",
-    val zoneStatus: ZoneStatus = ZoneStatus.HOME
+    val zoneStatus: ZoneStatus = ZoneStatus.HOME,
+    /** Úkoly dnešní smlouvy (todo list na domově, 334); prázdné = dnes bez úkolů. */
+    val tasks: List<TaskItem> = emptyList(),
 ) {
+    val doneTaskCount: Int get() = tasks.count { it.isDone }
+    val openTaskCount: Int get() = tasks.count { it.canVerify }
+
     /** Nadpis karty smlouvy: splněná / podepsaná (dnes, zítra) / čeká. */
     val contractTitle: String
         get() = when {

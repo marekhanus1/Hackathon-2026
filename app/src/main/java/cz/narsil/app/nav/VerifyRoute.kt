@@ -3,13 +3,6 @@ package cz.narsil.app.nav
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,10 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.PhotoKind
@@ -33,6 +23,7 @@ import cz.narsil.core.Proof
 import cz.narsil.core.TaskStatus
 import cz.narsil.core.VerificationMethod
 import cz.narsil.ui.screens.verify.ProofMode
+import cz.narsil.ui.screens.verify.TaskPickerScreen
 import cz.narsil.ui.screens.verify.TaskType as UiTaskType
 import cz.narsil.ui.screens.verify.VerificationStatus
 import cz.narsil.ui.screens.verify.VerifyTaskScreen
@@ -48,7 +39,7 @@ import kotlinx.coroutines.launch
  * úkol se dokládá fotkou nebo popisem. Demo „vždy ANO“ jde přes DemoAwareTaskVerifier.
  */
 @Composable
-fun VerifyRoute(onBack: () -> Unit) {
+fun VerifyRoute(onBack: () -> Unit, initialTaskId: Long? = null) {
     val sl = ServiceLocator
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -56,7 +47,7 @@ fun VerifyRoute(onBack: () -> Unit) {
     val events by sl.verification.events.collectAsState()
 
     // Zobrazený úkol se drží, dokud uživatel neklepne na „Další úkol“ – po ověření uvidí výsledek a odměnu.
-    var shownTaskId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var shownTaskId by rememberSaveable { mutableStateOf(initialTaskId) }
     val tasks = contract?.tasks.orEmpty()
     val task: PlanTask? = pickVerifyTask(tasks, shownTaskId)
     if (task == null) {
@@ -74,11 +65,16 @@ fun VerifyRoute(onBack: () -> Unit) {
     var pendingPhoto by remember { mutableStateOf<Uri?>(null) }
     // „Zkusit znovu“ po zamítnutí: znovu formulář důkazu, dokud se nezapíše další pokus.
     var retrying by rememberSaveable(task.id, task.attempts) { mutableStateOf(false) }
-    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
-        if (ok) photo = pendingPhoto?.toString()
-    }
-
     fun submit(proof: Proof) = scope.launch { runCatching { sl.verification.submit(task, proof) } }
+
+    // „Vyfotit a ověřit“ (334): po vyfocení se důkaz rovnou odešle.
+    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        val uri = pendingPhoto?.toString()
+        if (ok && uri != null) {
+            photo = uri
+            submit(Proof.Photo(uri, if (proofMode == ProofMode.ROOM) PhotoKind.ROOM else PhotoKind.TASK))
+        }
+    }
 
     // Po restartu aplikace vezme důvod (pochvalu / zamítnutí od AI) uložený u úkolu.
     val event = events[task.id] ?: remember(task.id, task.status) { sl.verification.eventFor(task) }
@@ -98,6 +94,8 @@ fun VerifyRoute(onBack: () -> Unit) {
         statusMessage = if (retrying) "" else event?.reason.orEmpty(),
         rewardXp = GamificationRules.XP_TASK,
         nextTaskTitle = nextTask?.title,
+        tasks = tasks.map { it.toTaskItem() },
+        selectedTaskId = task.id,
     )
 
     VerifyTaskScreen(
@@ -133,6 +131,7 @@ fun VerifyRoute(onBack: () -> Unit) {
         },
         onBack = onBack,
         onContinue = { if (nextTask != null) shownTaskId = nextTask.id else onBack() },
+        onSelectTask = { shownTaskId = it },
     )
 }
 
@@ -157,13 +156,17 @@ internal fun verifyStatus(task: PlanTask, running: Boolean, retrying: Boolean): 
 
 @Composable
 private fun NoTask(onBack: () -> Unit) {
-    Column(
-        Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text("Dnes nemáš žádný úkol k ověření.", style = MaterialTheme.typography.titleMedium)
-        Text("Úkoly si naplánuješ ve večerní smlouvě.", style = MaterialTheme.typography.bodyMedium)
-        TextButton(onClick = onBack) { Text("Zpět") }
-    }
+    TaskPickerScreen(tasks = emptyList(), onBack = onBack, onContinue = {}, onOpenContract = onBack)
+}
+
+/** Výběr úkolu k ověření (334) nad úkoly dnešní smlouvy. */
+@Composable
+fun TaskPickerRoute(onBack: () -> Unit, onContinue: (Long) -> Unit, onOpenContract: () -> Unit) {
+    val contract by ServiceLocator.contractRepository.today.collectAsState()
+    TaskPickerScreen(
+        tasks = contract?.tasks.orEmpty().map { it.toTaskItem() },
+        onBack = onBack,
+        onContinue = onContinue,
+        onOpenContract = onOpenContract,
+    )
 }
