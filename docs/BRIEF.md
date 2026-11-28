@@ -232,6 +232,57 @@ Nothing Phone 3a je demo telefon, Redmi Note 11 telefon Parťáka a záloha. Oba
 
 # Plány agentů (záložky)
 
+## Předání Markovi: co Šimon (2xx) nemohl dodělat
+
+Stav 28. 11.: úkoly 201–231 jsou v `main` (PR #32–#43 mergnuté), napojení v 124 hotové (odškrtnuto). Šimon převzal i řadu 5xx (viz níže).
+Následující body z vlastních balíčků Šimon udělat nemohl (cizí soubory, nebo jen na telefonu). **Vlastník: Marek.**
+
+**Napojení v aplikaci (124, `ServiceLocator`)**
+- [x] Pohyb: `MovementModule.create(appContext)` + `startAutoRefresh(appScope)` (211).
+- [x] Gamifikace: `GamificationModule.create(appContext, appScope)` a po vytvoření smlouvy a pohybu `GamificationModule.watchContract(engine, contractRepository, movementRepository, appScope)` (220, +100 XP za splněnou smlouvu).
+- [x] Smlouva a Ozvěna: `ContractModule.contractRepository(appContext, appScope)`, `ContractModule.echoVideoRepository(appContext)` (212).
+- [x] Odměny: `TaskRewardService.create(appContext, movement, gamification)` (221), volá ho ověření (520).
+- [x] Dřepy: `PoseSquatCounter(appContext)` (210/231); náhled `SquatCameraPreview(counter)` do `SquatScreen(cameraPreviewSlot = …)`.
+
+**Demo panel (123, `app/demo/DemoActions.kt`)**
+- [x] `prepareDemo()`: místo `setState(FakeGamificationEngine.DEMO_STATE)` (1 340 XP – dřepy pak úroveň nespustí) volat `GamificationDebug.prepareDemo(engine)` (1 480 XP, 20 dřepů → úroveň 4, 230) a `MovementDebug.resetDay(movement)`.
+- [x] Tlačítka přes `MovementDebug.addSteps`, `GamificationDebug.addXp` / `setAvatar` / `resetDay` – fungují i se skutečnými moduly (222).
+- [x] Na obrazovce dřepů v demo režimu zobrazit `SquatTuningOverlay(counter)` pro zkoušku v sále.
+
+**Overlay a Ozvěna (114/115)**
+- [ ] Animace nové úrovně (321): ukázat, když `level` po `onOutcome` > `level` před ním (`DemoTuning.levelsUp`).
+- [ ] Dřepy nad 20 posílat do `RulesGamificationEngine.onExtraSquats(n)` – za každých 50 navíc žolík.
+
+**Onboarding (122)**
+- [ ] Oprávnění Health Connect: `registerForActivityResult(HealthConnectStepsSource.permissionContract())` s `HealthConnectStepsSource.PERMISSIONS`; na Redmi případně doinstalovat Health Connect (`HealthConnectStepsSource.isAvailable`).
+- [ ] Runtime oprávnění `ACTIVITY_RECOGNITION` (záloha senzor kroků), `CAMERA`, `RECORD_AUDIO` (video smlouvy), `POST_NOTIFICATIONS` (zpráva Parťákovi).
+- [ ] Video z onboardingu uložit přes `PrefsOnboardingVideoStore(context).save(uri, den)` – záloha Ozvěny (SPEC 9).
+
+**Databáze a manifest (jen Marek)**
+- [ ] `XpDao.all()` – gamifikace teď načítá historii po dnech za 90 dní (`RoomGamificationStore`).
+- [ ] Manifest z PR #36 (211): `<queries>` pro Health Connect a dva `activity-alias` na MainActivity (vysvětlení oprávnění) – zkontrolovat při merge.
+
+**Jen na telefonu (130, s pomocí Šimona)**
+- [ ] 231: 3 různí lidé × 20 dřepů na Nothing i Redmi v sále se `SquatTuningOverlay`; při chybách doladit `SquatThresholds.downDepth` / `upDepth`.
+- [ ] 211: kroky z Health Connect a ze senzoru se promítnou do zůstatku (kroky / 100).
+- [ ] 212: nahrání 15s videa smlouvy přední kamerou a jeho přehrání v Ozvěně druhý den.
+
+**Rozhodnutí k odsouhlasení (zapsat do `docs/decisions.md`)**
+- [ ] Postava: kdo má méně než 7 dní historie, nespadne pod `OK` (nikdy netrestat; SPEC 8 by dal `EXHAUSTED`).
+- [ ] Ozvěna: nejdřív video **dnešní** smlouvy (natočené včera večer), pak starší, pak onboarding (SPEC 9 doslova „staršího dne“).
+- [ ] Dřepy: tolerantní prahy pro sál (dole ≈ 122°, nahoře ≈ 150°) místo 100° / 160° ze SPEC 3/210, plus signál ze stehna pro postoj čelem ke kameře.
+
+**Ověření, LLM a Strava (5xx – převzal Šimon, PR viz tasks/5xx)**
+- [ ] `app/build.gradle.kts`: `buildConfigField` pro `GEMINI_API_KEY`, `OPENAI_API_KEY`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET` z `local.properties` (klient je čte reflexí, chybějící = poskytovatel vypnutý).
+- [ ] `ServiceLocator`: `contentMatcher = LlmContentMatcher(MultiProviderLlmClient({ settings.llmProvider }), isOnline = AndroidNetworkStatus(ctx)::isOnline)` (512); `taskVerifier = VerificationModule.verifier(ctx, settingsRepository, stravaRepository)` (501/522); `verification = VerificationModule.service(contractRepository, taskVerifier, rewardService)` (520/521) + `VerificationModule.networkTrigger(ctx, verification, appScope).start()`; `stravaRepository = HttpStravaRepository.create(ctx)` (511).
+- [ ] Manifest: deep link `narsil://strava` (intent-filter VIEW, BROWSABLE, scheme `narsil`, host `strava`) na MainActivity; v `onCreate`/`onNewIntent` zavolat `stravaRepository.handleRedirect(intent.data.toString())`.
+- [ ] Obrazovka ověření (Jan 324) volá `verification.submit(task, proof)` a stav čte z `verification.events`.
+- [ ] 502 (člověk): registrace aplikace na strava.com/settings/api, Authorization Callback Domain `strava`, testovací aktivita v den dema.
+- [ ] 530 (s klíči): `NARSIL_LIVE_EVAL=1 … ./gradlew testDebugUnitTest --tests '*PromptEvalTest*'`, výsledek do `docs/overeni-testy.md`.
+- [ ] Rozhodnutí: Claude ověřuje přes `claude-haiku-5-5` **bez** `temperature` (model ji odmítá) – thinking vypnuté a effort `low` místo „teplota 0“ ze SPEC 7.
+
+**Pořadí merge PR 5xx:** 510 → 501 → 520 → 521 → 522; 512 po 510; 530 po 501; 511 nezávisle.
+
 ## Plány agentů
 
 Každý člověk řídí jednoho hlavního agenta jako orchestrátora. Orchestrátor sám skoro nepíše kód: rozdělí fázi na nezávislé proudy, každý proud pustí jako samostatného subagenta ve vlastním worktree, kontroluje výsledky a otevírá PR. Pravidla repozitáře jsou v `AGENTS.md`. Brief exportujte do Markdownu jako `docs/BRIEF.md` včetně těchto záložek.
