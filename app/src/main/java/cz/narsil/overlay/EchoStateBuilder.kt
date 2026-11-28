@@ -61,6 +61,9 @@ object EchoStateBuilder {
             currentDebtMinutes = movement.debtMinutes,
             isVideoPlaying = video != null,
             exerciseOptionTitle = ExerciseText.echoOption(exercise, reps),
+            // 159: stejné pravidlo jako EchoOutcomeHandler.canBorrow (SPEC 5), tlačítko nad limitem neaktivní.
+            canBorrow = movement.debtMinutes + MovementRates.MINUTES_PER_UNLOCK <= movement.debtLimitMinutes,
+            debtLimitMinutes = movement.debtLimitMinutes,
         )
         return EchoContent(ui, video?.uri, fallback)
     }
