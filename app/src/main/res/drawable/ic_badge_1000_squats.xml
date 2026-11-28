@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <path
+        android:fillColor="#663209"
+        android:pathData="M32,32 m-28,0 a28,28 0,1 1,56 0 a28,28 0,1 1,-56 0" />
+    <path
+        android:pathData="M32,4 A28,28 0 1,1 32,60 A28,28 0 1,1 32,4"
+        android:strokeColor="#F2A359"
+        android:strokeWidth="3" />
+
+    <!-- Double upward motion chevrons (forged ember) -->
+    <path
+        android:pathData="M20,30 L32,18 L44,30"
+        android:strokeColor="#F2A359"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M20,44 L32,32 L44,44"
+        android:strokeColor="#FFE5D0"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

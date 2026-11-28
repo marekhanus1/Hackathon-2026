@@ -1,12 +1,15 @@
 package cz.narsil.ui.components
 
 import android.content.res.Configuration
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,9 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cz.narsil.R
 import cz.narsil.ui.theme.NarsilTheme
 
 /**
@@ -61,7 +66,19 @@ enum class AvatarState(
 }
 
 /**
- * Displays the "Budoucí já" character card with an optional slot for Štěpán's illustrations.
+ * Maps each [AvatarState] to its vector drawable illustration in `res/drawable/`.
+ */
+@DrawableRes
+fun AvatarState.drawableRes(): Int = when (this) {
+    AvatarState.TIRED -> R.drawable.avatar_state_1_tired
+    AvatarState.RESTING -> R.drawable.avatar_state_2_resting
+    AvatarState.BALANCED -> R.drawable.avatar_state_3_balanced
+    AvatarState.ENERGIZED -> R.drawable.avatar_state_4_energized
+    AvatarState.THRIVING -> R.drawable.avatar_state_5_thriving
+}
+
+/**
+ * Displays the "Budoucí já" character card with an optional slot for custom illustrations.
  */
 @Composable
 fun AvatarCard(
@@ -72,14 +89,6 @@ fun AvatarCard(
 ) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
-
-    val accentColor = when (state) {
-        AvatarState.TIRED -> colors.echo
-        AvatarState.RESTING -> MaterialTheme.colorScheme.onSurfaceVariant
-        AvatarState.BALANCED -> colors.ember
-        AvatarState.ENERGIZED -> colors.positive
-        AvatarState.THRIVING -> colors.goldAccent
-    }
 
     val containerColor = when (state) {
         AvatarState.TIRED -> colors.echoContainer
@@ -114,7 +123,7 @@ fun AvatarCard(
                 if (avatarContent != null) {
                     avatarContent(state)
                 } else {
-                    DefaultAvatarEmblem(state = state, accentColor = accentColor)
+                    DefaultAvatarEmblem(state = state)
                 }
             }
 
@@ -151,29 +160,14 @@ fun AvatarCard(
 }
 
 @Composable
-private fun DefaultAvatarEmblem(
-    state: AvatarState,
-    accentColor: androidx.compose.ui.graphics.Color
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(34.dp)
-                .clip(CircleShape)
-                .background(accentColor),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "${state.level}/5",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.surface
-            )
-        }
-    }
+private fun DefaultAvatarEmblem(state: AvatarState) {
+    Image(
+        painter = painterResource(id = state.drawableRes()),
+        contentDescription = state.label,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(6.dp)
+    )
 }
 
 @Preview(name = "AvatarCard – Světlý", showBackground = true)

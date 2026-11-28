@@ -1,0 +1,34 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Soft twilight halo -->
+    <path
+        android:fillColor="#9FA8DA"
+        android:fillAlpha="0.22"
+        android:pathData="M48,48 m-38,0 a38,38 0,1 1,76 0 a38,38 0,1 1,-76 0" />
+
+    <!-- Calm resting ground line -->
+    <path
+        android:pathData="M20,76 L76,76"
+        android:strokeColor="#5465B8"
+        android:strokeAlpha="0.55"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+
+    <!-- Seated figure resting head slightly forward -->
+    <path
+        android:fillColor="#5465B8"
+        android:pathData="M46,35 m-9,0 a9,9 0,1 1,18 0 a9,9 0,1 1,-18 0" />
+    <path
+        android:fillColor="#344180"
+        android:pathData="M28,74 C28,55 40,48 50,51 C60,54 66,64 66,74 Z" />
+
+    <!-- Small dim ember spark beside the character -->
+    <path
+        android:fillColor="#F2A359"
+        android:fillAlpha="0.75"
+        android:pathData="M70,58 L73,63 L70,68 L67,63 Z" />
+</vector>

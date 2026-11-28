@@ -1,0 +1,33 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Sage energy aura -->
+    <path
+        android:fillColor="#5CC497"
+        android:fillAlpha="0.24"
+        android:pathData="M48,48 m-38,0 a38,38 0,1 1,76 0 a38,38 0,1 1,-76 0" />
+    <path
+        android:pathData="M18,62 A34,34 0 1,1 78,62"
+        android:strokeColor="#5CC497"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round" />
+
+    <!-- Forward-striding focused character -->
+    <path
+        android:fillColor="#2E7D5B"
+        android:pathData="M50,25 m-9,0 a9,9 0,1 1,18 0 a9,9 0,1 1,-18 0" />
+    <path
+        android:fillColor="#5CC497"
+        android:pathData="M36,74 L41,42 C42,38 56,38 58,43 L66,74 L55,74 L50,58 L44,74 Z" />
+
+    <!-- Warm amber momentum spark -->
+    <path
+        android:fillColor="#F2A359"
+        android:pathData="M24,42 L28,48 L24,54 L20,48 Z" />
+    <path
+        android:fillColor="#F2A359"
+        android:pathData="M73,34 L77,40 L73,46 L69,40 Z" />
+</vector>

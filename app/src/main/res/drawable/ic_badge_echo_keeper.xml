@@ -1,0 +1,29 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <path
+        android:fillColor="#344180"
+        android:pathData="M32,32 m-28,0 a28,28 0,1 1,56 0 a28,28 0,1 1,-56 0" />
+    <path
+        android:pathData="M32,4 A28,28 0 1,1 32,60 A28,28 0 1,1 32,4"
+        android:strokeColor="#9FA8DA"
+        android:strokeWidth="3" />
+
+    <!-- Twilight echo arcs + ember spark -->
+    <path
+        android:pathData="M21,42 A15,15 0 0,1 43,42"
+        android:strokeColor="#9FA8DA"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M16,33 A22,22 0 0,1 48,33"
+        android:strokeColor="#E0E5FA"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#F2A359"
+        android:pathData="M32,44 m-5,0 a5,5 0,1 1,10 0 a5,5 0,1 1,-10 0" />
+</vector>

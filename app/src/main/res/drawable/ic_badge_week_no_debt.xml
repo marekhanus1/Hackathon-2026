@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <path
+        android:fillColor="#5A3916"
+        android:pathData="M32,32 m-28,0 a28,28 0,1 1,56 0 a28,28 0,1 1,-56 0" />
+    <path
+        android:pathData="M32,4 A28,28 0 1,1 32,60 A28,28 0 1,1 32,4"
+        android:strokeColor="#F2C14E"
+        android:strokeWidth="3" />
+
+    <!-- Calm shield with balanced horizontal line -->
+    <path
+        android:fillColor="#F2C14E"
+        android:fillAlpha="0.25"
+        android:pathData="M32,14 L46,20 V33 C46,42 39,48 32,51 C25,48 18,42 18,33 V20 Z" />
+    <path
+        android:pathData="M23,32 H41 M32,23 V41"
+        android:strokeColor="#F2C14E"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round" />
+</vector>

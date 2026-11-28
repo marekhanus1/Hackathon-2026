@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <path
+        android:fillColor="#175139"
+        android:pathData="M32,32 m-28,0 a28,28 0,1 1,56 0 a28,28 0,1 1,-56 0" />
+    <path
+        android:pathData="M32,4 A28,28 0 1,1 32,60 A28,28 0 1,1 32,4"
+        android:strokeColor="#5CC497"
+        android:strokeWidth="3" />
+
+    <!-- Calm closed door / checkmark -->
+    <path
+        android:pathData="M20,33 L28,41 L44,23"
+        android:strokeColor="#5CC497"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

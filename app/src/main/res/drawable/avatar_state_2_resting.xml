@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Warm twilight + soft ember aura -->
+    <path
+        android:fillColor="#9FA8DA"
+        android:fillAlpha="0.20"
+        android:pathData="M48,48 m-38,0 a38,38 0,1 1,76 0 a38,38 0,1 1,-76 0" />
+
+    <!-- Rising posture -->
+    <path
+        android:fillColor="#5A5248"
+        android:pathData="M48,30 m-9,0 a9,9 0,1 1,18 0 a9,9 0,1 1,-18 0" />
+    <path
+        android:fillColor="#474139"
+        android:pathData="M31,76 C31,56 38,44 48,44 C58,44 65,56 65,76 Z" />
+
+    <!-- Gentle warm ember held in hands -->
+    <path
+        android:fillColor="#F2A359"
+        android:fillAlpha="0.30"
+        android:pathData="M48,54 m-11,0 a11,11 0,1 1,22 0 a11,11 0,1 1,-22 0" />
+    <path
+        android:fillColor="#F2A359"
+        android:pathData="M48,47 L53,54 L48,61 L43,54 Z" />
+
+    <!-- Calm base line -->
+    <path
+        android:pathData="M24,76 L72,76"
+        android:strokeColor="#C1B7AA"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+</vector>

@@ -1,0 +1,42 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Radiant gold & sage crown aura -->
+    <path
+        android:fillColor="#F2C14E"
+        android:fillAlpha="0.24"
+        android:pathData="M48,48 m-40,0 a40,40 0,1 1,80 0 a40,40 0,1 1,-80 0" />
+    <path
+        android:pathData="M16,48 A32,32 0 1,1 80,48 A32,32 0 1,1 16,48"
+        android:strokeColor="#F2C14E"
+        android:strokeWidth="3.5" />
+
+    <!-- Thriving upright character -->
+    <path
+        android:fillColor="#D49B27"
+        android:pathData="M48,26 m-9,0 a9,9 0,1 1,18 0 a9,9 0,1 1,-18 0" />
+    <path
+        android:fillColor="#2E7D5B"
+        android:pathData="M34,74 L39,42 C40,38 56,38 57,42 L62,74 Z" />
+
+    <!-- Reforged golden kintsugi blade crest -->
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M48,44 L52,52 L48,66 L44,52 Z" />
+    <path
+        android:pathData="M42,54 L54,51"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round" />
+
+    <!-- Spark stars -->
+    <path
+        android:fillColor="#F2C14E"
+        android:pathData="M24,26 L26,30 L30,32 L26,34 L24,38 L22,34 L18,32 L22,30 Z" />
+    <path
+        android:fillColor="#5CC497"
+        android:pathData="M72,26 L74,30 L78,32 L74,34 L72,38 L70,34 L66,32 L70,30 Z" />
+</vector>

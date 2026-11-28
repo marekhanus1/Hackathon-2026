@@ -1,7 +1,9 @@
 package cz.narsil.ui.screens.badges
 
 import android.content.res.Configuration
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -22,13 +25,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cz.narsil.R
 import cz.narsil.ui.components.AvatarCard
 import cz.narsil.ui.components.AvatarState
 import cz.narsil.ui.components.NarsilProgressBar
+import cz.narsil.ui.components.drawableRes
 import cz.narsil.ui.theme.NarsilTheme
 
 /**
@@ -98,15 +105,16 @@ fun BadgesScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(spacing.xxs)
                             ) {
-                                Text(
-                                    text = "${avatarStage.level}/5",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isCurrent) colors.ember else MaterialTheme.colorScheme.onSurfaceVariant
+                                Image(
+                                    painter = painterResource(id = avatarStage.drawableRes()),
+                                    contentDescription = avatarStage.label,
+                                    modifier = Modifier.size(48.dp)
                                 )
                                 Text(
-                                    text = avatarStage.label,
+                                    text = "${avatarStage.level}/5 · ${avatarStage.label}",
                                     style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isCurrent) colors.ember else MaterialTheme.colorScheme.onSurface,
                                     textAlign = TextAlign.Center
                                 )
                             }
@@ -164,14 +172,31 @@ private fun BadgeCard(badge: BadgeItem) {
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = badge.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
+                Image(
+                    painter = painterResource(id = badgeDrawableRes(badge.id)),
+                    contentDescription = badge.title,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .alpha(if (badge.isUnlocked) 1f else 0.45f)
                 )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(spacing.xxs)
+                ) {
+                    Text(
+                        text = badge.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = badge.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Surface(
                     shape = CircleShape,
                     color = if (badge.isUnlocked) colors.goldAccent else MaterialTheme.colorScheme.surfaceVariant
@@ -185,11 +210,6 @@ private fun BadgeCard(badge: BadgeItem) {
                     )
                 }
             }
-            Text(
-                text = badge.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
             NarsilProgressBar(
                 progress = fraction,
                 fillColor = if (badge.isUnlocked) colors.goldAccent else colors.positive,
@@ -197,6 +217,16 @@ private fun BadgeCard(badge: BadgeItem) {
             )
         }
     }
+}
+
+@DrawableRes
+private fun badgeDrawableRes(badgeId: String): Int = when (badgeId) {
+    "closed_10x" -> R.drawable.ic_badge_closed_10x
+    "week_no_debt" -> R.drawable.ic_badge_week_no_debt
+    "1000_squats" -> R.drawable.ic_badge_1000_squats
+    "echo_keeper" -> R.drawable.ic_badge_echo_keeper
+    "reforged" -> R.drawable.ic_badge_reforged
+    else -> R.drawable.ic_badge_reforged
 }
 
 @Composable
