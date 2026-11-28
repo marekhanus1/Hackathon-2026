@@ -132,6 +132,12 @@ object EchoOverlayStarter {
                     demoMode = { sl.settingsRepository.settings.value.demoMode },
                     gamification = sl.gamificationEngine,
                     session = echoSession,
+                    // 153: jen nad aplikací, ze které zásah přišel (null = nevíme → ukázat).
+                    isInForeground = { t ->
+                        val fg = NarsilAccessibilityService.instance?.foregroundPackage()
+                        fg == null || fg == t.event.packageName
+                    },
+                    onSkipped = { (triggers as? AccessibilityTriggerSource)?.onOutcome(InterventionOutcome.PLANNED_FREE) },
                     // Prošlá rozdělaná Ozvěna: okno zmizelo bez volby, detekce smí zasáhnout znovu.
                     onRestoreExpired = { (triggers as? AccessibilityTriggerSource)?.onOutcome(InterventionOutcome.PLANNED_FREE) },
                     onExtraSquats = { n -> (sl.gamificationEngine as? RulesGamificationEngine)?.onExtraSquats(n) },

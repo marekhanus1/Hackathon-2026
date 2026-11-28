@@ -48,6 +48,11 @@ class AccessibilityTriggerSource(
     private val planDelayMillis: Long = 2_000,
     /** Ladicí výpis (149): změny obecné detekce feedu. ServiceLocator → Log.d. */
     private val onDebug: (String) -> Unit = {},
+    /**
+     * Balíček aplikace skutečně v popředí (153, `NarsilAccessibilityService.foregroundPackage`), null = nevíme.
+     * Tik podle něj nepoužije zastaralý snímek sledované aplikace, když uživatel odešel (plocha bez události).
+     */
+    private val foreground: () -> String? = { null },
 ) : InterventionTriggerSource {
     private val tracker = ScrollSessionTracker()
     private val chain = VideoChainTracker()
@@ -87,7 +92,13 @@ class AccessibilityTriggerSource(
         scope.launch {
             while (isActive) {
                 delay(tickMillis)
-                last?.let { handle(it.copy(atMillis = clock()), scrolled = false) }
+                val snap = last ?: continue
+                val now = clock()
+                val fg = runCatching { foreground() }.getOrNull()
+                // 153: v popředí je jiná aplikace (odchod se neohlásil): jako mimo sledované, žádný zásah nad ní.
+                val current = if (fg != null && fg != snap.packageName) ForegroundSnapshot(fg, null, SnapshotKind.CONTENT_CHANGED, now)
+                else snap.copy(atMillis = now)
+                handle(current, scrolled = false)
             }
         }
     }

@@ -146,6 +146,8 @@ object ServiceLocator {
                 },
                 // 149: obecná detekce feedu do logu (`adb logcat -s NarsilA11y`).
                 onDebug = { android.util.Log.d("NarsilA11y", it) },
+                // 153: tik a zásahy jen nad aplikací skutečně v popředí.
+                foreground = { cz.narsil.detection.accessibility.NarsilAccessibilityService.instance?.foregroundPackage() },
             )
         }
 
