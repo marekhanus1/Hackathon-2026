@@ -1,0 +1,23 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="390" height="844" rx="40" fill="#121110" stroke="#332E28" stroke-width="3"/>
+  <!-- Lock screen clock -->
+  <text x="195" y="138" text-anchor="middle" fill="#F3EFE9" font-size="68" font-weight="300">22:14</text>
+  <text x="195" y="170" text-anchor="middle" fill="#C1B7AA" font-size="15">Sobota 28. listopadu · Telefon Parťáka (Redmi Note 11)</text>
+
+  <!-- Notification card -->
+  <rect x="20" y="236" width="350" height="170" rx="24" fill="#1C1A17" stroke="#F2A359" stroke-width="2"/>
+  <circle cx="52" cy="272" r="14" fill="#663209" stroke="#F2A359"/>
+  <text x="52" y="277" text-anchor="middle" fill="#F2A359" font-size="12" font-weight="800">N</text>
+  <text x="76" y="276" fill="#F2A359" font-size="13" font-weight="700">Narsil · Parťák (MVP ukázka)</text>
+  <text x="348" y="276" text-anchor="end" fill="#C1B7AA" font-size="12">nyní</text>
+
+  <text x="38" y="314" fill="#F3EFE9" font-size="16" font-weight="700">Marek přerušil ochranu Narsilu</text>
+  <text x="38" y="340" fill="#C1B7AA" font-size="13">Aplikace se přestala hlásit nebo byl překročen</text>
+  <text x="38" y="358" fill="#C1B7AA" font-size="13">limit dluhu. Napiš mu krátkou zprávu – žádná</text>
+  <text x="38" y="376" fill="#C1B7AA" font-size="13">data ani videa se nesdílí.</text>
+
+  <!-- Privacy note -->
+  <rect x="34" y="440" width="322" height="58" rx="16" fill="#344180"/>
+  <text x="195" y="466" text-anchor="middle" fill="#E0E5FA" font-size="13" font-weight="700">Soukromí zachováno</text>
+  <text x="195" y="484" text-anchor="middle" fill="#E0E5FA" opacity="0.85" font-size="12">Parťák nevidí aplikace, videa ani zprávy.</text>
+</svg>
