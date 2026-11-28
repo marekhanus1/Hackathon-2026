@@ -1,9 +1,9 @@
 ---
-status: in-progress # todo | in-progress | review | done
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/151-pitch-lotr
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/112
 ---
 
 # 151 – Prezentace v jednom stylu (Pán prstenů) s ukázkami aplikace
