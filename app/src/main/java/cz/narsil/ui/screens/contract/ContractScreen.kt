@@ -42,8 +42,8 @@ import cz.narsil.core.TaskType
 import cz.narsil.ui.theme.NarsilTheme
 
 /**
- * Three-step Evening Contract ("Večerní smlouva") wizard.
- * Step 3 accepts CameraX preview via [cameraPreviewSlot] (task 212).
+ * Four-step Evening Contract ("Večerní smlouva") wizard.
+ * The final step accepts CameraX preview via [cameraPreviewSlot] (task 212).
  */
 @Composable
 fun ContractScreen(
@@ -417,94 +417,196 @@ private fun TasksStep(
         TaskType.OTHER to "Uklidit pokoj",
     )
 
-    Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-        Text(
-            text = "Co chceš ${state.dayWord} stihnout? Splněný úkol doložíš fotkou, fotkou prostředí nebo popisem a dostaneš minuty navíc.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
-            TaskType.entries.forEach { type ->
-                FilterChip(
-                    selected = state.taskDraftType == type,
-                    onClick = { onSelectTaskType(type) },
-                    label = { Text("${type.label} · ${type.defaultRewardMinutes} min") }
-                )
-            }
-        }
+    Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing.xs),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = state.taskDraftText,
-                onValueChange = onTaskDraftChange,
-                placeholder = { Text("Např. kapitola 3 z fyziky") },
-                singleLine = true,
-                modifier = Modifier.weight(1f)
-            )
-            Button(
-                onClick = { onAddTask(state.taskDraftType, state.taskDraftText) },
-                enabled = state.taskDraftText.isNotBlank() && state.canAddTask
-            ) {
-                Text("Přidat")
+            Column {
+                Text(
+                    text = "Tvoje úkoly na ${state.dayWord}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Tohle je hlavní plán dne.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-        }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
-            suggestions.forEach { (type, title) ->
-                FilterChip(
-                    selected = state.tasks.any { it.title == title },
-                    onClick = { onAddTask(type, title) },
-                    enabled = state.canAddTask,
-                    label = { Text("+ $title") }
+            Surface(
+                shape = CircleShape,
+                color = if (state.tasks.isEmpty()) {
+                    MaterialTheme.colorScheme.surfaceVariant
+                } else {
+                    colors.positiveContainer
+                },
+                contentColor = if (state.tasks.isEmpty()) {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    colors.onPositiveContainer
+                }
+            ) {
+                Text(
+                    text = "${state.tasks.size}/${PlanRules.MAX_TASKS}",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xs)
                 )
             }
         }
+
         if (state.tasks.isEmpty()) {
-            Text(
-                text = "Zatím žádný úkol. Smlouva jde podepsat i bez úkolů.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
-            state.tasks.forEach { task ->
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    color = colors.echoContainer,
-                    contentColor = colors.onEchoContainer
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium,
+                color = colors.echoContainer,
+                contentColor = colors.onEchoContainer
+            ) {
+                Column(
+                    modifier = Modifier.padding(spacing.md),
+                    verticalArrangement = Arrangement.spacedBy(spacing.xs)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = spacing.md, vertical = spacing.xs),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Text(
+                        text = "Co chceš opravdu dokončit?",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Přidej jeden až tři konkrétní úkoly. Za ověřené splnění získáš minuty navíc.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                state.tasks.forEachIndexed { index, task ->
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(text = task.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-                            Text(
-                                text = "${task.type.label} · +${task.rewardMinutes} min" +
-                                     " · fotka nebo popis",
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                        TextButton(onClick = { onRemoveTask(task) }) {
-                            Text("Odebrat")
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(spacing.md),
+                            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = colors.echoContainer,
+                                contentColor = colors.onEchoContainer
+                            ) {
+                                Text(
+                                    text = "${index + 1}",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xs)
+                                )
+                            }
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(spacing.xxs)
+                            ) {
+                                Text(
+                                    text = task.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = "${task.type.label} · +${task.rewardMinutes} min · fotka nebo popis",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            TextButton(onClick = { onRemoveTask(task) }) {
+                                Text("Odebrat")
+                            }
                         }
                     }
                 }
             }
         }
-        if (!state.canAddTask) {
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh
+        ) {
+            Column(
+                modifier = Modifier.padding(spacing.md),
+                verticalArrangement = Arrangement.spacedBy(spacing.sm)
+            ) {
+                Text(
+                    text = if (state.tasks.isEmpty()) "Přidat první úkol" else "Přidat další úkol",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                    TaskType.entries.forEach { type ->
+                        FilterChip(
+                            selected = state.taskDraftType == type,
+                            onClick = { onSelectTaskType(type) },
+                            label = { Text("${type.label} · ${type.defaultRewardMinutes} min") }
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing.xs),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = state.taskDraftText,
+                        onValueChange = onTaskDraftChange,
+                        placeholder = { Text("Např. dokončit kapitolu 3") },
+                        singleLine = true,
+                        enabled = state.canAddTask,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Button(
+                        onClick = { onAddTask(state.taskDraftType, state.taskDraftText) },
+                        enabled = state.taskDraftText.isNotBlank() && state.canAddTask
+                    ) {
+                        Text("Přidat")
+                    }
+                }
+            }
+        }
+
+        if (state.canAddTask) {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                Text(
+                    text = "Rychlé návrhy",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                    suggestions.forEach { (type, title) ->
+                        FilterChip(
+                            selected = state.tasks.any { it.title == title },
+                            onClick = { onAddTask(type, title) },
+                            label = { Text("+ $title") }
+                        )
+                    }
+                }
+            }
+        } else {
             Text(
-                text = "Víc než ${PlanRules.MAX_TASKS} úkolů se do jednoho dne nevejde.",
+                text = "Plán je plný. Víc než ${PlanRules.MAX_TASKS} úkolů se do jednoho dne nevejde.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+
+        Text(
+            text = "Splnění doložíš fotkou, fotkou prostředí nebo krátkým popisem.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -631,6 +733,33 @@ private fun ContractStep2LightPreview() {
             state = ContractUiState(
                 currentStep = ContractStep.PLANNED_CONTENT,
                 plannedItems = listOf("Přednáška o Rustu", "Jeden díl seriálu")
+            ),
+            onSelectGoalType = {},
+            onSetGoalAmount = {},
+            onAdjustGoalAmount = {},
+            onDraftChange = {},
+            onAddPlannedItem = {},
+            onRemovePlannedItem = {},
+            onToggleRecording = {},
+            onNextStep = {},
+            onPreviousStep = {},
+            onSubmitContract = {},
+            onBackToHome = {}
+        )
+    }
+}
+
+@Preview(name = "Smlouva – Úkoly jako hlavní obsah", showBackground = true)
+@Composable
+private fun ContractTasksPreview() {
+    NarsilTheme(darkTheme = false) {
+        ContractScreen(
+            state = ContractUiState(
+                currentStep = ContractStep.TASKS,
+                tasks = listOf(
+                    TaskDraft(TaskType.SCHOOL, "Dokončit kapitolu 3 z fyziky"),
+                    TaskDraft(TaskType.MOVEMENT, "Jít na 20minutovou procházku")
+                )
             ),
             onSelectGoalType = {},
             onSetGoalAmount = {},
