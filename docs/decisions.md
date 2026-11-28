@@ -11,3 +11,5 @@ Jeden řádek na rozhodnutí: `YYYY-MM-DD – kdo – co a proč`.
 2026-11-27 – marek – Změny AndroidManifest.xml a app/build.gradle.kts drží proudy minimální; konflikty řeší Marek. Klíč Claude je v BuildConfig.CLAUDE_API_KEY z local.properties (už v kostře 101).
 2026-11-27 – marek – Sdílená databáze je NarsilDatabase v cz.narsil.core.data (105, nahrazuje AppDatabase/121): všechny entity a DAO předem, ostatní moduly vlastní entity nezakládají.
 2026-11-27 – marek – DailyContract.isFulfilled je funkce isFulfilled(stepsToday), ne vlastnost: kroky smlouva nezná (105). Den od 4:00 počítá sdílený DayKey.
+2026-11-28 – marek – Ověření úkolů přes Claude (výchozí poskytovatel) používá claude-haiku-5-5 bez parametru temperature (model ho odmítá); místo „teplota 0“ ze SPEC 7 je thinking vypnuté a effort low. Gemini a OpenAI dál s teplotou 0.
+2026-11-28 – marek – Klíče GEMINI_API_KEY, OPENAI_API_KEY, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET (vedle CLAUDE_API_KEY) jen v local.properties → BuildConfig; chybějící klíč = poskytovatel vypnutý (ověření pak VERIFY_LATER, párování obsahu přes klíčová slova).

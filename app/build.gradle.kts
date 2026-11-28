@@ -23,7 +23,10 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1"
-        buildConfigField("String", "CLAUDE_API_KEY", "\"${localProps.getProperty("CLAUDE_API_KEY", "")}\"")
+        // Klíče jen v local.properties (nikdy v gitu). Chybějící = prázdný řetězec = poskytovatel vypnutý.
+        listOf("CLAUDE_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY", "STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET").forEach { key ->
+            buildConfigField("String", key, "\"${localProps.getProperty(key, "")}\"")
+        }
     }
 
     buildTypes {
