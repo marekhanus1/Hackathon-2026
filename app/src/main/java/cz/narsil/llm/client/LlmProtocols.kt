@@ -23,7 +23,9 @@ data class HttpCall(val url: String, val headers: Map<String, String>, val body:
  *
  * - Claude: Messages API, `claude-haiku-5-5`. Haiku 5.5 nepřijímá `temperature` (400) – determinismus
  *   zajišťuje vypnuté thinking a effort `low`; odpověď je jedno slovo.
- * - Gemini: `generateContent`, `temperature 0`.
+ * - Gemini: `generateContent`, `temperature 0`, `gemini-3.5-flash-lite`. Je to thinking model – přemýšlení
+ *   je stažené na `thinkingLevel: minimal` (`thinkingBudget: 0` API odmítá 400). Části odpovědi s
+ *   `thoughtSignature` nesou i text, části s `thought: true` (shrnutí přemýšlení) se přeskočí.
  * - OpenAI: Chat Completions, `temperature 0`.
  */
 object LlmProtocols {
@@ -116,6 +118,7 @@ object LlmProtocols {
             putJsonObject("generationConfig") {
                 put("temperature", 0)
                 put("maxOutputTokens", r.maxTokens)
+                putJsonObject("thinkingConfig") { put("thinkingLevel", "minimal") }
             }
         }
         return HttpCall(
@@ -128,7 +131,7 @@ object LlmProtocols {
     private fun parseGemini(root: JsonObject): String? =
         root["candidates"]?.jsonArray?.firstOrNull()?.jsonObject
             ?.get("content")?.jsonObject?.get("parts")?.jsonArray
-            ?.mapNotNull { (it as? JsonObject)?.str("text") }
+            ?.mapNotNull { part -> (part as? JsonObject)?.takeUnless { it.str("thought") == "true" }?.str("text") }
             ?.joinToString("")
 
     private fun openai(r: LlmRequest, key: String): HttpCall {
