@@ -1,5 +1,7 @@
 package cz.narsil.detection.accessibility
 
+import cz.narsil.detection.youtube.VideoPlayback
+
 /** Druh události, ze které snímek vznikl. */
 enum class SnapshotKind { WINDOW_CHANGED, SCROLLED, CONTENT_CHANGED }
 
@@ -14,6 +16,7 @@ enum class SnapshotKind { WINDOW_CHANGED, SCROLLED, CONTENT_CHANGED }
  * @param viewIds ID prvků (viewIdResourceName) viditelného okna – podle nich 111 pozná feed/Reels/Shorts/zprávy
  * @param texts krátké texty a contentDescription vybraných prvků (název videa YouTube pro 120); u chatů prázdné
  * @param selectedTab ID (bez balíčku) vybrané záložky ve spodní liště, např. "feed_tab", "clips_tab"; null = nezjištěno
+ * @param video stav přehrávače YouTube (134): aplikace YouTube, nebo video na youtube.com ve Firefoxu; jinak null
  */
 data class ForegroundSnapshot(
     val packageName: String,
@@ -25,6 +28,7 @@ data class ForegroundSnapshot(
     val viewIds: Set<String> = emptySet(),
     val texts: List<String> = emptyList(),
     val selectedTab: String? = null,
+    val video: VideoPlayback? = null,
 ) {
     val isWatched: Boolean get() = app != null
 }

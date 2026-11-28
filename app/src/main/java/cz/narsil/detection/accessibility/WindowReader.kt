@@ -2,6 +2,7 @@ package cz.narsil.detection.accessibility
 
 import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
+import cz.narsil.detection.youtube.YouTubePlayback
 
 /** Čtení stromu okna: ID prvků, URL z Firefoxu, krátké texty a ladicí výpis. */
 internal object WindowReader {
@@ -9,6 +10,11 @@ internal object WindowReader {
     private const val MAX_NODES = 400
     private const val MAX_TEXTS = 20
     private const val MAX_TEXT_LEN = 120
+
+    /** Přehrávač YouTube ve Firefoxu (134): kolik uzlů stránky projít a jaké texty brát (krátké = ovládání). */
+    private const val MAX_WEB_NODES = 300
+    private const val MAX_PLAYER_TEXTS = 60
+    private const val MAX_PLAYER_TEXT_LEN = 40
 
     /**
      * Adresní řádek Firefoxu. Firefox 160 (Nothing 3a, 11/2026): Compose prvek s ID `ADDRESSBAR_URL_BOX`
@@ -25,14 +31,29 @@ internal object WindowReader {
         return token.takeIf { host.contains('.') && host.none { it.isWhitespace() } }
     }
 
-    data class Result(val viewIds: Set<String>, val texts: List<String>, val url: String?, val selectedTab: String? = null)
+    /**
+     * @param playerTexts krátké texty ze stránky videa YouTube ve Firefoxu (jen pro [YouTubePlayback.parse],
+     *   neukládají se ani nelogují); jinde prázdné
+     */
+    data class Result(
+        val viewIds: Set<String>,
+        val texts: List<String>,
+        val url: String?,
+        val selectedTab: String? = null,
+        val playerTexts: List<String> = emptyList(),
+    )
 
-    fun read(root: AccessibilityNodeInfo, app: WatchedApp?, dumpToLog: Boolean): Result {
+    /**
+     * @param fallbackUrl poslední URL Firefoxu: adresní řádek se při scrollu a na celé obrazovce schová,
+     *   stránka se ale nezměnila (134). Použije se, když se URL v tomto stromu nenajde.
+     */
+    fun read(root: AccessibilityNodeInfo, app: WatchedApp?, dumpToLog: Boolean, fallbackUrl: String? = null): Result {
         val ids = linkedSetOf<String>()
         val texts = mutableListOf<String>()
         var url: String? = null
         var selectedTab: String? = null
         var visited = 0
+        val webViews = mutableListOf<AccessibilityNodeInfo>()
         val stack = ArrayDeque<Pair<AccessibilityNodeInfo, Int>>()
         stack.addLast(root to 0)
         while (stack.isNotEmpty() && visited < MAX_NODES) {
@@ -55,11 +76,34 @@ internal object WindowReader {
                     (if (!text.isNullOrEmpty()) " \"$text\"" else "") + (if (node.isScrollable) " [scroll]" else "") + (if (node.isSelected) " [selected]" else ""))
             }
             // Obsah webové stránky nečíst: soukromí a stovky uzlů by vyčerpaly MAX_NODES dřív než adresní řádek.
-            if (app == WatchedApp.FIREFOX && node.className?.toString() == WEBVIEW_CLASS) continue
+            if (app == WatchedApp.FIREFOX && node.className?.toString() == WEBVIEW_CLASS) {
+                webViews += node
+                continue
+            }
             for (i in node.childCount - 1 downTo 0) {
                 node.getChild(i)?.let { stack.addLast(it to depth + 1) }
             }
         }
-        return Result(ids, texts, url, selectedTab)
+        if (app == WatchedApp.FIREFOX && url == null) url = fallbackUrl
+        // Výjimka (134): na stránce jednoho videa YouTube přečíst ovládání přehrávače (čas, „Přehrát znovu“).
+        val playerTexts = if (YouTubePlayback.videoIdFromUrl(url) != null) readPlayerTexts(webViews) else emptyList()
+        return Result(ids, texts, url, selectedTab, playerTexts)
+    }
+
+    /** Krátké texty viditelných uzlů stránky (ovládání přehrávače je nahoře, stačí omezený průchod). */
+    private fun readPlayerTexts(webViews: List<AccessibilityNodeInfo>): List<String> {
+        val out = mutableListOf<String>()
+        var visited = 0
+        val stack = ArrayDeque<AccessibilityNodeInfo>()
+        webViews.asReversed().forEach { w -> for (i in w.childCount - 1 downTo 0) w.getChild(i)?.let(stack::addLast) }
+        while (stack.isNotEmpty() && visited < MAX_WEB_NODES && out.size < MAX_PLAYER_TEXTS) {
+            val node = stack.removeLast()
+            visited++
+            if (!node.isVisibleToUser) continue
+            val text = (node.text ?: node.contentDescription)?.toString()?.trim()
+            if (!text.isNullOrEmpty() && text.length <= MAX_PLAYER_TEXT_LEN) out += text
+            for (i in node.childCount - 1 downTo 0) node.getChild(i)?.let(stack::addLast)
+        }
+        return out
     }
 }
