@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/143-zrcadlo-mapa-boss
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/103
 ---
 
 # 143 – Zrcadlo: mapa hodnoty a boss z databáze
