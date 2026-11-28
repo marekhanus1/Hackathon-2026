@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/134-youtube-konec-videa
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/91
 ---
 
 # 134 – YouTube: Ozvěna až na konci videa
