@@ -18,9 +18,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
@@ -59,6 +61,8 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
     val movement by sl.movementRepository.state.collectAsState()
     val contract by sl.contractRepository.today.collectAsState()
     val comfort by sl.contextRepository.context.collectAsState()
+    val settings by sl.settingsRepository.settings.collectAsState()
+    val scope = rememberCoroutineScope()
     val state = HomeUiState(
         level = game.level,
         levelTitle = RewardBuilder.levelTitle(game.level),
@@ -81,6 +85,7 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
             ComfortContext.AWAY -> ZoneStatus.AWAY
             ComfortContext.UNKNOWN -> ZoneStatus.UNKNOWN
         },
+        selectedExercise = settings.exercise,
     )
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // Rychlé vstupy: dřepy, ověření úkolu, nastavení (odtud onboarding a demo panel).
@@ -90,8 +95,7 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
         ) {
-            val exercise = ServiceLocator.settingsRepository.settings.collectAsState().value.exercise
-            TextButton(onClick = { onNavigate(NarsilRoute.Squat) }) { Text(ExerciseText.label(exercise)) }
+            TextButton(onClick = { onNavigate(NarsilRoute.Squat) }) { Text(ExerciseText.label(settings.exercise)) }
             TextButton(onClick = { onNavigate(NarsilRoute.Verify) }) { Text("Ověřit úkol") }
             IconButton(onClick = { onNavigate(NarsilRoute.Settings) }) {
                 Icon(Icons.Filled.Settings, contentDescription = "Nastavení", tint = MaterialTheme.colorScheme.onBackground)
@@ -102,6 +106,8 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
             onOpenContract = { onNavigate(NarsilRoute.Contract) },
             onOpenMirror = { onNavigate(NarsilRoute.Mirror) },
             onOpenBadges = { onNavigate(NarsilRoute.Badges) },
+            onSelectExercise = { ex -> scope.launch { sl.settingsRepository.update { it.copy(exercise = ex) } } },
+            onStartExercise = { onNavigate(NarsilRoute.Squat) },
             modifier = Modifier.weight(1f),
         )
     }

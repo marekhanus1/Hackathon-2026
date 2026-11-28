@@ -1,6 +1,7 @@
 package cz.narsil.ui.screens.home
 
 import androidx.lifecycle.ViewModel
+import cz.narsil.core.Exercise
 import cz.narsil.ui.components.AvatarState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,10 +30,15 @@ data class HomeUiState(
     val debtMinutes: Int = 0,
     val contractCompletedToday: Boolean = false,
     val plannedContentSummary: String = "Přednáška o Rustu, 1 díl seriálu",
-    val zoneStatus: ZoneStatus = ZoneStatus.HOME
+    val zoneStatus: ZoneStatus = ZoneStatus.HOME,
+    val selectedExercise: Exercise = Exercise.SQUATS
 )
 
 class HomeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    fun selectExercise(exercise: Exercise) {
+        _uiState.value = _uiState.value.copy(selectedExercise = exercise)
+    }
 }

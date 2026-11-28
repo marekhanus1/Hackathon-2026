@@ -30,9 +30,10 @@ fun SquatOverlayContent(
     demoMode: Boolean = false,
     onRequestPermission: (() -> Unit)? = null,
     exercise: Exercise = Exercise.SQUATS,
+    onSelectExercise: (Exercise) -> Unit = {},
 ) {
     if (exercise == Exercise.PUSHUPS) {
-        PushupContent(counter, onCancel, onDone, demoMode, onRequestPermission)
+        PushupContent(counter, onCancel, onDone, demoMode, onRequestPermission, onSelectExercise)
         return
     }
     val target = MovementRates.SQUATS_PER_UNLOCK
@@ -58,6 +59,7 @@ fun SquatOverlayContent(
                 onDone(count)
             }
         },
+        onSelectExercise = onSelectExercise,
         cameraPreviewSlot = { SquatCameraSlot(counter, demoMode, onRequestPermission) },
     )
 }
@@ -70,6 +72,7 @@ private fun PushupContent(
     onDone: (count: Int) -> Unit,
     demoMode: Boolean,
     onRequestPermission: (() -> Unit)?,
+    onSelectExercise: (Exercise) -> Unit,
 ) {
     val target = MovementRates.PUSHUPS_PER_UNLOCK
     val count by counter.count.collectAsState()
@@ -109,6 +112,7 @@ private fun PushupContent(
                 onDone(count)
             }
         },
+        onSelectExercise = onSelectExercise,
         cameraPreviewSlot = { SquatCameraSlot(counter, demoMode, onRequestPermission) },
     )
 }

@@ -35,7 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.Exercise
 import cz.narsil.core.LlmProvider
+import cz.narsil.core.MovementRates
 import cz.narsil.ui.theme.NarsilTheme
 
 /**
@@ -54,7 +56,8 @@ fun SettingsScreen(
     onOpenOnboarding: () -> Unit,
     onOpenDemoPanel: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSelectExercise: (Exercise) -> Unit = {}
 ) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
@@ -162,6 +165,48 @@ fun SettingsScreen(
                                 label = { Text(choice.label) }
                             )
                         }
+                    }
+                }
+            }
+
+            // 1b. Cvik v Ozvěně
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(spacing.md),
+                    verticalArrangement = Arrangement.spacedBy(spacing.xs)
+                ) {
+                    Text(
+                        text = "Cvik v Ozvěně",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = if (state.exercise == Exercise.PUSHUPS) {
+                            "Kliky: ${MovementRates.PUSHUPS_PER_UNLOCK} opakování, telefon leží rovně na zemi pod hrudníkem displejem nahoru."
+                        } else {
+                            "Dřepy: ${MovementRates.SQUATS_PER_UNLOCK} opakování, telefon opřený naproti celé postavě."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                        FilterChip(
+                            selected = state.exercise == Exercise.SQUATS,
+                            onClick = { onSelectExercise(Exercise.SQUATS) },
+                            label = { Text("Dřepy (${MovementRates.SQUATS_PER_UNLOCK})") }
+                        )
+                        FilterChip(
+                            selected = state.exercise == Exercise.PUSHUPS,
+                            onClick = { onSelectExercise(Exercise.PUSHUPS) },
+                            label = { Text("Kliky (${MovementRates.PUSHUPS_PER_UNLOCK})") }
+                        )
                     }
                 }
             }

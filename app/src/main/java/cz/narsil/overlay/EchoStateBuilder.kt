@@ -46,6 +46,7 @@ object EchoStateBuilder {
             currentDebtMinutes = movement.debtMinutes,
             isVideoPlaying = video != null,
             exerciseOptionTitle = ExerciseText.echoOption(exercise),
+            selectedExercise = exercise,
         )
         return EchoContent(ui, video?.uri, fallback)
     }

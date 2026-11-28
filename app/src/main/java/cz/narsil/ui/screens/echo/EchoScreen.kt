@@ -31,6 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cz.narsil.core.Exercise
+import cz.narsil.core.MovementRates
 import cz.narsil.ui.components.ChoiceCard
 import cz.narsil.ui.components.ChoiceCardTone
 import cz.narsil.ui.theme.NarsilTheme
@@ -49,6 +51,7 @@ fun EchoScreen(
     onPayWithSteps: () -> Unit,
     onBorrow: () -> Unit,
     modifier: Modifier = Modifier,
+    onSelectExercise: (Exercise) -> Unit = {},
     videoSlot: @Composable () -> Unit = { DefaultEchoVideoPlaceholder(state) }
 ) {
     val colors = NarsilTheme.colors
@@ -163,9 +166,42 @@ fun EchoScreen(
                     onClick = onCloseFeed
                 )
 
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.xs)
+                ) {
+                    Text(
+                        text = "Cvik:",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    FilterChip(
+                        selected = state.selectedExercise == Exercise.SQUATS,
+                        onClick = { onSelectExercise(Exercise.SQUATS) },
+                        label = { Text("Dřepy (${MovementRates.SQUATS_PER_UNLOCK})") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = colors.emberContainer,
+                            selectedLabelColor = colors.onEmberContainer
+                        )
+                    )
+                    FilterChip(
+                        selected = state.selectedExercise == Exercise.PUSHUPS,
+                        onClick = { onSelectExercise(Exercise.PUSHUPS) },
+                        label = { Text("Kliky (${MovementRates.PUSHUPS_PER_UNLOCK})") },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = colors.emberContainer,
+                            selectedLabelColor = colors.onEmberContainer
+                        )
+                    )
+                }
+
                 ChoiceCard(
                     title = state.exerciseOptionTitle,
-                    subtitle = "Kamera spočítá opakování a odemkne 10 min",
+                    subtitle = if (state.selectedExercise == Exercise.PUSHUPS) {
+                        "Polož telefon na zem pod hrudník · odemkne 10 min"
+                    } else {
+                        "Kamera spočítá opakování a odemkne 10 min"
+                    },
                     badgeText = "+20 XP",
                     tone = ChoiceCardTone.EMBER,
                     onClick = onStartSquats

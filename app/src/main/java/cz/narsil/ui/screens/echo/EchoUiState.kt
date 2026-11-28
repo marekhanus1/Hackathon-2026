@@ -1,6 +1,7 @@
 package cz.narsil.ui.screens.echo
 
 import androidx.lifecycle.ViewModel
+import cz.narsil.core.Exercise
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +27,8 @@ data class EchoUiState(
     val currentDebtMinutes: Int = 0,
     val isVideoPlaying: Boolean = true,
     /** Titulek volby pohybu (232): „Udělat 20 dřepů hned“ nebo „Udělat 10 kliků hned“. */
-    val exerciseOptionTitle: String = "Udělat 20 dřepů hned"
+    val exerciseOptionTitle: String = "Udělat 20 dřepů hned",
+    val selectedExercise: Exercise = Exercise.SQUATS
 )
 
 class EchoViewModel : ViewModel() {
