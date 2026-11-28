@@ -1,5 +1,5 @@
 ---
-status: review
+status: done
 owner: marek
 agent: claude
 branch: marek/claude/161-demo-most-prezentace
