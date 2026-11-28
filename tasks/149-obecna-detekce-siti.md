@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/149-obecna-detekce-siti
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/111
 ---
 
 # 149 – Obecná detekce dalších sociálních sítí
