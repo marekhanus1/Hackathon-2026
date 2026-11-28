@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/135-progress-scroll
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/92
 ---
 
 # 135 – Ukazatel blížícího se limitu při scrollování
