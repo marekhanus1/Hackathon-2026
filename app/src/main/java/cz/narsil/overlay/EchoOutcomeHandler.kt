@@ -20,7 +20,7 @@ data class EchoResult(
 
 /**
  * Volby v Ozvěně (114, SPEC 4):
- * - CLOSED: návrat na plochu, nová relace od nuly, XP.
+ * - CLOSED: návrat na plochu, nová relace od nuly; XP čekající na potvrzení (155: po 10 min bez feedu).
  * - PAID_STEPS: strhne 10 min ze zůstatku, odemkne 10 min.
  * - SQUATS: (po 20 dřepech) zapíše dřepy, odemkne 10 min; do zůstatku se nepřičítají.
  * - BORROWED: dluh +10, odemkne 10 min; nad limitem dluhu neprojde.
@@ -37,7 +37,7 @@ class EchoOutcomeHandler(
     private val onResult: suspend (EchoResult) -> Unit = {},
 ) : EchoChoiceHandler {
 
-    override suspend fun onChoice(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?) {
+    override suspend fun onChoice(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?): Int {
         val minutes = MovementRates.MINUTES_PER_UNLOCK
         val accepted = when (outcome) {
             InterventionOutcome.CLOSED -> {
@@ -61,6 +61,7 @@ class EchoOutcomeHandler(
         runCatching { onDetectionOutcome(detectionOutcome, if (unlocks) minutes else 0) }
         val result = EchoResult(trigger, outcome, accepted, if (unlocks) minutes else 0, xp, feeling)
         runCatching { onResult(result) }
+        return xp
     }
 
     /** Půjčka projde, jen když dluh po ní nepřekročí limit (SPEC 5). */

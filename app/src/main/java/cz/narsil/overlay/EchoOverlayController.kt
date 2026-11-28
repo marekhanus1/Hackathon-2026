@@ -23,7 +23,8 @@ import androidx.compose.runtime.getValue
 
 /** Volba v Ozvěně: výsledek a nepovinný pocit. Zpracuje 114. */
 fun interface EchoChoiceHandler {
-    suspend fun onChoice(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?)
+    /** Vrací XP za volbu; u CLOSED XP čekající na potvrzení (155), 0 = bez XP. */
+    suspend fun onChoice(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?): Int
 }
 
 /**
@@ -39,7 +40,7 @@ class EchoOverlayController(
     private val contracts: ContractRepository,
     private val videos: EchoVideoRepository,
     private val scope: CoroutineScope,
-    private val choiceHandler: EchoChoiceHandler = EchoChoiceHandler { _, _, _ -> },
+    private val choiceHandler: EchoChoiceHandler = EchoChoiceHandler { _, _, _ -> 0 },
     private val squatCounter: SquatCounter? = null,
     /** Počítadlo kliků (232); použije se, když [exercise] vrátí PUSHUPS. */
     private val pushupCounter: SquatCounter? = null,
@@ -178,12 +179,16 @@ class EchoOverlayController(
         // Okno se schová hned (Zavřít → plocha, odemknutí → zpět do aplikace); odměna se ukáže zvlášť.
         window.dismiss()
         scope.launch {
-            runCatching { choiceHandler.onChoice(trigger, outcome, feeling) }
+            val xp = runCatching { choiceHandler.onChoice(trigger, outcome, feeling) }
                 .onFailure { Log.e(TAG, "volba $outcome selhala", it) }
+                .getOrDefault(0)
             Log.i(TAG, "volba: $outcome, pocit: $feeling")
             val after = gamification?.state?.value
             val ex = exercise()
-            val reward = RewardBuilder.build(outcome, before, after, ex, repsPerUnlock(ex)) ?: return@launch
+            val reward = RewardBuilder.build(
+                outcome, before, after, ex, repsPerUnlock(ex),
+                pendingCloseXp = if (outcome == InterventionOutcome.CLOSED) xp else 0,
+            ) ?: return@launch
             Log.i(TAG, "odměna: +${reward.gainedXp} XP, úroveň ${reward.previousLevel} → ${reward.newLevel}")
             window.show {
                 NarsilTheme {
