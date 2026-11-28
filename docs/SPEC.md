@@ -131,7 +131,7 @@ Popisek pod videem: věta z odpovědí „Co ti to video dalo?“ (9a), jinak �
 - **Kdy:** doma, po dosledovaném videu na YouTube (aplikace i Firefox): konec videa po ≥ 1 min sledování,
   nebo odchod z videa po ≥ 2 min. A po vypršení zaplaceného času feedu („Co ti daly ty minuty?“), když
   zrovna neběží další Ozvěna. Nejvýš 10× denně a s odstupem ≥ 3 min; přes Ozvěnu nikdy (Ozvěna panel zavře).
-- **Forma:** spodní panel přes aplikaci, nebere fokus, sám zmizí po 10 s, „Teď ne“ ho zavře.
+- **Forma:** spodní panel přes aplikaci, nebere fokus, sám zmizí po 20 s, „Teď ne“ ho zavře.
 - **Odpovědi** (jedno ťuknutí) → `video_ratings.rating`: Naučil jsem se něco 5, Inspirace, nápad 4,
   Odpočinul jsem si 3, Nic, jen čas 2, Je mi hůř 1. Text odpovědi jde do `intent`, název videa do `title`
   (nečitelný název z aplikace YouTube = „Video na YouTube“, zaplacený feed = „Feed · {aplikace}“). +5 XP (SPEC 8).

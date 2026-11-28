@@ -92,7 +92,7 @@ object VideoFeedback {
     const val MIN_GAP_MILLIS = 3 * 60_000L
 
     /** Panel sám zmizí, když na něj nikdo nesáhne. */
-    const val AUTO_DISMISS_MILLIS = 10_000L
+    const val AUTO_DISMISS_MILLIS = 20_000L
 
     /** Po odpovědi panel chvíli poděkuje. */
     const val THANKS_MILLIS = 1_500L
