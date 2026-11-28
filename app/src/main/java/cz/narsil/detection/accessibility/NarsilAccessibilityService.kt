@@ -83,7 +83,7 @@ class NarsilAccessibilityService : AccessibilityService() {
             }
             return
         }
-        val root = rootInActiveWindow
+        val root = appRoot(pkg)
         val dumpNow = dumpTree && kind == SnapshotKind.WINDOW_CHANGED
         var result = root?.let { runCatching { WindowReader.read(it, app, dumpToLog = dumpNow, fallbackUrl = lastFirefoxUrl) }.getOrNull() }
         // Přepnutí záložky v aplikaci nevyvolá WINDOW_CHANGED: při změně záložky vypsat strom znovu.
@@ -91,7 +91,7 @@ class NarsilAccessibilityService : AccessibilityService() {
             lastSelectedTab = result.selectedTab
             if (dumpTree && !dumpNow) {
                 Log.d(TAG, "záložka: ${result.selectedTab}")
-                result = runCatching { WindowReader.read(root, app, dumpToLog = true, fallbackUrl = lastFirefoxUrl) }.getOrNull() ?: result
+                result = root?.let { runCatching { WindowReader.read(it, app, dumpToLog = true, fallbackUrl = lastFirefoxUrl) }.getOrNull() } ?: result
             }
         }
         if (app == WatchedApp.FIREFOX) lastFirefoxUrl = result?.url ?: lastFirefoxUrl
@@ -144,6 +144,25 @@ class NarsilAccessibilityService : AccessibilityService() {
         lastScrollLogAt = now
         Log.d(TAG, "scroll: $pkg ${s.className?.substringAfterLast('.')} dY=${s.deltaY} dX=${s.deltaX} y=${s.scrollY} " +
             "položky=${s.fromIndex}–${s.toIndex}/${s.itemCount}")
+    }
+
+    /**
+     * Kořen okna aplikace [pkg] (149). Nad aplikací může viset cizí překryv s fokusem (dialog Minimalist
+     * launcheru „Jak dlouho chcete být na X?“), [rootInActiveWindow] by pak vrátil jeho strom.
+     * Proto okno TYPE_APPLICATION s balíčkem [pkg] (nejvyšší vrstva); jinak aktivní okno jako dřív.
+     */
+    private fun appRoot(pkg: String): android.view.accessibility.AccessibilityNodeInfo? {
+        val active = rootInActiveWindow
+        if (active?.packageName?.toString() == pkg) return active
+        val fromWindows = runCatching {
+            windows.filter { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_APPLICATION }
+                .sortedByDescending { it.layer }
+                .firstNotNullOfOrNull { w -> w.root?.takeIf { it.packageName?.toString() == pkg } }
+        }.getOrNull()
+        if (fromWindows != null && active != null) {
+            Log.d(TAG, "strom z okna $pkg, aktivní je překryv ${active.packageName}")
+        }
+        return fromWindows ?: active
     }
 
     /** Typ okna události (getWindows, flagRetrieveInteractiveWindows), null = nezjištěno. */
