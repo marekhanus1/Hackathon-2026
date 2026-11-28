@@ -1,16 +1,15 @@
 # Snímky obrazovek a prezentace (úkoly 331 a 333)
 
-## Webová prezentace – `pitch/slidy/index.html`
-Samostatná moderní webová prezentace projektu Narsil v minimalistickém Bento Grid designu (zaoblené obdélníky, vektorové ilustrace a grafy ze skutečných dat v `mockdata/`), postavená ze všech podkladů na GitHubu (`docs/BRIEF.md`, `docs/SPEC.md`, `docs/decisions.md`, `docs/GAMIFICATION.md`, `pitch/*.md`, `mockdata/*.json`, včetně novinek: kliky s `PhoneFlatGuard`, detekce Firefoxu, ukazatel při scrollování a ohleduplné čekání na konec videa YouTube).
+## Šablona prezentace – `pitch/slidy/index.html`
+Minimalistická 16:9 HTML prezentace v meruňkové a lososové barevné paletě se zaoblenými obdélníky a čistou strukturou připravenou pro tým k doplnění před prezentací v 17:00:
 
-- **Barevné varianty:** v horní liště lze přepínat mezi třemi paletami: **Meruňková** (`apricot`, výchozí), **Lososová** (`salmon`) a **Večer** (`dusk` – tmavý kontrast pro projektor).
-- **Dva režimy:**
-  - **Webový režim:** plynulá produktová stránka s interaktivním prohlížečem 5 obrazovek aplikace, grafem 21 dní dat a rozbalovacím FAQ pro porotu.
-  - **Prezentační režim (`P`):** celoobrazovkové krokování po 9 kapitolách (`←` / `→` / `Mezerník`), panel poznámek mluvčího (`N`), celá obrazovka (`F`) a export do PDF (`Ctrl + P`).
-- **Záloha klasických tmavých 16:9 slidů:** `pitch/slidy/klasicke-slidy-tmave.html`.
+- **Otevření:** otevři `pitch/slidy/index.html` v prohlížeči.
+- **Úpravy přímo v prohlížeči (`✎ Upravit`):** kliknutím lze přepsat jakýkoliv text, nahrát reálné screenshoty do telefonů (nebo je vložit jako `screen-1..3.png` do `pitch/slidy/obrazky/`), změnit pořadí/viditelnost slidů a výslednou verzi uložit tlačítkem `⬇ Uložit HTML`.
+- **Návod pro tým:** `pitch/slidy/JAK-UPRAVIT.md`.
+- **Ovládání:** `←` / `→` / `Mezerník` přepínají slidy, `G` zobrazí přehled všech slidů, `N` poznámky mluvčího, `F` celou obrazovku, `Ctrl + P` export do PDF.
 
 ## Snímky obrazovek – `pitch/snimky/`
-Vektorové SVG makety odpovídající reálným Jetpack Compose obrazovkám aplikace Narsil:
+Vektorové SVG makety odpovídající Jetpack Compose obrazovkám aplikace Narsil:
 1. `01-domu.svg` – Hlavní obrazovka (`HomeScreen`, 312)
 2. `02-smlouva.svg` – Večerní smlouva (`ContractScreen` krok 3, 313)
 3. `03-ozvena.svg` – Překryvné okno Ozvěny (`EchoScreen`, 310)

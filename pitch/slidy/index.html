@@ -3,2134 +3,1318 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Narsil – Webová prezentace konceptu &amp; grafiky</title>
+  <title>Narsil – Šablona prezentace (17:00)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     /* ==========================================================================
-       NARSIL DESIGN TOKENS — 3 MINIMALIST PALETTES (APRICOT / SALMON / DUSK)
+       PALETTES: APRICOT (MERUŇKOVÁ) & SALMON (LOSOSOVÁ)
        ========================================================================== */
     :root,
     html[data-theme="apricot"] {
-      --bg: #FFF9F4;
-      --bg-glow-1: rgba(255, 155, 106, 0.22);
-      --bg-glow-2: rgba(242, 122, 109, 0.16);
-      --surface: #FFFFFF;
-      --surface-soft: #FFF2E7;
-      --surface-tint: #FFE6D4;
-      --outline: #F5DCCB;
-      --outline-strong: #EDC4AA;
-      --ink: #241B18;
-      --ink-muted: #6E5C54;
-      --ink-subtle: #9A847A;
-      --primary: #F4845F;
-      --primary-hi: #FF9E75;
-      --primary-soft: #FFE4D6;
-      --on-primary: #FFFFFF;
-      --secondary: #E86B63;
-      --secondary-soft: #FFE1DE;
+      --studio-bg: #F5ECE4;
+      --canvas: #FFFFFF;
+      --soft: #FFF2E8;
+      --soft-2: #FFE5D4;
+      --muted-box: #F4EFEA;
+      --outline: #F2DACA;
+      --ink: #1F1613;
+      --ink-muted: #6C5A52;
+      --ink-subtle: #9E8A80;
+      --accent: #F4835C;
+      --accent-2: #FF9F70;
+      --accent-soft: #FFE4D4;
+      --grad: linear-gradient(135deg, #FF9E6E 0%, #F27B5A 100%);
+      --grad-soft: linear-gradient(135deg, #FFF3EA 0%, #FFE5DA 100%);
       --sage: #2D8A65;
-      --sage-soft: #E3F5ED;
-      --gold: #DF9B26;
-      --gold-soft: #FFF3D8;
-      --indigo: #636FC7;
-      --indigo-soft: #EAEBFD;
-      --shadow-card: 0 20px 50px rgba(244, 132, 95, 0.10), 0 4px 14px rgba(36, 27, 24, 0.04);
-      --shadow-float: 0 28px 70px rgba(244, 132, 95, 0.18), 0 8px 24px rgba(36, 27, 24, 0.06);
-      --glass: rgba(255, 249, 244, 0.82);
-      --phone-bezel: #2A201C;
-      --phone-screen: #FFFBF7;
-      --grad-hero: linear-gradient(135deg, #FF9B6A 0%, #F27A6D 100%);
-      --grad-soft: linear-gradient(135deg, #FFF1E6 0%, #FFE4DF 100%);
+      --sage-soft: #E3F4EC;
+      --shadow-deck: 0 28px 80px rgba(120, 62, 35, 0.14), 0 4px 16px rgba(31, 22, 19, 0.05);
+      --shadow-card: 0 12px 30px rgba(242, 123, 90, 0.08);
     }
 
     html[data-theme="salmon"] {
-      --bg: #FFF8F7;
-      --bg-glow-1: rgba(240, 113, 103, 0.22);
-      --bg-glow-2: rgba(255, 170, 117, 0.18);
-      --surface: #FFFFFF;
-      --surface-soft: #FFECEA;
-      --surface-tint: #FFDAD6;
-      --outline: #F6D2CE;
-      --outline-strong: #EEB3AC;
-      --ink: #261918;
-      --ink-muted: #705856;
-      --ink-subtle: #9D807D;
-      --primary: #F07167;
-      --primary-hi: #FF8E85;
-      --primary-soft: #FFE0DD;
-      --on-primary: #FFFFFF;
-      --secondary: #FF9F68;
-      --secondary-soft: #FFEAD9;
-      --sage: #2B8762;
-      --sage-soft: #E2F4EC;
-      --gold: #DF9724;
-      --gold-soft: #FFF2D6;
-      --indigo: #636FC7;
-      --indigo-soft: #EAEBFD;
-      --shadow-card: 0 20px 50px rgba(240, 113, 103, 0.11), 0 4px 14px rgba(38, 25, 24, 0.04);
-      --shadow-float: 0 28px 70px rgba(240, 113, 103, 0.20), 0 8px 24px rgba(38, 25, 24, 0.06);
-      --glass: rgba(255, 248, 247, 0.84);
-      --phone-bezel: #2B1D1C;
-      --phone-screen: #FFF9F8;
-      --grad-hero: linear-gradient(135deg, #F07167 0%, #FF9E75 100%);
-      --grad-soft: linear-gradient(135deg, #FFEAE7 0%, #FFECE0 100%);
+      --studio-bg: #F6EAE9;
+      --canvas: #FFFFFF;
+      --soft: #FFECEA;
+      --soft-2: #FFD9D5;
+      --muted-box: #F4ECEB;
+      --outline: #F4CFCC;
+      --ink: #221515;
+      --ink-muted: #6F5655;
+      --ink-subtle: #A18381;
+      --accent: #F06F67;
+      --accent-2: #FF948A;
+      --accent-soft: #FFE0DD;
+      --grad: linear-gradient(135deg, #F06F67 0%, #FF9687 100%);
+      --grad-soft: linear-gradient(135deg, #FFEFED 0%, #FFE1DC 100%);
+      --sage: #2D8A65;
+      --sage-soft: #E3F4EC;
+      --shadow-deck: 0 28px 80px rgba(128, 46, 42, 0.14), 0 4px 16px rgba(34, 21, 21, 0.05);
+      --shadow-card: 0 12px 30px rgba(240, 111, 103, 0.09);
     }
 
-    html[data-theme="dusk"] {
-      --bg: #171210;
-      --bg-glow-1: rgba(255, 164, 119, 0.14);
-      --bg-glow-2: rgba(255, 133, 122, 0.12);
-      --surface: #221B18;
-      --surface-soft: #2C221E;
-      --surface-tint: #382B25;
-      --outline: #463730;
-      --outline-strong: #634D43;
-      --ink: #FAF2EC;
-      --ink-muted: #CBB9AF;
-      --ink-subtle: #978378;
-      --primary: #FFA477;
-      --primary-hi: #FFB996;
-      --primary-soft: #4A2B1D;
-      --on-primary: #2B150B;
-      --secondary: #FF857A;
-      --secondary-soft: #4C2522;
-      --sage: #5CC497;
-      --sage-soft: #173F2E;
-      --gold: #F2C14E;
-      --gold-soft: #443514;
-      --indigo: #9FA8DA;
-      --indigo-soft: #29315C;
-      --shadow-card: 0 22px 54px rgba(0, 0, 0, 0.42);
-      --shadow-float: 0 30px 80px rgba(0, 0, 0, 0.56);
-      --glass: rgba(23, 18, 16, 0.84);
-      --phone-bezel: #0E0B0A;
-      --phone-screen: #1E1714;
-      --grad-hero: linear-gradient(135deg, #FFA477 0%, #FF857A 100%);
-      --grad-soft: linear-gradient(135deg, #2D221D 0%, #342322 100%);
-    }
-
-    /* ==========================================================================
-       BASE RESET & TYPOGRAPHY
-       ========================================================================== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html {
-      scroll-behavior: smooth;
-      font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--studio-bg);
       color: var(--ink);
-      background: var(--bg);
-      transition: background-color 280ms ease, color 280ms ease;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 12% 6%, var(--bg-glow-1), transparent 36%),
-        radial-gradient(circle at 88% 18%, var(--bg-glow-2), transparent 38%),
-        radial-gradient(circle at 50% 65%, var(--bg-glow-1), transparent 44%),
-        var(--bg);
-      line-height: 1.55;
-      overflow-x: hidden;
-    }
-
-    h1, h2, h3, h4 {
-      letter-spacing: -0.025em;
-      line-height: 1.12;
-      font-weight: 800;
-      color: var(--ink);
-    }
-
-    h1 { font-size: clamp(2.4rem, 4.6vw, 4.1rem); }
-    h2 { font-size: clamp(1.75rem, 3.1vw, 2.7rem); }
-    h3 { font-size: clamp(1.15rem, 1.5vw, 1.38rem); font-weight: 700; }
-
-    p { color: var(--ink-muted); }
-
-    .container {
-      width: min(1200px, calc(100vw - 36px));
-      margin: 0 auto;
+      overflow: hidden;
+      transition: background 240ms ease;
     }
 
     /* ==========================================================================
-       FLOATING GLASS HEADER & THEME / PRESENTATION CONTROLS
+       TOP STUDIO TOOLBAR (MINIMAL & CLEAN)
        ========================================================================== */
-    .topbar {
-      position: sticky;
-      top: 14px;
-      z-index: 50;
-      width: min(1200px, calc(100vw - 28px));
-      margin: 14px auto 0;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--glass);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid var(--outline);
-      box-shadow: var(--shadow-card);
+    .studio-bar {
+      height: 54px;
+      padding: 0 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      flex-wrap: wrap;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--outline);
+      position: relative;
+      z-index: 40;
     }
 
-    .brand {
+    .bar-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .brand-pill {
       display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: var(--ink);
-      font-weight: 800;
-      font-size: 1.05rem;
-      padding-left: 6px;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--ink-muted);
-      font-size: 0.85rem;
-      font-weight: 600;
-      padding: 7px 12px;
-      border-radius: 999px;
-      transition: all 180ms ease;
-    }
-
-    .nav-links a:hover,
-    .nav-links a.active {
-      background: var(--primary-soft);
-      color: var(--ink);
-    }
-
-    .toolbar-right {
-      display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--ink);
+      padding-right: 6px;
     }
 
-    .theme-pills {
+    .theme-switch {
       display: inline-flex;
-      background: var(--surface-soft);
+      background: var(--soft);
       border: 1px solid var(--outline);
       border-radius: 999px;
       padding: 3px;
       gap: 3px;
     }
 
-    .theme-btn {
-      border: none;
-      background: transparent;
-      color: var(--ink-muted);
+    .tool-btn {
+      border: 1px solid var(--outline);
+      background: #FFFFFF;
+      color: var(--ink);
       font-family: inherit;
       font-size: 0.78rem;
       font-weight: 700;
-      padding: 6px 11px;
+      padding: 6px 12px;
       border-radius: 999px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 180ms ease;
+      transition: all 160ms ease;
+      white-space: nowrap;
     }
 
-    .theme-btn .swatch {
-      width: 10px;
-      height: 10px;
+    .tool-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+    .tool-btn.active {
+      background: var(--grad);
+      color: #FFFFFF;
+      border-color: transparent;
+    }
+
+    .theme-switch .tool-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 11px;
+      color: var(--ink-muted);
+    }
+
+    .theme-switch .tool-btn.active {
+      background: #FFFFFF;
+      color: var(--ink);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .swatch {
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       display: inline-block;
     }
 
-    .theme-btn.active {
-      background: var(--surface);
-      color: var(--ink);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    }
-
-    .btn-primary, .btn-soft {
-      border: none;
-      border-radius: 999px;
-      font-family: inherit;
-      font-weight: 700;
-      font-size: 0.86rem;
-      padding: 9px 16px;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
-    }
-
-    .btn-primary {
-      background: var(--grad-hero);
-      color: var(--on-primary);
-      box-shadow: 0 10px 24px rgba(244, 132, 95, 0.28);
-    }
-
-    .btn-primary:hover { transform: translateY(-1px); }
-
-    .btn-soft {
-      background: var(--surface);
-      color: var(--ink);
-      border: 1px solid var(--outline);
-    }
-
-    .btn-soft:hover {
-      background: var(--surface-soft);
-      border-color: var(--outline-strong);
-    }
+    .edit-only { display: none !important; }
+    body.edit-mode .edit-only { display: inline-flex !important; }
 
     /* ==========================================================================
-       SECTIONS & BENTO ROUNDED RECTANGLE GEOMETRY
+       16:9 STAGE & SLIDE CONTAINER (SCALES CLEANLY ON ANY SCREEN)
        ========================================================================== */
-    main.deck-root {
-      padding: 28px 0 96px;
+    .stage {
+      height: calc(100vh - 54px);
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 24px 56px;
     }
 
-    .section-slide {
-      padding: 52px 0;
-      scroll-margin-top: 86px;
+    .deck {
+      position: relative;
+      width: min(calc(100vw - 48px), calc((100vh - 126px) * 16 / 9));
+      aspect-ratio: 16 / 9;
+      container-type: inline-size;
     }
 
-    .section-head {
+    .slide {
+      position: absolute;
+      inset: 0;
+      background: var(--canvas);
+      border-radius: 2.6cqi;
+      border: 1px solid var(--outline);
+      box-shadow: var(--shadow-deck);
+      padding: 4.2cqi 5cqi;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .slide.active {
+      display: flex;
+      animation: slideIn 200ms ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Slide Header & Footer */
+    .slide-meta {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      gap: 24px;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
+      align-items: center;
+      font-size: 1.15cqi;
+      font-weight: 800;
+      color: var(--ink-subtle);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      flex-shrink: 0;
     }
 
-    .eyebrow {
+    .tag-pill {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
+      gap: 0.6cqi;
+      padding: 0.5cqi 1.2cqi;
       border-radius: 999px;
-      background: var(--primary-soft);
-      color: var(--ink);
-      font-size: 0.78rem;
+      background: var(--soft);
+      color: var(--accent);
+      font-size: 1.08cqi;
       font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 12px;
+      letter-spacing: 0.05em;
     }
 
-    .eyebrow .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--primary);
+    .slide-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.1cqi;
+      font-weight: 600;
+      color: var(--ink-subtle);
+      flex-shrink: 0;
     }
 
-    .lead {
-      font-size: clamp(1.02rem, 1.35vw, 1.22rem);
+    /* Typography scaled proportionally to 16:9 canvas (cqi) */
+    h1 {
+      font-size: 5.1cqi;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      font-weight: 800;
+    }
+
+    h2 {
+      font-size: 3.5cqi;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      font-weight: 800;
+    }
+
+    h3 {
+      font-size: 1.75cqi;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .sub {
+      font-size: 1.65cqi;
+      line-height: 1.45;
       color: var(--ink-muted);
-      max-width: 64ch;
-      margin-top: 10px;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: 30px;
-      padding: 26px;
-      box-shadow: var(--shadow-card);
-      transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
-    }
-
-    .card.soft { background: var(--surface-soft); }
-    .card.tint { background: var(--grad-soft); }
-
-    .card.interactive:hover {
-      transform: translateY(-3px);
-      border-color: var(--outline-strong);
-      box-shadow: var(--shadow-float);
+      font-weight: 500;
+      margin-top: 1.1cqi;
     }
 
     .grad-text {
-      background: var(--grad-hero);
+      background: var(--grad);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
     }
 
-    .pill {
-      display: inline-flex;
+    /* Layout Primitives Inside Slide */
+    .body-split {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 3.6cqi;
       align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 999px;
-      font-size: 0.84rem;
-      font-weight: 700;
-      background: var(--surface-soft);
+      min-height: 0;
+    }
+
+    .body-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2.4cqi;
+      min-height: 0;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.8cqi; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.8cqi; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.4cqi; }
+
+    .bento {
+      background: var(--soft);
       border: 1px solid var(--outline);
+      border-radius: 2.2cqi;
+      padding: 2.2cqi;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .bento.white { background: #FFFFFF; box-shadow: var(--shadow-card); }
+    .bento.muted { background: var(--muted-box); border-color: transparent; }
+    .bento.tint { background: var(--grad-soft); }
+    .bento.hero-grad { background: var(--grad); color: #FFFFFF; border: none; }
+    .bento.hero-grad h1, .bento.hero-grad h2, .bento.hero-grad h3, .bento.hero-grad p { color: #FFFFFF; }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: 0.8cqi; margin-top: 1.6cqi; }
+    .chip {
+      padding: 0.55cqi 1.25cqi;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid var(--outline);
+      font-size: 1.2cqi;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .chip.accent { background: var(--grad); color: #FFFFFF; border: none; }
+    .chip.sage { background: var(--sage-soft); color: var(--sage); border: none; }
+
+    .num-badge {
+      width: 3.4cqi;
+      height: 3.4cqi;
+      border-radius: 1.1cqi;
+      background: var(--grad);
+      color: #FFFFFF;
+      font-size: 1.45cqi;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      margin-bottom: 1.1cqi;
+    }
+
+    /* Architectural Rounded Graphics */
+    .art-panel {
+      position: relative;
+      height: 100%;
+      max-height: 39cqi;
+      border-radius: 2.8cqi;
+      background: var(--grad-soft);
+      border: 1px solid var(--outline);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2.4cqi;
+    }
+
+    .shape-r {
+      position: absolute;
+      border-radius: 2.4cqi;
+    }
+
+    /* Phone Mockup & Clickable Upload Slot (Slide 5) */
+    .phone-slot {
+      background: #231B18;
+      border-radius: 2.6cqi;
+      padding: 0.75cqi;
+      height: 31cqi;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+
+    .phone-inner {
+      flex: 1;
+      background: #FFFBF8;
+      border-radius: 2cqi;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 1.4cqi;
+      gap: 0.9cqi;
+      position: relative;
+    }
+
+    .phone-inner img.uploaded-screen {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 2cqi;
+      z-index: 3;
+    }
+
+    .upload-hint {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      background: rgba(31, 22, 19, 0.56);
+      color: #FFFFFF;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.2cqi;
+      font-size: 1.2cqi;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+
+    body.edit-mode .phone-slot:hover .upload-hint,
+    body.edit-mode .phone-slot.empty-hint .upload-hint {
+      display: flex;
+    }
+
+    /* Edit Mode Visual Highlights & Per-Slide Controls */
+    body.edit-mode [data-editable] {
+      outline: 1.5px dashed transparent;
+      border-radius: 0.5cqi;
+      transition: outline-color 140ms ease, background 140ms ease;
+      cursor: text;
+    }
+
+    body.edit-mode [data-editable]:hover,
+    body.edit-mode [data-editable]:focus {
+      outline-color: var(--accent);
+      background: rgba(255, 158, 110, 0.10);
+    }
+
+    .slide-edit-bar {
+      position: absolute;
+      top: 1.4cqi;
+      right: 1.8cqi;
+      z-index: 15;
+      display: none;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--outline);
+      border-radius: 999px;
+      padding: 4px 8px;
+      box-shadow: var(--shadow-card);
+    }
+
+    body.edit-mode .slide-edit-bar { display: flex; }
+
+    .mini-btn {
+      border: none;
+      background: var(--soft);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .mini-btn:hover { background: var(--accent); color: #FFFFFF; }
+
+    .slide.is-hidden { opacity: 0.48; }
+    .hidden-badge {
+      display: none;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #221515;
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .slide.is-hidden .hidden-badge { display: inline-block; }
+
+    /* ==========================================================================
+       BOTTOM NAVIGATION PILL & SPEAKER NOTES & GRID OVERVIEW
+       ========================================================================== */
+    .bottom-dock {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--outline);
+      border-radius: 999px;
+      padding: 5px 12px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .counter {
+      font-size: 0.82rem;
+      font-weight: 800;
+      min-width: 56px;
+      text-align: center;
       color: var(--ink);
     }
 
-    .pill.sage { background: var(--sage-soft); color: var(--sage); border-color: transparent; }
-    .pill.gold { background: var(--gold-soft); color: var(--gold); border-color: transparent; }
-    .pill.indigo { background: var(--indigo-soft); color: var(--indigo); border-color: transparent; }
-    .pill.salmon { background: var(--secondary-soft); color: var(--secondary); border-color: transparent; }
-    .pill.apricot { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
-
-    /* Grids */
-    .grid-hero {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 28px;
-      align-items: center;
+    .notes-box {
+      position: fixed;
+      right: 20px;
+      bottom: 64px;
+      width: min(420px, calc(100vw - 40px));
+      background: #FFFFFF;
+      border: 1.5px solid var(--accent);
+      border-radius: 22px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow-deck);
+      z-index: 45;
+      display: none;
     }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 22px;
-    }
+    .notes-box.open { display: block; }
+    .notes-box h4 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 6px; }
+    .notes-box p { font-size: 0.88rem; color: var(--ink-muted); line-height: 1.45; white-space: pre-line; }
 
-    .grid-3 {
+    /* Grid Overview Mode (G) */
+    body.grid-mode { overflow-y: auto; }
+    body.grid-mode .stage { height: auto; padding: 28px; display: block; }
+    body.grid-mode .deck {
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      aspect-ratio: auto;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
     }
-
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
-    }
-
-    .grid-5 {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
-    }
-
-    /* ==========================================================================
-       HERO ARTWORK & MINIMALIST GEOMETRY
-       ========================================================================== */
-    .hero-canvas {
+    body.grid-mode .slide {
       position: relative;
-      border-radius: 38px;
-      padding: 44px;
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      box-shadow: var(--shadow-float);
-      overflow: hidden;
-    }
-
-    .hero-canvas::before {
-      content: "";
-      position: absolute;
-      width: 420px;
-      height: 420px;
-      right: -110px;
-      top: -120px;
-      border-radius: 90px;
-      transform: rotate(18deg);
-      background: var(--grad-hero);
-      opacity: 0.12;
-      pointer-events: none;
-    }
-
-    .hero-canvas::after {
-      content: "";
-      position: absolute;
-      width: 240px;
-      height: 240px;
-      left: -70px;
-      bottom: -80px;
-      border-radius: 60px;
-      transform: rotate(-14deg);
-      background: var(--secondary);
-      opacity: 0.08;
-      pointer-events: none;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 26px;
-    }
-
-    .hero-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 28px;
-    }
-
-    .stat-box {
-      background: var(--surface-soft);
-      border: 1px solid var(--outline);
-      border-radius: 22px;
-      padding: 14px 16px;
-    }
-
-    .stat-box .val {
-      font-size: 1.45rem;
-      font-weight: 800;
-      color: var(--ink);
-    }
-
-    .stat-box .lbl {
-      font-size: 0.78rem;
-      color: var(--ink-muted);
-      font-weight: 600;
-      margin-top: 2px;
-    }
-
-    /* ==========================================================================
-       MINIMALIST PHONE FRAME (USED IN HERO & SECTION 4)
-       ========================================================================== */
-    .phone-frame {
-      width: 100%;
-      max-width: 360px;
-      margin: 0 auto;
-      background: var(--phone-bezel);
-      border-radius: 44px;
-      padding: 12px;
-      box-shadow: var(--shadow-float);
-      border: 2px solid rgba(255,255,255,0.14);
-    }
-
-    .phone-screen {
-      background: var(--phone-screen);
-      border-radius: 34px;
-      padding: 18px 16px 20px;
-      min-height: 540px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .phone-notch {
-      width: 88px;
-      height: 18px;
-      border-radius: 999px;
-      background: var(--phone-bezel);
-      margin: 0 auto 4px;
-      opacity: 0.85;
-    }
-
-    .ui-card {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: 20px;
-      padding: 13px 14px;
-    }
-
-    .ui-card.apricot { background: var(--primary-soft); border-color: transparent; }
-    .ui-card.sage { background: var(--sage-soft); border-color: transparent; }
-    .ui-card.gold { background: var(--gold-soft); border-color: transparent; }
-    .ui-card.salmon { background: var(--secondary-soft); border-color: transparent; }
-
-    /* Interactive Pillars */
-    .pillar-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .pillar-tab {
-      text-align: left;
-      width: 100%;
-      background: var(--surface);
-      border: 1.5px solid var(--outline);
-      border-radius: 24px;
-      padding: 18px 20px;
+      display: flex !important;
+      aspect-ratio: 16 / 9;
       cursor: pointer;
-      font-family: inherit;
-      transition: all 200ms ease;
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
+      container-type: inline-size;
     }
+    body.grid-mode .slide:hover { border-color: var(--accent); transform: translateY(-2px); }
 
-    .pillar-tab:hover { border-color: var(--primary); }
-
-    .pillar-tab.active {
-      background: var(--surface-soft);
-      border-color: var(--primary);
-      box-shadow: var(--shadow-card);
-    }
-
-    .pillar-num {
-      width: 38px;
-      height: 38px;
-      border-radius: 14px;
-      background: var(--primary-soft);
-      color: var(--primary);
-      font-weight: 800;
-      display: grid;
-      place-items: center;
-      flex-shrink: 0;
-    }
-
-    .pillar-tab.active .pillar-num {
-      background: var(--grad-hero);
-      color: var(--on-primary);
-    }
-
-    .pillar-tab h4 { font-size: 1.03rem; margin-bottom: 4px; }
-    .pillar-tab p { font-size: 0.88rem; line-height: 1.45; }
-
-    .screen-view { display: none; flex-direction: column; gap: 11px; animation: fadeUp 240ms ease; }
-    .screen-view.active { display: flex; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ==========================================================================
-       ECONOMY EQUATION & XP BARS
-       ========================================================================== */
-    .equation-box {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-      padding: 20px;
-      border-radius: 24px;
-      background: var(--surface-soft);
-      border: 1px solid var(--outline);
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-
-    .eq-chip {
-      padding: 8px 14px;
-      border-radius: 14px;
-      background: var(--surface);
-      border: 1px solid var(--outline);
-    }
-
-    .xp-bar-row {
-      display: grid;
-      grid-template-columns: 165px 1fr 72px;
-      align-items: center;
-      gap: 12px;
-      font-size: 0.88rem;
-      font-weight: 700;
-    }
-
-    .xp-track {
-      height: 14px;
-      border-radius: 999px;
-      background: var(--surface-soft);
-      overflow: hidden;
-    }
-
-    .xp-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: var(--grad-hero);
-    }
-
-    /* ==========================================================================
-       AVATARS, BADGES, TIMELINE & FAQ ACCORDION
-       ========================================================================== */
-    .avatar-card {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: 26px;
-      padding: 18px 14px;
-      text-align: center;
-      box-shadow: var(--shadow-card);
-    }
-
-    .avatar-card.highlight {
-      background: var(--grad-soft);
-      border-color: var(--primary);
-    }
-
-    .timeline {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
-    }
-
-    .step-card {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: 24px;
-      padding: 18px 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: var(--shadow-card);
-    }
-
-    .step-time {
-      display: inline-block;
-      align-self: flex-start;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: var(--primary-soft);
-      color: var(--primary);
-      font-size: 0.76rem;
-      font-weight: 800;
-    }
-
-    .faq-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .faq-item {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: 22px;
-      overflow: hidden;
-    }
-
-    .faq-item summary {
-      list-style: none;
-      padding: 16px 20px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .faq-item summary::-webkit-details-marker { display: none; }
-    .faq-item summary::after {
-      content: "+";
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      background: var(--surface-soft);
-      display: grid;
-      place-items: center;
-      font-weight: 800;
-      color: var(--primary);
-      flex-shrink: 0;
-    }
-    .faq-item[open] summary::after { content: "−"; background: var(--primary-soft); }
-
-    .faq-body {
-      padding: 0 20px 18px;
-      font-size: 0.92rem;
-      color: var(--ink-muted);
-    }
-
-    /* ==========================================================================
-       PRESENTATION MODE (FULLSCREEN SLIDES + SPEAKER NOTES)
-       ========================================================================== */
-    body.present-mode {
-      overflow: hidden;
-      background: var(--bg);
-    }
-
-    body.present-mode .topbar {
-      position: fixed;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      margin: 0;
-    }
-
-    body.present-mode .nav-links { display: none; }
-
-    body.present-mode main.deck-root {
-      padding: 0;
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    body.present-mode .section-slide {
-      display: none;
-      width: min(1240px, calc(100vw - 48px));
-      max-height: calc(100vh - 148px);
-      overflow-y: auto;
-      padding: 20px 8px;
-      animation: fadeUp 240ms ease;
-    }
-
-    body.present-mode .section-slide.current-slide {
-      display: block;
-    }
-
-    .pres-controls {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 60;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 14px;
-      border-radius: 999px;
-      background: var(--glass);
-      backdrop-filter: blur(18px);
-      border: 1px solid var(--outline-strong);
-      box-shadow: var(--shadow-float);
-    }
-
-    body.present-mode .pres-controls { display: flex; }
-
-    .pres-controls button {
-      border: 1px solid var(--outline);
-      background: var(--surface);
-      color: var(--ink);
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 700;
-      padding: 6px 12px;
-      border-radius: 999px;
-      cursor: pointer;
-    }
-
-    .pres-controls button:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-
-    .pres-counter {
-      font-size: 0.84rem;
-      font-weight: 800;
-      min-width: 58px;
-      text-align: center;
-      color: var(--ink);
-    }
-
-    .notes-drawer {
-      position: fixed;
-      right: 20px;
-      bottom: 72px;
-      width: min(440px, calc(100vw - 40px));
-      background: var(--surface);
-      border: 1.5px solid var(--primary);
-      border-radius: 26px;
-      padding: 18px 20px;
-      box-shadow: var(--shadow-float);
-      z-index: 65;
-      display: none;
-    }
-
-    .notes-drawer.open { display: block; }
-    .notes-drawer h4 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary); margin-bottom: 6px; }
-    .notes-drawer p { font-size: 0.9rem; white-space: pre-line; }
-
-    /* Reveal animation in web mode */
-    .reveal { opacity: 0; transform: translateY(16px); transition: opacity 460ms ease, transform 460ms ease; }
-    .reveal.visible, body.present-mode .reveal { opacity: 1; transform: translateY(0); }
-
-    /* Responsive */
-    @media (max-width: 980px) {
-      .grid-hero, .grid-2, .grid-3, .grid-4, .grid-5, .timeline {
-        grid-template-columns: 1fr;
-      }
-      .nav-links { display: none; }
-      .hero-canvas { padding: 26px; }
-      .hero-stats { grid-template-columns: 1fr; }
-      .xp-bar-row { grid-template-columns: 1fr; gap: 4px; }
+    @media (max-width: 900px) {
+      body.grid-mode .deck { grid-template-columns: 1fr; }
     }
 
     @media print {
-      @page { size: landscape; margin: 10mm; }
-      .topbar, .pres-controls, .notes-drawer { display: none !important; }
-      .section-slide { display: block !important; page-break-after: always; padding: 12px 0; }
-      .reveal { opacity: 1 !important; transform: none !important; }
+      @page { size: 16in 9in; margin: 0; }
+      html, body { overflow: visible; background: #FFFFFF; }
+      .studio-bar, .bottom-dock, .notes-box, .slide-edit-bar, .upload-hint { display: none !important; }
+      .stage { display: block; padding: 0; height: auto; width: auto; }
+      .deck { width: 100%; aspect-ratio: auto; }
+      .slide {
+        position: relative;
+        display: flex !important;
+        width: 100vw;
+        height: 100vh;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        page-break-after: always;
+      }
+      .slide.is-hidden { display: none !important; }
     }
   </style>
 </head>
 <body>
-  <!-- ======================================================================
-       TOP FLOATING GLASS NAVIGATION & THEME SWITCHER
-       ====================================================================== -->
-  <header class="topbar">
-    <a href="#hero" class="brand">
-      <svg width="28" height="28" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-        <rect width="40" height="40" rx="13" fill="url(#logoGrad)"/>
-        <path d="M20 8L24.5 14.5L23 22L17 24L15.5 14.5L20 8Z" fill="#FFF9F4"/>
-        <path d="M16.5 25.5L23.5 23.5L23 30H17L16.5 25.5Z" fill="#FFE4D6"/>
-        <path d="M14.5 24.8L25.5 22.2" stroke="#F2C14E" stroke-width="2.8" stroke-linecap="round"/>
-        <defs>
-          <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#FF9B6A"/><stop offset="1" stop-color="#F07167"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <span>Narsil</span>
-    </a>
-
-    <nav class="nav-links" aria-label="Kapitoly prezentace">
-      <a href="#problem">Problém</a>
-      <a href="#kontext">Kontext</a>
-      <a href="#koncept">Koncept</a>
-      <a href="#tok">Ekonomika</a>
-      <a href="#gamifikace">Gamifikace</a>
-      <a href="#data">21 dní dat</a>
-      <a href="#demo">Demo</a>
-      <a href="#architektura">Architektura</a>
-    </nav>
-
-    <div class="toolbar-right">
-      <div class="theme-pills" role="group" aria-label="Barevné téma">
-        <button class="theme-btn active" data-set-theme="apricot" title="Meruňkový úsvit">
-          <span class="swatch" style="background:#FF9B6A;"></span>Meruňková
-        </button>
-        <button class="theme-btn" data-set-theme="salmon" title="Lososový korál">
-          <span class="swatch" style="background:#F07167;"></span>Lososová
-        </button>
-        <button class="theme-btn" data-set-theme="dusk" title="Tmavý režim pro projektor">
-          <span class="swatch" style="background:#2A201C; border:1px solid #FFA477;"></span>Večer
-        </button>
+  <!-- TOP STUDIO BAR -->
+  <header class="studio-bar">
+    <div class="bar-group">
+      <div class="brand-pill">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect width="32" height="32" rx="10" fill="url(#nGrad)"/>
+          <path d="M16 6L20 11.5L18.5 18L13.5 19.5L12 11.5L16 6Z" fill="#FFFFFF"/>
+          <path d="M13 21L19 19.5L18.6 25H13.4L13 21Z" fill="#FFE5D4"/>
+          <defs>
+            <linearGradient id="nGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FF9E6E"/><stop offset="1" stop-color="#F06F67"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>Narsil · Prezentace</span>
       </div>
-      <button class="btn-primary" id="togglePresentBtn" title="Přepnout na celoobrazovkové slidy (klávesa P)">
-        Režim prezentace
-      </button>
+
+      <div class="theme-switch" role="group" aria-label="Barevná paleta">
+        <button class="tool-btn active" data-theme-btn="apricot"><span class="swatch" style="background:#FF9E6E;"></span>Meruňková</button>
+        <button class="tool-btn" data-theme-btn="salmon"><span class="swatch" style="background:#F06F67;"></span>Lososová</button>
+      </div>
+    </div>
+
+    <div class="bar-group">
+      <button class="tool-btn" id="gridBtn" title="Přehled slidů (G)">Přehled</button>
+      <button class="tool-btn" id="editBtn" title="Zapnout úpravu textů a obrázků">✎ Upravit</button>
+      <button class="tool-btn edit-only" id="addSlideBtn" title="Přidat nový prázdný slide">+ Přidat slide</button>
+      <button class="tool-btn edit-only" id="exportBtn" title="Stáhnout samostatný index.html pro projektor">⬇ Uložit HTML</button>
+      <button class="tool-btn edit-only" id="resetBtn" title="Vrátit původní šablonu">Obnovit</button>
     </div>
   </header>
 
-  <main class="deck-root">
-    <!-- ====================================================================
-         1. HERO SECTION — KONCEPT A HLAVNÍ MYŠLENKA
-         ==================================================================== -->
-    <section class="section-slide current-slide" id="hero" data-title="1 · Úvod &amp; Koncept"
-      data-notes="Štěpán (0:25): Každá antiprokrastinační aplikace prohrává stejnou válku: staví zeď proti člověku. A člověk se naučí přelézat. My jsme zeď nepostavili. Postavili jsme zrcadlo – Narsil. Venku vás necháme žít, doma vám připomeneme, kým chcete být.">
-      <div class="container">
-        <div class="hero-canvas">
-          <div class="grid-hero">
-            <div>
-              <div class="eyebrow"><span class="dot"></span>Hackathon 2026 · Nativní Android</div>
-              <h1>Zeď, nebo <span class="grad-text">zrcadlo</span>?</h1>
-              <p class="lead">
-                <strong>Narsil</strong> je chytrý pomocník proti prokrastinaci na sociálních sítích.
-                Nikde nic tvrdě neblokuje – místo cizích zákazů ti ve chvíli pokušení pustí
-                <strong>Ozvěnu</strong>: tvoje vlastní včerejší video.
-              </p>
-              <p class="lead" style="font-size: 1rem; margin-top: 12px;">
-                Název odkazuje na zlomený meč, který byl znovu ukován zlatým <em>kintsugi</em> svárem:
-                <strong>relaps není konec, jen další krok.</strong>
-              </p>
+  <!-- 16:9 SLIDE STAGE -->
+  <div class="stage">
+    <main class="deck" id="deck">
 
-              <div class="hero-actions">
-                <a href="#koncept" class="btn-primary">Prozkoumat 4 pilíře</a>
-                <button class="btn-soft" id="heroPresentBtn">Spustit prezentaci (P)</button>
-              </div>
-
-              <div class="hero-stats">
-                <div class="stat-box">
-                  <div class="val">Jen doma</div>
-                  <div class="lbl">Venku a v chatech mlčí</div>
-                </div>
-                <div class="stat-box">
-                  <div class="val">−77 %</div>
-                  <div class="lbl">Feedu za 21 dní (142 → 33 min)</div>
-                </div>
-                <div class="stat-box">
-                  <div class="val">100 % lokální</div>
-                  <div class="lbl">Videa neopouští telefon</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hero Minimalist Visual Composition: Rounded Rectangles + Live Card -->
-            <div>
-              <div class="phone-frame" style="max-width: 340px;">
-                <div class="phone-screen" style="min-height: 460px; justify-content: space-between;">
-                  <div class="phone-notch"></div>
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight:800; font-size:1.05rem;">Narsil</span>
-                    <span class="pill apricot" style="padding:4px 10px; font-size:0.74rem;">Doma · Wi-Fi aktivní</span>
-                  </div>
-
-                  <!-- Stylized Echo Video Card -->
-                  <div class="ui-card" style="background: var(--grad-hero); color:#fff; border:none; border-radius:24px; padding:18px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; opacity:0.9; font-size:0.75rem; font-weight:700;">
-                      <span>OZVĚNA · VČEREJŠÍ SMLOUVA</span>
-                      <span>0:14</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:12px; margin:14px 0 10px;">
-                      <div style="width:46px; height:46px; border-radius:16px; background:rgba(255,255,255,0.24); display:grid; place-items:center;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><polygon points="6,4 20,12 6,20"/></svg>
-                      </div>
-                      <div style="font-weight:700; font-size:0.95rem; line-height:1.3;">
-                        „Zítra chci dopsat report, ne scrollovat do půlnoci.“
-                      </div>
-                    </div>
-                    <div style="font-size:0.8rem; opacity:0.92;">Čemu se teď vyhýbáš? Nuda · Únava · Úkol</div>
-                  </div>
-
-                  <!-- 2 primary choices preview -->
-                  <div class="ui-card sage" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <div style="font-weight:800; font-size:0.92rem; color:var(--sage);">Zavřít feed</div>
-                      <div style="font-size:0.76rem; color:var(--ink-muted);">Chuť opadla, jdu dál</div>
-                    </div>
-                    <span class="pill sage" style="background:var(--surface); padding:4px 10px;">+50 XP</span>
-                  </div>
-
-                  <div class="ui-card apricot" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <div style="font-weight:800; font-size:0.92rem; color:var(--ink);">20 dřepů / 10 kliků</div>
-                      <div style="font-size:0.76rem; color:var(--ink-muted);">Kamera spočítá · +10 min</div>
-                    </div>
-                    <span class="pill apricot" style="background:var(--surface); padding:4px 10px;">+20 XP</span>
-                  </div>
-
-                  <div style="text-align:center; font-size:0.75rem; font-weight:700; color:var(--ink-subtle);">
-                    Venku vás necháme žít · Doma připomeneme, kým chcete být
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- SLIDE 1: TITULNÍ -->
+      <section class="slide active" data-notes="Úvod (0:20): Krátké představení názvu Narsil a hlavní myšlenky: pomocník místo tvrdých zákazů.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
         </div>
-      </div>
-    </section>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>NARSIL · KONCEPT APLIKACE</span>
+          <span data-editable>Prezentace 17:00</span>
+        </div>
 
-    <!-- ====================================================================
-         2. PROBLÉM & PSYCHOLOGICKÝ INSIGHT
-         ==================================================================== -->
-    <section class="section-slide reveal" id="problem" data-title="2 · Problém &amp; Insight"
-      data-notes="Štěpán (0:25): Prokrastinace není lenost, je to útěk před nepříjemným pocitem. Zákazy prohrávají, protože staví zeď – člověk ji přeleze přes prohlížeč nebo aplikaci smaže. My místo zdi stavíme laskavé zrcadlo.">
-      <div class="container">
-        <div class="section-head">
+        <div class="body-split">
           <div>
-            <div class="eyebrow"><span class="dot"></span>Problém a psychologie</div>
-            <h2>Prokrastinace není lenost. <span class="grad-text">Je to útěk.</span></h2>
-            <p class="lead">
-              Když otevřeme feed „jen na chvilku“, neutíkáme za zábavou, ale před nepříjemným pocitem:
-              nudou, únavou, těžkým úkolem nebo samotou. Zákazy ten pocit neřeší.
-            </p>
-          </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <span class="pill apricot">Nuda</span>
-            <span class="pill salmon">Únava</span>
-            <span class="pill gold">Těžký úkol</span>
-            <span class="pill indigo">Samota</span>
-          </div>
-        </div>
-
-        <!-- Graphic comparison: Wall vs Mirror -->
-        <div class="grid-2" style="margin-bottom: 22px;">
-          <div class="card soft">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-              <h3>Běžné blokátory: Zeď</h3>
-              <span class="pill salmon">Smyčka obcházení</span>
-            </div>
-            <svg viewBox="0 0 480 180" width="100%" aria-label="Ilustrace zdi zákazů">
-              <rect x="4" y="4" width="472" height="172" rx="24" fill="var(--surface)" stroke="var(--outline)"/>
-              <!-- Rounded brick shapes -->
-              <rect x="28" y="30" width="94" height="32" rx="10" fill="var(--secondary-soft)"/>
-              <rect x="130" y="30" width="104" height="32" rx="10" fill="var(--secondary-soft)"/>
-              <rect x="242" y="30" width="90" height="32" rx="10" fill="var(--secondary-soft)"/>
-              <rect x="58" y="70" width="110" height="32" rx="10" fill="var(--primary-soft)"/>
-              <rect x="176" y="70" width="132" height="32" rx="10" fill="var(--secondary)" opacity="0.88"/>
-              <text x="242" y="91" text-anchor="middle" fill="#fff" font-size="13" font-weight="800">Limit vyčerpán</text>
-              <rect x="28" y="110" width="96" height="32" rx="10" fill="var(--secondary-soft)"/>
-              <rect x="132" y="110" width="116" height="32" rx="10" fill="var(--secondary-soft)"/>
-              <!-- Bypass arc -->
-              <path d="M352 136 C352 44, 434 44, 434 114" fill="none" stroke="var(--secondary)" stroke-width="3.5" stroke-dasharray="7 6" stroke-linecap="round"/>
-              <polygon points="434,126 426,110 442,110" fill="var(--secondary)"/>
-              <text x="394" y="152" text-anchor="middle" fill="var(--ink-muted)" font-size="12" font-weight="700">Otevřeš v prohlížeči</text>
-            </svg>
-            <p style="font-size:0.92rem; margin-top:12px;">
-              Zablokuješ Instagram → otevřeš ho ve Firefoxu. Nastavíš limit → klikneš „+15 minut“. Smažeš aplikaci → za tři dny jsi zpátky.
-            </p>
-          </div>
-
-          <div class="card tint">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-              <h3>Narsil: Zrcadlo se zlatým svárem</h3>
-              <span class="pill sage">Vědomá volba</span>
-            </div>
-            <svg viewBox="0 0 480 180" width="100%" aria-label="Ilustrace zrcadla Narsil">
-              <rect x="4" y="4" width="472" height="172" rx="24" fill="var(--surface)" stroke="var(--outline)"/>
-              <!-- Concentric echo waves -->
-              <circle cx="136" cy="90" r="64" fill="var(--primary-soft)" opacity="0.55"/>
-              <circle cx="136" cy="90" r="46" fill="var(--secondary-soft)" opacity="0.75"/>
-              <rect x="96" y="28" width="80" height="124" rx="40" fill="var(--surface)" stroke="var(--primary)" stroke-width="3"/>
-              <!-- Kintsugi crack -->
-              <path d="M100 104 L128 86 L146 96 L174 74" fill="none" stroke="var(--gold)" stroke-width="3.5" stroke-linecap="round"/>
-              <!-- Pills on right -->
-              <rect x="218" y="34" width="224" height="32" rx="16" fill="var(--sage-soft)"/>
-              <text x="234" y="55" fill="var(--sage)" font-size="12.5" font-weight="800">1. Rozhoduje klidné večerní já</text>
-              <rect x="218" y="74" width="224" height="32" rx="16" fill="var(--primary-soft)"/>
-              <text x="234" y="95" fill="var(--ink)" font-size="12.5" font-weight="800">2. Vlastní hlas přesvědčí víc</text>
-              <rect x="218" y="114" width="224" height="32" rx="16" fill="var(--gold-soft)"/>
-              <text x="234" y="135" fill="var(--ink)" font-size="12.5" font-weight="800">3. Pohyb je cena i lék zároveň</text>
-            </svg>
-            <p style="font-size:0.92rem; margin-top:12px;">
-              Na zákaz se člověk naštve, se sebou z minulosti se hádá hůř. Pokračovat můžeš vždy – ale za pohyb, který mění tělesný stav.
-            </p>
-          </div>
-        </div>
-
-        <!-- 5 Principles -->
-        <div class="grid-5">
-          <div class="card" style="padding:18px; border-radius:24px;">
-            <div class="pill apricot" style="margin-bottom:10px;">01</div>
-            <h4>Pomocník, ne dozorce</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">Venku, s přáteli a ve zprávách aplikaci vůbec necítíš.</p>
-          </div>
-          <div class="card" style="padding:18px; border-radius:24px;">
-            <div class="pill salmon" style="margin-bottom:10px;">02</div>
-            <h4>Vlastní hlas</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">Tvoje vlastní včerejší video funguje lépe než cizí upozornění.</p>
-          </div>
-          <div class="card" style="padding:18px; border-radius:24px;">
-            <div class="pill gold" style="margin-bottom:10px;">03</div>
-            <h4>Klid před pokušením</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">Pravidla píšeš večer v klidu, ne uprostřed únavy.</p>
-          </div>
-          <div class="card" style="padding:18px; border-radius:24px;">
-            <div class="pill indigo" style="margin-bottom:10px;">04</div>
-            <h4>Lidi neobejdeš</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">Kód jde smazat, ale o výpadku se dozví tvůj Parťák.</p>
-          </div>
-          <div class="card" style="padding:18px; border-radius:24px;">
-            <div class="pill sage" style="margin-bottom:10px;">05</div>
-            <h4>Pohyb = cena i lék</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">20 dřepů nebo 10 kliků přepne hlavu i tělo z pasivity.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         3. KONTEXTOVÁ INTELIGENCE — KDY ZASAHUJE A KDY MLČÍ
-         ==================================================================== -->
-    <section class="section-slide reveal" id="kontext" data-title="3 · Kontext &amp; Detekce"
-      data-notes="Marek/Štěpán: Zásada je raději zásah propásnout než člověka otravovat. Sledujeme domácí Wi-Fi bez GPS, rozlišujeme zprávy od feedu a nově sledujeme i web ve Firefoxu, tenký ukazatel limitu při scrollování a na YouTube počkáme až na konec videa.">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow"><span class="dot"></span>Chytrá detekce chování</div>
-            <h2>Kdy Narsil zasahuje <span class="grad-text">a kdy mlčí</span></h2>
-            <p class="lead">
-              Zásada zní: <strong>raději zásah propásnout, než člověka zbytečně otravovat.</strong>
-              Narsil reaguje jen tehdy, když jsi v komfortní zóně (domácí Wi-Fi) a zároveň scrolluješ nekonečný obsah déle než 5 minut.
-            </p>
-          </div>
-          <span class="pill apricot">Aplikace i prohlížeč Firefox</span>
-        </div>
-
-        <div class="grid-4" style="margin-bottom: 22px;">
-          <div class="card interactive" style="border-radius:28px;">
-            <svg width="46" height="46" viewBox="0 0 46 46" style="margin-bottom:12px;">
-              <rect width="46" height="46" rx="16" fill="var(--sage-soft)"/>
-              <circle cx="23" cy="23" r="10" fill="none" stroke="var(--sage)" stroke-width="2.5"/>
-              <path d="M19 23L22 26L28 20" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-            <div class="pill sage" style="margin-bottom:8px;">MLČÍ</div>
-            <h3>Venku ve společnosti</h3>
-            <p style="font-size:0.88rem; margin-top:8px;">
-              Ukazuješ kamarádovi Reels nebo TikTok v kavárně či tramvaji? Mimo domácí Wi-Fi se Narsil vůbec neozve.
-            </p>
-          </div>
-
-          <div class="card interactive" style="border-radius:28px;">
-            <svg width="46" height="46" viewBox="0 0 46 46" style="margin-bottom:12px;">
-              <rect width="46" height="46" rx="16" fill="var(--indigo-soft)"/>
-              <rect x="12" y="14" width="22" height="16" rx="7" fill="none" stroke="var(--indigo)" stroke-width="2.5"/>
-              <circle cx="19" cy="22" r="1.8" fill="var(--indigo)"/><circle cx="27" cy="22" r="1.8" fill="var(--indigo)"/>
-            </svg>
-            <div class="pill indigo" style="margin-bottom:8px;">NIKDY</div>
-            <h3>Zprávy a chaty</h3>
-            <p style="font-size:0.88rem; margin-top:8px;">
-              WhatsApp, Messenger i Instagram Direct se nikdy nepočítají. V nejistotě bere detekce obrazovku jako chat.
-            </p>
-          </div>
-
-          <div class="card interactive" style="border-radius:28px;">
-            <svg width="46" height="46" viewBox="0 0 46 46" style="margin-bottom:12px;">
-              <rect width="46" height="46" rx="16" fill="var(--gold-soft)"/>
-              <polygon points="19,16 31,23 19,30" fill="var(--gold)"/>
-            </svg>
-            <div class="pill gold" style="margin-bottom:8px;">ZDARMA</div>
-            <h3>Plánované &amp; do 5 min</h3>
-            <p style="font-size:0.88rem; margin-top:8px;">
-              Krátký pohled do 5 min nebo video z tvého večerního plánu (např. přednáška o Rustu spárovaná AI) běží volně.
-            </p>
-          </div>
-
-          <div class="card interactive" style="border-radius:28px; border-color:var(--primary); background:var(--grad-soft);">
-            <svg width="46" height="46" viewBox="0 0 46 46" style="margin-bottom:12px;">
-              <rect width="46" height="46" rx="16" fill="var(--primary)"/>
-              <circle cx="23" cy="23" r="9" fill="none" stroke="#fff" stroke-width="2.5"/>
-              <circle cx="23" cy="23" r="3" fill="#fff"/>
-            </svg>
-            <div class="pill apricot" style="background:var(--surface); margin-bottom:8px;">OZVĚNA</div>
-            <h3>Doma ve feedu &gt; 5 min</h3>
-            <p style="font-size:0.88rem; margin-top:8px;">
-              Nekonečný feed, Reels, Shorts nebo 3. neplánované video v řadě spustí Ozvěnu – i když je otevřeš ve Firefoxu.
-            </p>
-          </div>
-        </div>
-
-        <!-- Novinky z GitHubu (PR #83-#92) -->
-        <div class="grid-3">
-          <div class="card soft" style="padding:20px; border-radius:24px;">
-            <span class="pill apricot" style="margin-bottom:8px;">Novinka · Scroll bar (135)</span>
-            <h4>Jemný ukazatel při scrollování</h4>
-            <p style="font-size:0.86rem; margin-top:6px;">
-              Tenký, neblokující proužek na okraji obrazovky se při scrollování doma postupně plní k 100 % a barvou jemně upozorní, že se blíží Ozvěna.
-            </p>
-          </div>
-          <div class="card soft" style="padding:20px; border-radius:24px;">
-            <span class="pill salmon" style="margin-bottom:8px;">Novinka · Ohleduplný YouTube (134)</span>
-            <h4>Neskáče do půlky věty</h4>
-            <p style="font-size:0.86rem; margin-top:6px;">
-              Vyprší-li limit během sledování YouTube videa (v aplikaci i Firefoxu), Ozvěna zdvořile počká na konec videa nebo přepnutí na další.
-            </p>
-          </div>
-          <div class="card soft" style="padding:20px; border-radius:24px;">
-            <span class="pill gold" style="margin-bottom:8px;">Novinka · Firefox detekce</span>
-            <h4>Prohlížeč není úniková cesta</h4>
-            <p style="font-size:0.86rem; margin-top:6px;">
-              Accessibility čte adresní řádek Firefoxu – pozná Instagram, TikTok i konkrétní YouTube video na webu, aniž by četl obsah soukromých zpráv.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         4. KONCEPT: 4 PILÍŘE + INTERAKTIVNÍ PROHLÍŽEČ OBRAZOVEK
-         ==================================================================== -->
-    <section class="section-slide reveal" id="koncept" data-title="4 · Čtyři pilíře aplikace"
-      data-notes="Štěpán (0:40): Celek drží jedno pravidlo: plánovaná spotřeba je zdarma, neplánovaná se platí pohybem. Tady si můžeme rovnou proklikat všech pět hlavních momentů v aplikaci: večerní smlouvu, Ozvěnu, kamerové počítání dřepů i kliků, Zrcadlo a notifikaci Parťákovi.">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow"><span class="dot"></span>Architektura návyku</div>
-            <h2>Čtyři pilíře: <span class="grad-text">plán zdarma, chaos za pohyb</span></h2>
-            <p class="lead">Klikni na jednotlivé kroky vlevo a prohlédni si odpovídající obrazovku aplikace vpravo.</p>
-          </div>
-        </div>
-
-        <div class="grid-hero" style="align-items:start;">
-          <!-- Interactive Pillar Selector -->
-          <div class="pillar-list" role="tablist" aria-label="Pilíře aplikace Narsil">
-            <button class="pillar-tab active" data-screen="screen-contract" role="tab" aria-selected="true">
-              <div class="pillar-num">1</div>
-              <div>
-                <h4>Večerní smlouva &amp; Plán dne (2 min)</h4>
-                <p>Cíl kroků (6 000), seznam plánovaného obsahu zdarma, denní úkoly ověřované přes AI (Gemini / Claude / OpenAI) nebo Stravu a 15s osobní video na zítřek.</p>
-              </div>
-            </button>
-
-            <button class="pillar-tab" data-screen="screen-echo" role="tab" aria-selected="false">
-              <div class="pillar-num">2</div>
-              <div>
-                <h4>Ozvěna v okamžiku pokušení</h4>
-                <p>Překryvné okno pustí včerejší video, zeptá se „Čemu se teď vyhýbáš?“ a nabídne: Zavřít (+50 XP), Dřepy/Kliky (+20 XP), Kroky (+10 XP) nebo Půjčku.</p>
-              </div>
-            </button>
-
-            <button class="pillar-tab" data-screen="screen-move" role="tab" aria-selected="false">
-              <div class="pillar-num">3</div>
-              <div>
-                <h4>Dřepy i kliky před kamerou (Anti-cheat)</h4>
-                <p>ML Kit Pose počítá 20 dřepů zepředu i z boku. Přepínač umožňuje i 10 kliků přes kameru + proximity senzor s hlídačem ležícího telefonu (PhoneFlatGuard).</p>
-              </div>
-            </button>
-
-            <button class="pillar-tab" data-screen="screen-mirror" role="tab" aria-selected="false">
-              <div class="pillar-num">4</div>
-              <div>
-                <h4>Hodnota obsahu &amp; Zrcadlo</h4>
-                <p>Záměr před videem a hodnocení 1–5 po něm (+5 XP). Zrcadlo ukáže, kolik hodin sis vzal zpět a které kanály jsou jen časová past.</p>
-              </div>
-            </button>
-
-            <button class="pillar-tab" data-screen="screen-buddy" role="tab" aria-selected="false">
-              <div class="pillar-num">5</div>
-              <div>
-                <h4>Parťák &amp; Ochrana bez zámků</h4>
-                <p>Kamarád dostane zprávu jen při smazání aplikace nebo dluhu nad 30 min. Nevidí žádná data. Citlivá nastavení navíc chrání zpožděné potvrzení.</p>
-              </div>
-            </button>
-          </div>
-
-          <!-- Phone Mockup Screen Switcher -->
-          <div class="phone-frame">
-            <div class="phone-screen">
-              <div class="phone-notch"></div>
-
-              <!-- Screen 1: Večerní smlouva -->
-              <div class="screen-view active" id="screen-contract">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <strong>Večerní smlouva</strong>
-                  <span class="pill indigo" style="padding:3px 10px; font-size:0.74rem;">Krok 3 ze 3</span>
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px;">
-                  <div style="height:6px; border-radius:99px; background:var(--primary);"></div>
-                  <div style="height:6px; border-radius:99px; background:var(--primary);"></div>
-                  <div style="height:6px; border-radius:99px; background:var(--primary);"></div>
-                </div>
-                <div class="ui-card apricot">
-                  <div style="font-size:0.75rem; font-weight:800; color:var(--primary);">POHYBOVÝ CÍL &amp; ÚKOLY</div>
-                  <div style="font-weight:800; font-size:0.95rem; margin-top:2px;">6 000 kroků + Běh 20 min</div>
-                  <div style="font-size:0.78rem; color:var(--ink-muted); margin-top:4px;">Ověření: Strava API nebo fotka (SHA-256 + AI)</div>
-                </div>
-                <div class="ui-card sage">
-                  <div style="font-size:0.75rem; font-weight:800; color:var(--sage);">PLÁNOVANÝ OBSAH ZDARMA</div>
-                  <div style="font-weight:700; font-size:0.92rem; margin-top:2px;">„Přednáška o Rustu“, 1 díl seriálu</div>
-                </div>
-                <div class="ui-card" style="text-align:center; padding:18px 14px;">
-                  <div style="width:58px; height:58px; border-radius:22px; background:var(--grad-hero); margin:0 auto 10px; display:grid; place-items:center;">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="9" r="3.5"/><path d="M5 19c0-3.5 14-3.5 14 0" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
-                  </div>
-                  <div style="font-weight:800; font-size:0.92rem;">Tvoje 15s Ozvěna uložena</div>
-                  <div style="font-size:0.76rem; color:var(--ink-muted); margin-top:3px;">CameraX · jen lokálně v telefonu</div>
-                </div>
-                <div style="margin-top:auto; background:var(--sage); color:#fff; text-align:center; padding:13px; border-radius:20px; font-weight:800; font-size:0.92rem;">
-                  Podepsat smlouvu (+100 XP)
-                </div>
-              </div>
-
-              <!-- Screen 2: Ozvěna -->
-              <div class="screen-view" id="screen-echo">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span class="pill indigo" style="padding:4px 10px; font-size:0.74rem;">Ozvěna · TikTok</span>
-                  <span style="font-size:0.76rem; font-weight:700; color:var(--ink-muted);">Doma · 21:47</span>
-                </div>
-                <div class="ui-card" style="background:var(--grad-hero); color:#fff; border:none; text-align:center; padding:16px;">
-                  <div style="font-weight:800; font-size:0.95rem;">Tvoje včerejší Ozvěna</div>
-                  <div style="font-size:0.8rem; opacity:0.94; margin-top:4px;">„Zítra chci mít čistou hlavu a hotový report.“</div>
-                </div>
-                <div style="font-weight:800; font-size:0.98rem;">Čemu se teď vyhýbáš?</div>
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                  <span class="pill" style="padding:4px 10px; font-size:0.75rem;">Nuda</span>
-                  <span class="pill apricot" style="padding:4px 10px; font-size:0.75rem;">Únava</span>
-                  <span class="pill" style="padding:4px 10px; font-size:0.75rem;">Úkol</span>
-                  <span class="pill" style="padding:4px 10px; font-size:0.75rem;">Samota</span>
-                </div>
-                <div class="ui-card sage" style="display:flex; justify-content:space-between; align-items:center;">
-                  <div>
-                    <strong style="color:var(--sage);">Zavřít feed</strong>
-                    <div style="font-size:0.74rem; color:var(--ink-muted);">Chuť opadla, odcházím</div>
-                  </div>
-                  <span class="pill sage" style="background:var(--surface);">+50 XP</span>
-                </div>
-                <div class="ui-card apricot" style="display:flex; justify-content:space-between; align-items:center;">
-                  <div>
-                    <strong>Udělat 20 dřepů / 10 kliků</strong>
-                    <div style="font-size:0.74rem; color:var(--ink-muted);">Kamera spočítá · +10 min</div>
-                  </div>
-                  <span class="pill apricot" style="background:var(--surface);">+20 XP</span>
-                </div>
-                <div class="ui-card" style="display:flex; justify-content:space-between; align-items:center;">
-                  <div>
-                    <strong>Zaplatit 1 000 kroků</strong>
-                    <div style="font-size:0.74rem; color:var(--ink-muted);">Máš 4 200 kroků (+42 min)</div>
-                  </div>
-                  <span class="pill" style="padding:4px 10px;">+10 XP</span>
-                </div>
-                <div class="ui-card salmon" style="display:flex; justify-content:space-between; align-items:center;">
-                  <div>
-                    <strong>Půjčit si 10 min</strong>
-                    <div style="font-size:0.74rem; color:var(--ink-muted);">Dluh se přenese do zítřka</div>
-                  </div>
-                  <span class="pill salmon" style="background:var(--surface);">0 XP</span>
-                </div>
-              </div>
-
-              <!-- Screen 3: Pohyb kamerou -->
-              <div class="screen-view" id="screen-move">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <strong>Pohyb kamerou</strong>
-                  <span class="pill apricot" style="padding:3px 10px; font-size:0.74rem;">+20 XP · 10 min</span>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                  <div class="pill apricot" style="justify-content:center; font-size:0.78rem;">Dřepy (20×)</div>
-                  <div class="pill" style="justify-content:center; font-size:0.78rem;">Kliky (10×)</div>
-                </div>
-                <div class="ui-card soft" style="text-align:center; padding:18px 12px; position:relative;">
-                  <svg viewBox="0 0 200 180" width="180" height="150" style="margin:0 auto; display:block;">
-                    <rect x="10" y="6" width="180" height="168" rx="22" fill="var(--surface)" stroke="var(--outline)"/>
-                    <!-- Minimalist pose skeleton -->
-                    <circle cx="100" cy="42" r="14" fill="none" stroke="var(--sage)" stroke-width="3"/>
-                    <path d="M100 56 V100 L76 130 L86 158 M100 100 L124 130 L114 158 M72 80 L100 66 L128 80" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="76" cy="130" r="4.5" fill="var(--sage)"/>
-                    <circle cx="124" cy="130" r="4.5" fill="var(--sage)"/>
-                  </svg>
-                  <div style="font-size:2.3rem; font-weight:800; color:var(--primary); line-height:1;">18 / 20</div>
-                  <div style="font-size:0.8rem; color:var(--ink-muted); font-weight:700;">ML Kit Pose · zepředu i z boku</div>
-                </div>
-                <div class="ui-card">
-                  <div style="font-size:0.78rem; font-weight:700; color:var(--ink);">Podpora kliků (PhoneFlatGuard)</div>
-                  <div style="font-size:0.76rem; color:var(--ink-muted); margin-top:2px;">
-                    Telefon na zemi kontroluje akcelerometr i gyroskop, kliky měří přední kamera + proximity senzor.
-                  </div>
-                </div>
-                <div style="height:10px; border-radius:99px; background:var(--surface-soft); overflow:hidden;">
-                  <div style="width:90%; height:100%; background:var(--grad-hero); border-radius:99px;"></div>
-                </div>
-              </div>
-
-              <!-- Screen 4: Zrcadlo a mapa hodnoty -->
-              <div class="screen-view" id="screen-mirror">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <strong>Zrcadlo &amp; Hodnota</strong>
-                  <span class="pill sage" style="padding:3px 10px; font-size:0.74rem;">21 dní dat</span>
-                </div>
-                <div class="ui-card sage">
-                  <div style="font-weight:800; font-size:1rem; color:var(--sage);">+9 h 10 min za týden</div>
-                  <div style="font-size:0.78rem; color:var(--ink-muted); margin-top:2px;">Feed klesl z 142 na 33 min denně (−77 %)</div>
-                </div>
-                <div class="ui-card" style="border-color:var(--sage);">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <strong style="font-size:0.9rem;">Rust za kafe · LONG</strong>
-                      <div style="font-size:0.75rem; color:var(--ink-muted);">88 % dokoukáno · KEEP</div>
-                    </div>
-                    <span class="pill sage">4.7 / 5</span>
-                  </div>
-                </div>
-                <div class="ui-card salmon">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <strong style="font-size:0.9rem;">Drama Recap CZ · SHORT</strong>
-                      <div style="font-size:0.75rem; color:var(--ink-muted);">88 % dokoukáno · Časová past</div>
-                    </div>
-                    <span class="pill salmon" style="background:var(--surface);">1.6 / 5</span>
-                  </div>
-                </div>
-                <div class="ui-card">
-                  <div style="font-size:0.78rem; font-weight:700;">AI párování plánu</div>
-                  <div style="font-size:0.76rem; color:var(--ink-muted); margin-top:2px;">
-                    Titulek „Přednáška: Rust v embedded“ spárovaný s plánem → zdarma bez přerušení.
-                  </div>
-                </div>
-              </div>
-
-              <!-- Screen 5: Parťák -->
-              <div class="screen-view" id="screen-buddy">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <strong>Telefon Parťáka</strong>
-                  <span class="pill gold" style="padding:3px 10px; font-size:0.74rem;">Vztah místo zámků</span>
-                </div>
-                <div style="text-align:center; padding:12px 0 4px;">
-                  <div style="font-size:2.4rem; font-weight:300; line-height:1;">22:14</div>
-                  <div style="font-size:0.76rem; color:var(--ink-muted);">Kamarádův telefon</div>
-                </div>
-                <div class="ui-card apricot" style="border:1.5px solid var(--primary);">
-                  <div style="display:flex; justify-content:space-between; font-size:0.74rem; font-weight:800; color:var(--primary); margin-bottom:6px;">
-                    <span>NARSIL · PARŤÁK</span>
-                    <span>nyní</span>
-                  </div>
-                  <div style="font-weight:800; font-size:0.94rem;">Tereza přerušila ochranu</div>
-                  <p style="font-size:0.78rem; margin-top:4px; line-height:1.4;">
-                    Aplikace se přestala hlásit nebo dluh překročil 30 min. Napiš jí krátkou zprávu.
-                  </p>
-                </div>
-                <div class="ui-card indigo" style="background:var(--indigo-soft); border:none;">
-                  <div style="font-weight:800; font-size:0.84rem; color:var(--indigo);">100 % soukromí</div>
-                  <div style="font-size:0.76rem; color:var(--ink-muted); margin-top:2px;">
-                    Parťák nikdy nevidí aplikace, názvy videí, minuty ani tvoje nahrávky.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         5. EKONOMIKA ČASU & TOK INTERVENCE
-         ==================================================================== -->
-    <section class="section-slide reveal" id="tok" data-title="5 · Ekonomika času &amp; Tok"
-      data-notes="Logika ekonomiky a toku: den začíná ve 4:00 ráno. Zůstatek minut = kroky/100 + odměny ověřených úkolů − zaplacené minuty − přenesený dluh. Vývojový diagram ukazuje přesnou cestu od otevření feedu přes kontrolu Wi-Fi a plánu až po Ozvěnu.">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow"><span class="dot"></span>Pravidla a ekonomika minut</div>
-            <h2>Tok intervence <span class="grad-text">&amp; peněženka času</span></h2>
-            <p class="lead">
-              Žádné arbitrární limity. Svůj rozpočet pro neplánovaný obsah si přirozeně tvoříš pohybem a splněnými úkoly dne.
-            </p>
-          </div>
-        </div>
-
-        <!-- SVG Decision Flowchart -->
-        <div class="card" style="margin-bottom:22px; overflow-x:auto;">
-          <svg viewBox="0 0 1060 270" width="100%" style="min-width:740px;" aria-label="Vývojový diagram toku intervence">
-            <!-- Step 1 -->
-            <rect x="12" y="90" width="170" height="84" rx="22" fill="var(--surface-soft)" stroke="var(--outline)" stroke-width="1.5"/>
-            <text x="97" y="126" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">Otevřeš Reels,</text>
-            <text x="97" y="146" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">TikTok nebo Firefox</text>
-
-            <path d="M182 132 H222" stroke="var(--outline-strong)" stroke-width="2.5" stroke-linecap="round"/>
-
-            <!-- Step 2: Condition -->
-            <rect x="222" y="78" width="186" height="108" rx="26" fill="var(--primary-soft)" stroke="var(--primary)" stroke-width="1.8"/>
-            <text x="315" y="114" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">Doma na Wi-Fi</text>
-            <text x="315" y="135" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">&amp; feed &gt; 5 min?</text>
-            <text x="315" y="158" text-anchor="middle" fill="var(--ink-muted)" font-size="11.5" font-weight="700">(demo: 20 s · ne chaty)</text>
-
-            <!-- Branch NO -->
-            <path d="M315 78 V44 H550" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round"/>
-            <rect x="444" y="14" width="212" height="52" rx="18" fill="var(--sage-soft)"/>
-            <text x="550" y="38" text-anchor="middle" fill="var(--sage)" font-size="13" font-weight="800">Narsil mlčí</text>
-            <text x="550" y="55" text-anchor="middle" fill="var(--ink-muted)" font-size="11.5" font-weight="600">Venku, zprávy, krátký pohled</text>
-
-            <!-- Branch YES -> Planned? -->
-            <path d="M408 132 H444" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
-            <rect x="444" y="88" width="176" height="88" rx="24" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.6"/>
-            <text x="532" y="122" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">Je v plánu</text>
-            <text x="532" y="142" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">ze smlouvy?</text>
-
-            <!-- Branch PLANNED YES -->
-            <path d="M532 176 V220 H660" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round"/>
-            <rect x="606" y="198" width="204" height="52" rx="18" fill="var(--sage-soft)"/>
-            <text x="708" y="222" text-anchor="middle" fill="var(--sage)" font-size="13" font-weight="800">Plánovaný obsah: zdarma</text>
-            <text x="708" y="239" text-anchor="middle" fill="var(--ink-muted)" font-size="11.5" font-weight="600">AI spáruje název videa</text>
-
-            <!-- Branch PLANNED NO -> ECHO -->
-            <path d="M620 132 H656" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
-            <rect x="656" y="74" width="172" height="114" rx="26" fill="url(#logoGrad)"/>
-            <text x="742" y="114" text-anchor="middle" fill="#fff" font-size="16" font-weight="800">OZVĚNA</text>
-            <text x="742" y="136" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Včerejší video +</text>
-            <text x="742" y="154" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">„Čemu se vyhýbáš?“</text>
-
-            <!-- 4 Outcomes -->
-            <path d="M828 132 H858" stroke="var(--primary)" stroke-width="2.5"/>
-            <rect x="858" y="20" width="188" height="44" rx="16" fill="var(--sage-soft)" stroke="var(--sage)"/>
-            <text x="952" y="47" text-anchor="middle" fill="var(--sage)" font-size="13" font-weight="800">Zavřít feed · +50 XP</text>
-
-            <rect x="858" y="76" width="188" height="44" rx="16" fill="var(--primary-soft)" stroke="var(--primary)"/>
-            <text x="952" y="103" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="800">20 dřepů / 10 kliků · +20</text>
-
-            <rect x="858" y="132" width="188" height="44" rx="16" fill="var(--indigo-soft)"/>
-            <text x="952" y="159" text-anchor="middle" fill="var(--indigo)" font-size="13" font-weight="800">Zaplatit kroky · +10 XP</text>
-
-            <rect x="858" y="188" width="188" height="44" rx="16" fill="var(--secondary-soft)"/>
-            <text x="952" y="215" text-anchor="middle" fill="var(--secondary)" font-size="13" font-weight="800">Půjčit si (limit 30 min)</text>
-          </svg>
-        </div>
-
-        <!-- Wallet Equation & Exchange Rates -->
-        <div class="grid-2">
-          <div class="card soft">
-            <h3 style="margin-bottom:12px;">Rovnice rozpočtu minut</h3>
-            <div class="equation-box">
-              <span class="eq-chip" style="background:var(--primary-soft);">⌊Kroky dnes / 100⌋</span>
-              <span>+</span>
-              <span class="eq-chip" style="background:var(--sage-soft);">Odměny úkolů</span>
-              <span>−</span>
-              <span class="eq-chip">Zaplaceno dnes</span>
-              <span>−</span>
-              <span class="eq-chip" style="background:var(--secondary-soft);">Přenesený dluh</span>
-            </div>
-            <p style="font-size:0.88rem; margin-top:12px;">
-              Den začíná ve <strong>4:00 ráno</strong> (noční sovy nejsou penalizovány). Úkoly školy/práce/pohybu přidávají 10–30 minut po ověření AI (fotka se SHA-256 proti opakování / text) nebo Stravou (aktivita ≥ 15 min).
-            </p>
-          </div>
-
-          <div class="card">
-            <h3 style="margin-bottom:12px;">Přehled kurzů a limitů</h3>
-            <div class="grid-2" style="gap:12px;">
-              <div class="stat-box">
-                <div class="val" style="color:var(--primary);">1 000 kroků</div>
-                <div class="lbl">= 10 minut obsahu (Health Connect / senzor)</div>
-              </div>
-              <div class="stat-box">
-                <div class="val" style="color:var(--secondary);">20 dřepů / 10 kliků</div>
-                <div class="lbl">= 10 minut hned přes kameru</div>
-              </div>
-              <div class="stat-box">
-                <div class="val" style="color:var(--sage);">+10 až +30 min</div>
-                <div class="lbl">Odměna za ověřený denní úkol</div>
-              </div>
-              <div class="stat-box">
-                <div class="val" style="color:var(--gold);">30 min strop</div>
-                <div class="lbl">Max dluh; nad limit zpráva Parťákovi</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         6. GAMIFIKACE, KTERÁ NIKDY NETRESTÁ
-         ==================================================================== -->
-    <section class="section-slide reveal" id="gamifikace" data-title="6 · Gamifikace bez trestů"
-      data-notes="Štěpán (0:30): Gamifikace má 25 % váhy hodnocení a je postavená obráceně než u jiných aplikací: nejvíc bodů je za odchod od feedu (50 XP), ne za čas v aplikaci. Nic nikdy XP nebere. Série chrání žolíky za 50 dřepů navíc.">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow"><span class="dot"></span>25 % hodnocení aplikace</div>
-            <h2>Gamifikace, která <span class="grad-text">nikdy netrestá</span></h2>
-            <p class="lead">
-              Nejvíc XP dostaneš za to, že odejdeš sám. Relaps ani dluh body neberou – jen nepřidávají.
-              Úroveň roste každých <strong>500 XP</strong>.
-            </p>
-          </div>
-          <span class="pill sage">Cíl: trávit v aplikaci minimum času</span>
-        </div>
-
-        <div class="grid-2" style="margin-bottom:22px;">
-          <!-- XP Reward Hierarchy -->
-          <div class="card">
-            <h3 style="margin-bottom:16px;">Odměny XP za rozhodnutí</h3>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-              <div class="xp-bar-row">
-                <span>Boss 21:00–22:00</span>
-                <div class="xp-track"><div class="xp-fill" style="width:100%; background:var(--gold);"></div></div>
-                <span style="text-align:right; color:var(--gold);">+150 XP</span>
-              </div>
-              <div class="xp-bar-row">
-                <span>Splněná smlouva</span>
-                <div class="xp-track"><div class="xp-fill" style="width:74%; background:var(--indigo);"></div></div>
-                <span style="text-align:right; color:var(--indigo);">+100 XP</span>
-              </div>
-              <div class="xp-bar-row">
-                <span>Zavřít feed sám (5×/d)</span>
-                <div class="xp-track"><div class="xp-fill" style="width:52%; background:var(--sage);"></div></div>
-                <span style="text-align:right; color:var(--sage);">+50 XP</span>
-              </div>
-              <div class="xp-bar-row">
-                <span>Ověřený úkol dne</span>
-                <div class="xp-track"><div class="xp-fill" style="width:36%;"></div></div>
-                <span style="text-align:right; color:var(--primary);">+30 XP</span>
-              </div>
-              <div class="xp-bar-row">
-                <span>20 dřepů / 10 kliků</span>
-                <div class="xp-track"><div class="xp-fill" style="width:26%;"></div></div>
-                <span style="text-align:right; color:var(--primary);">+20 XP</span>
-              </div>
-              <div class="xp-bar-row">
-                <span>Zaplatit kroky</span>
-                <div class="xp-track"><div class="xp-fill" style="width:16%; background:var(--secondary);"></div></div>
-                <span style="text-align:right; color:var(--secondary);">+10 XP</span>
-              </div>
-              <div class="xp-bar-row">
-                <span>Hodnocení videa (10×/d)</span>
-                <div class="xp-track"><div class="xp-fill" style="width:10%; background:var(--secondary);"></div></div>
-                <span style="text-align:right; color:var(--ink-muted);">+5 XP</span>
-              </div>
-              <div class="xp-bar-row">
-                <span>Půjčka 10 minut</span>
-                <div class="xp-track"><div class="xp-fill" style="width:2%; background:var(--outline-strong);"></div></div>
-                <span style="text-align:right; color:var(--ink-subtle);">0 XP</span>
-              </div>
+            <h1 data-editable>Pomocník,<br /><span class="grad-text">ne dozorce.</span></h1>
+            <p class="sub" data-editable>Chytrá cesta z prokrastinace na sociálních sítích – vlastním hlasem a pohybem.</p>
+            <div class="chip-row">
+              <span class="chip accent" data-editable>Ozvěna</span>
+              <span class="chip" data-editable>Android</span>
+              <span class="chip" data-editable>[ Doplňte jména týmu ]</span>
             </div>
           </div>
 
-          <!-- Souboj, Žolíky, Parta, Odznaky -->
-          <div class="card soft" style="display:flex; flex-direction:column; gap:14px;">
-            <h3>Mechaniky motivace</h3>
-            <div class="ui-card">
-              <strong>Souboj s algoritmem</strong>
-              <p style="font-size:0.84rem; margin-top:3px;">
-                Každý den porovnáváš <em>získaný čas</em> (Zavřít × 15 min + odměny úkolů) proti minutám ve feedu. Vyšší číslo bere denní bod.
-              </p>
-            </div>
-            <div class="ui-card">
-              <strong>Série se žolíky (50 dřepů navíc = 1 žolík)</strong>
-              <p style="font-size:0.84rem; margin-top:3px;">
-                V zásobě můžeš mít až 3 žolíky. Když některý den smlouvu nesplníš, žolík tě podrží bez ztráty série.
-              </p>
-            </div>
-            <div class="ui-card">
-              <strong>5 odznaků &amp; Parta „Kovárna“</strong>
-              <p style="font-size:0.84rem; margin-top:3px;">
-                Odznaky (<em>První odchod</em>, <em>Odešel jsem sám 10×</em>, <em>Týden bez dluhu</em>, <em>1 000 dřepů</em>, <em>3 dny podle plánu</em>) + týmový cíl <strong>203 400 / 200 000 kroků</strong>.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5 States of Future Self -->
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-            <h3>5 stavů postavy „Budoucí já“ (podle posledních 7 dní)</h3>
-            <span class="pill apricot">Nováčci prvních 7 dní neklesnou pod OK</span>
-          </div>
-          <div class="grid-5">
-            <div class="avatar-card">
-              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--indigo-soft)"/><circle cx="34" cy="28" r="10" fill="var(--indigo)" opacity="0.55"/><path d="M18 52 C18 40 50 40 50 52" fill="var(--indigo)" opacity="0.45"/></svg>
-              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">1 · Unavené já</div>
-              <div style="font-size:0.76rem; color:var(--ink-muted);">0–1 splněný den</div>
-            </div>
-            <div class="avatar-card">
-              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--surface-soft)"/><circle cx="34" cy="26" r="10" fill="var(--secondary)" opacity="0.72"/><path d="M18 52 C18 39 50 39 50 52" fill="var(--secondary)" opacity="0.62"/></svg>
-              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">2 · Klidné já</div>
-              <div style="font-size:0.76rem; color:var(--ink-muted);">2 splněné dny</div>
-            </div>
-            <div class="avatar-card">
-              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--primary-soft)"/><circle cx="34" cy="25" r="10.5" fill="var(--primary)"/><path d="M18 52 C18 38 50 38 50 52" fill="var(--primary)" opacity="0.82"/></svg>
-              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">3 · Vyrovnané já</div>
-              <div style="font-size:0.76rem; color:var(--ink-muted);">3–4 splněné dny</div>
-            </div>
-            <div class="avatar-card">
-              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--sage-soft)"/><circle cx="34" cy="24" r="10.5" fill="var(--sage)"/><path d="M18 52 C18 37 50 37 50 52" fill="var(--sage)" opacity="0.88"/></svg>
-              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">4 · Soustředěné já</div>
-              <div style="font-size:0.76rem; color:var(--ink-muted);">5–6 splněných dní</div>
-            </div>
-            <div class="avatar-card highlight">
-              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--gold-soft)"/><circle cx="34" cy="34" r="24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-dasharray="4 4"/><circle cx="34" cy="24" r="10.5" fill="var(--gold)"/><path d="M18 52 C18 37 50 37 50 52" fill="url(#logoGrad)"/></svg>
-              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">5 · V plné kondici</div>
-              <div style="font-size:0.76rem; color:var(--ink-muted);">7 / 7 splněných dní</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         7. DŮKAZ V DATECH: ZRCADLO & MAPA HODNOTY (21 DNÍ Z MOCKDATA)
-         ==================================================================== -->
-    <section class="section-slide reveal" id="data" data-title="7 · 21 dní dat &amp; Mapa hodnoty"
-      data-notes="Ukázka dat z mockdata/mirror.json a value_map.json: za 21 dní klesl čas v neplánovaném feedu ze 142 na 33 minut denně. I když 23. 11. přišel relaps, další den uživatel navázal. Mapa hodnoty odhalí, co dává smysl (Rust za kafe 4.7/5) a co je past (Drama Recap CZ 1.6/5).">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow"><span class="dot"></span>Zrcadlo a Mapa hodnoty</div>
-            <h2>Co odhalí <span class="grad-text">21 dní dat</span></h2>
-            <p class="lead">
-              Když se člověk na své chování podívá bez výčitek v Zrcadle, uvidí trend i vlastní „časové pasti“ – kanály, které dokoukává, ale hodnotí nízko.
-            </p>
-          </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <span class="pill sage">9 h 10 min získáno za týden</span>
-            <span class="pill apricot">26× vlastní odchod</span>
-          </div>
-        </div>
-
-        <div class="grid-hero" style="align-items:stretch;">
-          <!-- 21-day SVG Chart dynamically built from exact mirror.json numbers -->
-          <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-              <div>
-                <h3>Souboj s algoritmem (21 dní)</h3>
-                <p style="font-size:0.84rem;">Kritická hodina z dat: <strong>21:00</strong> · Relaps 23. 11. (den 17) sérii nezničil</p>
-              </div>
-              <div style="display:flex; gap:12px; font-size:0.8rem; font-weight:700;">
-                <span style="color:var(--secondary);">● Minuty feedu (142 → 33)</span>
-                <span style="color:var(--sage);">● Získaný čas (0 → 105)</span>
-              </div>
-            </div>
-            <svg id="mirrorChart" viewBox="0 0 640 240" width="100%" aria-label="Graf vývoje za 21 dní"></svg>
-          </div>
-
-          <!-- Value Map KEEP vs TRAP -->
-          <div class="card soft" style="display:flex; flex-direction:column; gap:12px;">
-            <h3>Mapa hodnoty obsahu</h3>
-            <p style="font-size:0.86rem;">Porovnává míru dokoukání s osobním hodnocením 1–5:</p>
-
-            <div class="ui-card sage">
+          <!-- Architectural Rounded-Rectangle Graphic -->
+          <div class="art-panel">
+            <div class="shape-r" style="width:76%; height:78%; background:var(--grad); opacity:0.16; transform:rotate(-6deg);"></div>
+            <div class="shape-r" style="width:68%; height:72%; background:#FFFFFF; border:1px solid var(--outline); box-shadow:var(--shadow-card); display:flex; flex-direction:column; justify-content:space-between; padding:2.4cqi;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <strong>Rust za kafe · LONG</strong>
-                  <div style="font-size:0.78rem; color:var(--ink-muted);">174 min · 88 % dokoukáno · KEEP</div>
-                </div>
-                <span class="pill sage" style="background:var(--surface);">4.7 / 5</span>
+                <span style="width:4cqi; height:0.7cqi; border-radius:99px; background:var(--soft-2);"></span>
+                <span style="width:1.4cqi; height:1.4cqi; border-radius:50%; background:var(--accent);"></span>
               </div>
-            </div>
-
-            <div class="ui-card sage">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <strong>Fyzika v kostce · LONG</strong>
-                  <div style="font-size:0.78rem; color:var(--ink-muted);">82 min · 91 % dokoukáno · KEEP</div>
-                </div>
-                <span class="pill sage" style="background:var(--surface);">4.5 / 5</span>
-              </div>
-            </div>
-
-            <div class="ui-card salmon">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <strong>Drama Recap CZ · SHORT</strong>
-                  <div style="font-size:0.78rem; color:var(--ink-muted);">72 videí · 88 % dokoukáno · PAST</div>
-                </div>
-                <span class="pill salmon" style="background:var(--surface);">1.6 / 5</span>
-              </div>
-            </div>
-
-            <div class="ui-card salmon">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <strong>Memes denně · SHORT</strong>
-                  <div style="font-size:0.78rem; color:var(--ink-muted);">48 videí · 84 % dokoukáno · PAST</div>
-                </div>
-                <span class="pill salmon" style="background:var(--surface);">1.8 / 5</span>
+              <svg viewBox="0 0 220 140" width="100%" aria-hidden="true">
+                <circle cx="110" cy="70" r="56" fill="var(--soft)"/>
+                <circle cx="110" cy="70" r="38" fill="var(--soft-2)"/>
+                <rect x="82" y="24" width="56" height="92" rx="28" fill="#FFFFFF" stroke="var(--accent)" stroke-width="3.5"/>
+                <path d="M84 78 L104 65 L118 73 L136 58" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/>
+              </svg>
+              <div style="display:flex; gap:0.8cqi;">
+                <div style="flex:1; height:2.2cqi; border-radius:1.1cqi; background:var(--sage-soft);"></div>
+                <div style="flex:1; height:2.2cqi; border-radius:1.1cqi; background:var(--soft);"></div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- ====================================================================
-         8. PŘÍBĚH TEREZY & 2MINUTOVÝ SCÉNÁŘ ŽIVÉHO DEMA
-         ==================================================================== -->
-    <section class="section-slide reveal" id="demo" data-title="8 · Příběh &amp; Živé demo"
-      data-notes="Živé demo (2:00) na Nothing Phone 3a + Redmi Note 11 jako Parťák. Šimon ovládá telefon a dělá dřepy před porotou, Štěpán komentuje příběh Terezy.">
-      <div class="container">
-        <div class="section-head">
+        <div class="slide-foot">
+          <span data-editable>Znovu ukovaný meč · relaps není konec</span>
+          <span class="slide-num-label">1 / 9</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: PROBLÉM (ZEĎ VS ZRCADLO) -->
+      <section class="slide" data-notes="Problém: Zákazy jdou obejít (prohlížeč, vypnutí limitu, smazání). Prokrastinace není lenost, ale útěk před nepříjemným pocitem.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>PROBLÉM &amp; INSIGHT</span>
+          <span data-editable>Proč blokátory selhávají</span>
+        </div>
+
+        <div class="body-col">
+          <h2 data-editable>Každá zeď <span class="grad-text">jde obejít.</span></h2>
+          <div class="grid-2" style="flex:1; max-height:31cqi;">
+            <div class="bento muted">
+              <div>
+                <h3 data-editable>Tvrdé zákazy</h3>
+                <p class="sub" style="font-size:1.4cqi;" data-editable>Blokace → prohlížeč → smazání aplikace.</p>
+              </div>
+              <svg viewBox="0 0 360 150" width="100%" aria-hidden="true">
+                <rect x="16" y="18" width="96" height="32" rx="11" fill="#FFFFFF" opacity="0.85"/>
+                <rect x="122" y="18" width="112" height="32" rx="11" fill="#FFFFFF" opacity="0.85"/>
+                <rect x="44" y="60" width="120" height="32" rx="11" fill="#E6DAD3"/>
+                <rect x="174" y="60" width="96" height="32" rx="11" fill="#FFFFFF" opacity="0.85"/>
+                <rect x="16" y="102" width="110" height="32" rx="11" fill="#FFFFFF" opacity="0.85"/>
+                <path d="M276 116 C276 34, 336 34, 336 102" fill="none" stroke="var(--ink-subtle)" stroke-width="3.5" stroke-dasharray="7 6" stroke-linecap="round"/>
+                <polygon points="336,114 328,99 344,99" fill="var(--ink-subtle)"/>
+              </svg>
+            </div>
+
+            <div class="bento tint">
+              <div>
+                <h3 data-editable>Zrcadlo Narsil</h3>
+                <p class="sub" style="font-size:1.4cqi;" data-editable>Prokrastinace je útěk před pocitem, ne lenost.</p>
+              </div>
+              <div class="chip-row" style="margin-top:0;">
+                <span class="chip" style="background:#FFFFFF;" data-editable>Nuda</span>
+                <span class="chip" style="background:#FFFFFF;" data-editable>Únava</span>
+                <span class="chip" style="background:#FFFFFF;" data-editable>Těžký úkol</span>
+                <span class="chip" style="background:#FFFFFF;" data-editable>Samota</span>
+              </div>
+              <svg viewBox="0 0 360 105" width="100%" aria-hidden="true">
+                <rect x="8" y="12" width="344" height="80" rx="22" fill="#FFFFFF" stroke="var(--outline)"/>
+                <circle cx="58" cy="52" r="24" fill="var(--soft-2)"/>
+                <circle cx="58" cy="52" r="12" fill="var(--accent)"/>
+                <rect x="100" y="34" width="180" height="14" rx="7" fill="var(--soft-2)"/>
+                <rect x="100" y="56" width="124" height="12" rx="6" fill="var(--muted-box)"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-foot">
+          <span data-editable>Se sebou z minulosti se hádá hůř než s cizím zákazem</span>
+          <span class="slide-num-label">2 / 9</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: KONTEXT (KDY ZASAHUJE) -->
+      <section class="slide" data-notes="Kontext: Raději zásah propásnout než zbytečně otravovat. Venku a v chatech mlčí, doma u nekonečného obsahu pustí Ozvěnu.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>KONTEXTOVÁ INTELIGENCE</span>
+          <span data-editable>Kdy Narsil reaguje</span>
+        </div>
+
+        <div class="body-col">
+          <h2 data-editable>Venku vás <span class="grad-text">necháme žít.</span></h2>
+          <div class="grid-3" style="flex:1; max-height:31cqi;">
+            <div class="bento white">
+              <div>
+                <div style="width:4.4cqi; height:4.4cqi; border-radius:1.4cqi; background:var(--sage-soft); display:grid; place-items:center; margin-bottom:1.6cqi;">
+                  <svg width="52%" height="52%" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+                <h3 data-editable>Venku s přáteli</h3>
+                <p class="sub" style="font-size:1.38cqi;" data-editable>Mimo domácí Wi-Fi se aplikace ani neozve.</p>
+              </div>
+              <span class="chip sage" style="align-self:flex-start;" data-editable>Mlčí</span>
+            </div>
+
+            <div class="bento white">
+              <div>
+                <div style="width:4.4cqi; height:4.4cqi; border-radius:1.4cqi; background:var(--muted-box); display:grid; place-items:center; margin-bottom:1.6cqi;">
+                  <svg width="52%" height="52%" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="5" width="16" height="12" rx="5"/><path d="M8 17l-2 3 4-2"/></svg>
+                </div>
+                <h3 data-editable>Zprávy a chaty</h3>
+                <p class="sub" style="font-size:1.38cqi;" data-editable>Chaty a Direct zprávy nikdy nesledujeme.</p>
+              </div>
+              <span class="chip" style="align-self:flex-start;" data-editable>Soukromí</span>
+            </div>
+
+            <div class="bento hero-grad">
+              <div>
+                <div style="width:4.4cqi; height:4.4cqi; border-radius:1.4cqi; background:rgba(255,255,255,0.24); display:grid; place-items:center; margin-bottom:1.6cqi;">
+                  <svg width="52%" height="52%" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="#FFFFFF"/></svg>
+                </div>
+                <h3 data-editable>Doma v nekonečnu</h3>
+                <p class="sub" style="font-size:1.38cqi;" data-editable>Dlouhé scrollování doma spustí Ozvěnu.</p>
+              </div>
+              <span class="chip" style="align-self:flex-start; background:#FFFFFF; color:var(--accent); border:none;" data-editable>Zasáhne</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-foot">
+          <span data-editable>Aplikace i prohlížeč</span>
+          <span class="slide-num-label">3 / 9</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: 4 PILÍŘE KONCEPTU (BENTO 2x2) -->
+      <section class="slide" data-notes="Čtyři pilíře konceptu: Večerní smlouva, Ozvěna v pokušení, Pohyb jako cena i lék, a Parťák.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>KONCEPT · 4 PILÍŘE</span>
+          <span data-editable>Jak Narsil funguje</span>
+        </div>
+
+        <div class="body-col">
+          <h2 data-editable>Plánované <span style="color:var(--sage);">zdarma</span>. Neplánované <span class="grad-text">za pohyb.</span></h2>
+          <div class="grid-2" style="flex:1; max-height:31cqi;">
+            <div class="bento white">
+              <div class="num-badge">01</div>
+              <div>
+                <h3 data-editable>Večerní smlouva</h3>
+                <p class="sub" style="font-size:1.35cqi;" data-editable>Krátký plán na zítřek, pohybový cíl a osobní video vzkaz.</p>
+              </div>
+            </div>
+            <div class="bento tint">
+              <div class="num-badge">02</div>
+              <div>
+                <h3 data-editable>Ozvěna v pokušení</h3>
+                <p class="sub" style="font-size:1.35cqi;" data-editable>Přehraje tvoje včerejší video a zeptá se: „Čemu se vyhýbáš?“</p>
+              </div>
+            </div>
+            <div class="bento white">
+              <div class="num-badge">03</div>
+              <div>
+                <h3 data-editable>Pohyb jako měna</h3>
+                <p class="sub" style="font-size:1.35cqi;" data-editable>Zavřít zdarma, nebo odemknout kroky, cviky před kamerou či půjčkou.</p>
+              </div>
+            </div>
+            <div class="bento white">
+              <div class="num-badge">04</div>
+              <div>
+                <h3 data-editable>Parťák</h3>
+                <p class="sub" style="font-size:1.35cqi;" data-editable>Kamarád dostane zprávu při vypnutí či smazání – bez sdílení dat.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-foot">
+          <span data-editable>Pokračovat můžeš vždycky – nic tvrdě neblokujeme</span>
+          <span class="slide-num-label">4 / 9</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 5: UKÁZKA OBRAZOVEK (SLOTY PRO SCREENSHOTY) -->
+      <section class="slide" data-notes="Tři sloty pro skutečné screenshoty z telefonu. Stačí nahrát přes Upravit nebo do složky pitch/slidy/obrazky/screen-1..3.png.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>UKÁZKA APLIKACE</span>
+          <span data-editable>Doplňte reálné screenshoty</span>
+        </div>
+
+        <div class="body-col">
+          <h2 data-editable>Klíčové obrazovky <span class="grad-text">v telefonu</span></h2>
+          <div class="grid-3">
+            <div class="phone-slot empty-hint" data-slot="1">
+              <div class="phone-inner">
+                <span class="tag-pill" style="align-self:flex-start;" data-editable>1 · Večerní smlouva</span>
+                <div style="flex:1; border-radius:1.4cqi; background:var(--soft); border:1px dashed var(--outline); display:grid; place-items:center; text-align:center; padding:1cqi;">
+                  <span style="font-size:1.15cqi; font-weight:700; color:var(--ink-subtle);" data-editable>Slot pro screenshot<br/>(screen-1.png)</span>
+                </div>
+              </div>
+              <label class="upload-hint">
+                <span>Klikni nebo přetáhni obrázek<br/>(.png / .jpg)</span>
+                <input type="file" accept="image/*" hidden data-upload-slot="1" />
+              </label>
+            </div>
+
+            <div class="phone-slot empty-hint" data-slot="2">
+              <div class="phone-inner">
+                <span class="tag-pill" style="align-self:flex-start;" data-editable>2 · Ozvěna</span>
+                <div style="flex:1; border-radius:1.4cqi; background:var(--grad-soft); border:1px dashed var(--accent); display:grid; place-items:center; text-align:center; padding:1cqi;">
+                  <span style="font-size:1.15cqi; font-weight:700; color:var(--accent);" data-editable>Slot pro screenshot<br/>(screen-2.png)</span>
+                </div>
+              </div>
+              <label class="upload-hint">
+                <span>Klikni nebo přetáhni obrázek<br/>(.png / .jpg)</span>
+                <input type="file" accept="image/*" hidden data-upload-slot="2" />
+              </label>
+            </div>
+
+            <div class="phone-slot empty-hint" data-slot="3">
+              <div class="phone-inner">
+                <span class="tag-pill" style="align-self:flex-start;" data-editable>3 · Pohyb / Přehled</span>
+                <div style="flex:1; border-radius:1.4cqi; background:var(--soft); border:1px dashed var(--outline); display:grid; place-items:center; text-align:center; padding:1cqi;">
+                  <span style="font-size:1.15cqi; font-weight:700; color:var(--ink-subtle);" data-editable>Slot pro screenshot<br/>(screen-3.png)</span>
+                </div>
+              </div>
+              <label class="upload-hint">
+                <span>Klikni nebo přetáhni obrázek<br/>(.png / .jpg)</span>
+                <input type="file" accept="image/*" hidden data-upload-slot="3" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-foot">
+          <span data-editable>V režimu Upravit stačí kliknout na telefon a nahrát snímek obrazovky</span>
+          <span class="slide-num-label">5 / 9</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 6: ŽIVÁ UKÁZKA (PŘECHOD NA DEMO) -->
+      <section class="slide" data-notes="Přechodový slide na živé demo na telefonu. Tady zrcadlete telefon na plátno.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>ŽIVÉ DEMO</span>
+          <span data-editable>Ukázka na telefonu</span>
+        </div>
+
+        <div class="bento hero-grad" style="flex:1; margin:1.6cqi 0; justify-content:center; align-items:center; text-align:center; position:relative; overflow:hidden;">
+          <div class="shape-r" style="width:42cqi; height:42cqi; border-radius:50%; background:rgba(255,255,255,0.12);"></div>
+          <div class="shape-r" style="width:28cqi; height:28cqi; border-radius:50%; background:rgba(255,255,255,0.14);"></div>
+          <div style="position:relative; z-index:2;">
+            <h1 data-editable>Živá ukázka</h1>
+            <p class="sub" style="font-size:1.9cqi; opacity:0.94;" data-editable>[ Doplňte scénář dema podle toho, co poběží na telefonu ]</p>
+            <div class="chip-row" style="justify-content:center; margin-top:2.4cqi;">
+              <span class="chip" style="background:rgba(255,255,255,0.22); color:#FFFFFF; border:none;" data-editable>1. Smlouva</span>
+              <span class="chip" style="background:rgba(255,255,255,0.22); color:#FFFFFF; border:none;" data-editable>2. Venku mlčí</span>
+              <span class="chip" style="background:rgba(255,255,255,0.22); color:#FFFFFF; border:none;" data-editable>3. Doma Ozvěna</span>
+              <span class="chip" style="background:#FFFFFF; color:var(--accent); border:none;" data-editable>4. Pohyb naživo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-foot">
+          <span data-editable>Přepnutí na zrcadlení telefonu</span>
+          <span class="slide-num-label">6 / 9</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 7: PRINCIPY (MOTIVACE & SOUKROMÍ) -->
+      <section class="slide" data-notes="Motivace bez trestů (nejvíc bodů za vlastní odchod) a soukromí přímo v telefonu.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>PRINCIPY NÁVRHU</span>
+          <span data-editable>Motivace &amp; Soukromí</span>
+        </div>
+
+        <div class="body-col">
+          <h2 data-editable>Žádné tresty. <span class="grad-text">Vše v telefonu.</span></h2>
+          <div class="grid-2" style="flex:1; max-height:31cqi;">
+            <div class="bento white">
+              <h3 data-editable>Odměňujeme odchod</h3>
+              <div style="display:flex; flex-direction:column; gap:1.1cqi; margin-top:1.4cqi;">
+                <div style="background:var(--sage-soft); color:var(--sage); padding:1.1cqi 1.4cqi; border-radius:1.4cqi; font-weight:800; font-size:1.35cqi;" data-editable>
+                  1. Odešel jsem sám (nejvyšší odměna)
+                </div>
+                <div style="background:var(--soft); padding:1.1cqi 1.4cqi; border-radius:1.4cqi; font-weight:700; font-size:1.35cqi; width:84%;" data-editable>
+                  2. Odemkl jsem pohybem
+                </div>
+                <div style="background:var(--muted-box); padding:1.1cqi 1.4cqi; border-radius:1.4cqi; font-weight:700; font-size:1.35cqi; width:64%; color:var(--ink-muted);" data-editable>
+                  3. Půjčka bez trestů
+                </div>
+              </div>
+              <p class="sub" style="font-size:1.25cqi;" data-editable>Relaps body nebere – série lze podržet.</p>
+            </div>
+
+            <div class="bento tint">
+              <h3 data-editable>Soukromí na prvním místě</h3>
+              <div style="display:flex; flex-direction:column; gap:1.1cqi; margin-top:1.4cqi;">
+                <div style="background:#FFFFFF; padding:1.1cqi 1.4cqi; border-radius:1.4cqi; font-weight:700; font-size:1.35cqi;" data-editable>
+                  Chaty a zprávy nikdy nečteme
+                </div>
+                <div style="background:#FFFFFF; padding:1.1cqi 1.4cqi; border-radius:1.4cqi; font-weight:700; font-size:1.35cqi;" data-editable>
+                  Videa zůstávají jen lokálně v mobilu
+                </div>
+                <div style="background:#FFFFFF; padding:1.1cqi 1.4cqi; border-radius:1.4cqi; font-weight:700; font-size:1.35cqi;" data-editable>
+                  Parťák nevidí aplikace ani videa
+                </div>
+              </div>
+              <p class="sub" style="font-size:1.25cqi;" data-editable>Důvěra bez odesílání osobního obsahu.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-foot">
+          <span data-editable>Cílem je trávit v aplikaci minimum času</span>
+          <span class="slide-num-label">7 / 9</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 8: CO JSME POSTAVILI (ŠABLONA PRO TÝM NA 17:00) -->
+      <section class="slide" data-notes="Tady kamarádi odpoledne před 17:00 doplní, co konkrétně je hotové v APK a co je v plánu dál.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>STAV PROJEKTU</span>
+          <span data-editable>Doplňte před 17:00</span>
+        </div>
+
+        <div class="body-col">
           <div>
-            <div class="eyebrow"><span class="dot"></span>Persona &amp; 2minutové demo (35 % hodnocení)</div>
-            <h2>Jeden den Terezy <span class="grad-text">naživo na pódiu</span></h2>
-            <p class="lead">
-              <strong>Tereza (21 let, studentka informatiky)</strong> zkoušela limity i blokátory – vždy je vypla.
-              Chce, aby jí telefon připomněl, kým chce být, ne aby ji trestal.
-            </p>
+            <h2 data-editable>Co jsme <span class="grad-text">postavili</span></h2>
+            <p class="sub" data-editable>Klikněte v režimu Upravit a doplňte finální stav vaší verze.</p>
           </div>
-          <span class="pill apricot">Nothing Phone 3a + Redmi Note 11</span>
-        </div>
 
-        <div class="timeline">
-          <div class="step-card">
-            <span class="step-time">0:00 – 0:20</span>
-            <h4>Večerní smlouva</h4>
-            <p style="font-size:0.84rem;">Nastaví 6 000 kroků, přidá „přednáška o Rustu“ a natočí 3s vzkaz pro zítřejší já.</p>
-          </div>
-          <div class="step-card">
-            <span class="step-time">0:20 – 0:35</span>
-            <h4>Venku mlčí</h4>
-            <p style="font-size:0.84rem;">Mimo domácí Wi-Fi ukáže kamarádovi Reels a odepíše v Directu. Narsil nezasahuje.</p>
-          </div>
-          <div class="step-card">
-            <span class="step-time">0:35 – 0:55</span>
-            <h4>Doma Ozvěna</h4>
-            <p style="font-size:0.84rem;">Na domácí Wi-Fi po scrollování TikToku naskočí její video a otázka „Čemu se vyhýbáš?“.</p>
-          </div>
-          <div class="step-card" style="border-color:var(--primary); background:var(--grad-soft);">
-            <span class="step-time" style="background:var(--primary); color:#fff;">0:55 – 1:25</span>
-            <h4>20 dřepů naživo</h4>
-            <p style="font-size:0.84rem;">Kamera před porotou počítá 20 dřepů, feed se odemkne na 10 min a vyskočí animace Úrovně 4.</p>
-          </div>
-          <div class="step-card">
-            <span class="step-time">1:25 – 1:50</span>
-            <h4>YouTube &amp; Mapa</h4>
-            <p style="font-size:0.84rem;">Přednáška o Rustu projde zdarma (AI párování). Neplánované video stojí kroky; Zrcadlo odhalí past.</p>
-          </div>
-          <div class="step-card">
-            <span class="step-time">1:50 – 2:00</span>
-            <h4>Pointa Parťák</h4>
-            <p style="font-size:0.84rem;">Pokus o odinstalaci → druhý telefon (Parťák) ukáže notifikaci. Kód jde obejít, lidi ne.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         9. SOUKROMÍ, TECHNICKÁ ARCHITEKTURA, TÝM & OTÁZKY POROTY
-         ==================================================================== -->
-    <section class="section-slide reveal" id="architektura" data-title="9 · Soukromí, Stack &amp; FAQ"
-      data-notes="Marek &amp; Štěpán: Nativní Android (Kotlin + Jetpack Compose), AccessibilityService, ML Kit Pose, senzory pro kliky, CameraX, Room, Strava a multi-provider LLM (Gemini 2.5 Flash-Lite, Claude Haiku, OpenAI). Postaveno za 20 hodin ve 4 lidech s paralelními AI agenty.">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow"><span class="dot"></span>Soukromí, Technologie &amp; Obhajoba</div>
-            <h2>Postaveno za <span class="grad-text">20 hodin</span> ve 4 lidech</h2>
-            <p class="lead">
-              Marek, Šimon, Jan a Štěpán s týmem paralelních AI agentů (oddělené git worktrees a sdílené kontrakty).
-            </p>
-          </div>
-        </div>
-
-        <!-- Privacy 4 cards -->
-        <div class="grid-4" style="margin-bottom:22px;">
-          <div class="card soft" style="padding:18px; border-radius:24px;">
-            <h4>Chaty se nečtou</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">Čteme jen název aplikace a typ povrchu (feed vs. chat). Obsah zpráv nikdy.</p>
-          </div>
-          <div class="card soft" style="padding:18px; border-radius:24px;">
-            <h4>Videa jen v telefonu</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">Večerní nahrávky nejdou do žádného cloudu. Smazáním aplikace zmizí.</p>
-          </div>
-          <div class="card soft" style="padding:18px; border-radius:24px;">
-            <h4>Minimum pro AI</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">Do Gemini / Claude / OpenAI jde jen titulek videa a plán nebo zmenšený důkaz úkolu.</p>
-          </div>
-          <div class="card soft" style="padding:18px; border-radius:24px;">
-            <h4>Parťák bez dat</h4>
-            <p style="font-size:0.84rem; margin-top:6px;">Dostane jen zprávu o výpadku či dluhu. Žádné minuty, aplikace ani videa.</p>
-          </div>
-        </div>
-
-        <!-- Tech Stack + Roadmap + FAQ -->
-        <div class="grid-2" style="margin-bottom:26px;">
-          <div class="card">
-            <h3 style="margin-bottom:14px;">Technická architektura &amp; Roadmapa</h3>
-            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
-              <span class="pill">Kotlin &amp; Jetpack Compose</span>
-              <span class="pill apricot">AccessibilityService</span>
-              <span class="pill salmon">WindowManager + Media3</span>
-              <span class="pill sage">ML Kit Pose + CameraX</span>
-              <span class="pill gold">Health Connect &amp; Strava</span>
-              <span class="pill indigo">Room &amp; DataStore</span>
-              <span class="pill apricot">Gemini 2.5 Flash-Lite / Claude / OpenAI</span>
+          <div class="grid-3" style="flex:1; max-height:28cqi;">
+            <div class="bento white">
+              <div>
+                <span class="chip accent" data-editable>Hotovo v aplikaci</span>
+                <p class="sub" style="font-size:1.35cqi; margin-top:1.4cqi;" data-editable>
+                  • [ Doplňte hotové funkce ]<br/>
+                  • [ Např. Ozvěna &amp; pohyb ]<br/>
+                  • [ Další funkční obrazovky ]
+                </p>
+              </div>
             </div>
-            <div class="ui-card soft">
-              <strong>Roadmapa po hackathonu</strong>
-              <p style="font-size:0.86rem; margin-top:4px;">
-                Vlastní komfortní zóny (kolej, kancelář, knihovna) · AI předpověď kritické hodiny z historie · Postupné šednutí obrazovky · Rozšíření na Netflix, hry a reálný backend pro Parťáka.
-              </p>
-            </div>
-          </div>
 
-          <div class="card">
-            <h3 style="margin-bottom:14px;">Nejčastější otázky poroty</h3>
-            <div class="faq-list">
-              <details class="faq-item">
-                <summary>Proč jen Android a ne iOS?</summary>
-                <div class="faq-body">
-                  iOS neumožní rozlišit feed od zpráv ani zobrazit překryvné okno s vlastním videem přes jinou aplikaci. Screen Time API umí jen tvrdý blok celé aplikace – a to je přesně model zdi, který nechceme.
-                </div>
-              </details>
-              <details class="faq-item">
-                <summary>Proč chcete oprávnění k poloze kvůli Wi-Fi?</summary>
-                <div class="faq-body">
-                  Od Androidu 10 vrací systém název připojené Wi-Fi sítě jen s oprávněním k poloze. GPS polohu samotnou nečteme ani neukládáme – funguje i ruční přepínač „Jsem doma“.
-                </div>
-              </details>
-              <details class="faq-item">
-                <summary>Čím se lišíte od one sec nebo Opalu?</summary>
-                <div class="faq-body">
-                  one sec i Opal staví zábranu před otevřením nebo podle času. Narsil nic neblokuje, zasahuje jen doma po 5 min nekonečného obsahu, používá vlastní video a plánovaný obsah nechává zdarma.
-                </div>
-              </details>
-              <details class="faq-item">
-                <summary>Co jste za 20 hodin opravdu postavili?</summary>
-                <div class="faq-body">
-                  Nativně běží: večerní smlouva s CameraX videem, Wi-Fi detekce + Firefox/TikTok/Instagram/YouTube, Ozvěna, počítání 20 dřepů i 10 kliků, kroky, dluh, XP/úrovně/odznaky/souboj a ověřování úkolů přes AI i Stravu. Zrcadlo, mapa hodnoty, žebříček a notifikace Parťáka jedou v MVP nad připravenými daty.
-                </div>
-              </details>
+            <div class="bento soft">
+              <div>
+                <span class="chip" style="background:#FFFFFF;" data-editable>Technologie</span>
+                <p class="sub" style="font-size:1.35cqi; margin-top:1.4cqi;" data-editable>
+                  • Kotlin &amp; Jetpack Compose<br/>
+                  • [ Doplňte použité služby ]<br/>
+                  • [ AI / senzory / kamera ]
+                </p>
+              </div>
+            </div>
+
+            <div class="bento white">
+              <div>
+                <span class="chip sage" data-editable>Další kroky</span>
+                <p class="sub" style="font-size:1.35cqi; margin-top:1.4cqi;" data-editable>
+                  • [ Co přijde po hackathonu ]<br/>
+                  • [ Vlastní zóny / další platformy ]<br/>
+                  • [ Plánované rozšíření ]
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Final Closing CTA Card -->
-        <div class="card" style="background: var(--grad-hero); color:#fff; border:none; border-radius:36px; padding:42px 34px; text-align:center; box-shadow:var(--shadow-float);">
-          <svg width="64" height="64" viewBox="0 0 64 64" style="margin-bottom:12px;">
-            <rect width="64" height="64" rx="22" fill="rgba(255,255,255,0.2)"/>
-            <path d="M32 14L38 22L36 34L28 37L26 22L32 14Z" fill="#fff"/>
-            <path d="M27.5 39.5L36.5 36.5L36 47H28L27.5 39.5Z" fill="rgba(255,255,255,0.85)"/>
-            <path d="M24 38.5L40 34.5" stroke="#FFF3D8" stroke-width="3.5" stroke-linecap="round"/>
-          </svg>
-          <h2 style="color:#fff; font-size:clamp(1.7rem, 3.2vw, 2.7rem);">
-            „Venku vás necháme žít.<br />Doma vám připomeneme, kým chcete být.“
+        <div class="slide-foot">
+          <span data-editable>Poctivé shrnutí toho, co reálně funguje</span>
+          <span class="slide-num-label">8 / 9</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 9: ZÁVĚR -->
+      <section class="slide" data-notes="Závěrečná pointa a poděkování porotě.">
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>NARSIL</span>
+          <span data-editable>Závěr</span>
+        </div>
+
+        <div class="bento tint" style="flex:1; margin:1.6cqi 0; justify-content:center; align-items:center; text-align:center; padding:4cqi;">
+          <div style="width:6cqi; height:6cqi; border-radius:2cqi; background:var(--grad); display:grid; place-items:center; margin-bottom:2cqi; box-shadow:var(--shadow-card);">
+            <svg width="54%" height="54%" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path d="M16 4L21 11L19 20L13 22L11 11L16 4Z" fill="#FFFFFF"/>
+              <path d="M12.5 23.5L19.5 21.5L19 28H13L12.5 23.5Z" fill="#FFE5D4"/>
+            </svg>
+          </div>
+          <h2 style="font-size:3.8cqi; max-width:24ch;" data-editable>
+            „Venku vás necháme žít.<br/><span class="grad-text">Doma vám připomeneme, kým chcete být.</span>“
           </h2>
-          <p style="color:rgba(255,255,255,0.92); font-weight:700; margin-top:12px; font-size:1.05rem;">
-            Narsil · Děkujeme za pozornost
-          </p>
+          <p class="sub" style="margin-top:1.8cqi; font-weight:700;" data-editable>Narsil · Děkujeme za pozornost</p>
         </div>
-      </div>
-    </section>
-  </main>
 
-  <!-- ======================================================================
-       PRESENTATION CONTROLS & SPEAKER NOTES DRAWER
-       ====================================================================== -->
-  <div class="notes-drawer" id="notesDrawer">
-    <h4 id="notesTitle">Poznámky pro mluvčího</h4>
-    <p id="notesBody"></p>
+        <div class="slide-foot">
+          <span data-editable>Otázky poroty</span>
+          <span class="slide-num-label">9 / 9</span>
+        </div>
+      </section>
+
+    </main>
   </div>
 
-  <div class="pres-controls" id="presControls">
-    <button id="prevSlideBtn" title="Předchozí (←)">← Předchozí</button>
-    <span class="pres-counter" id="slideCounter">1 / 9</span>
-    <button id="nextSlideBtn" title="Další (→ / Mezerník)">Další →</button>
-    <button id="notesToggleBtn" title="Poznámky (N)">Poznámky</button>
-    <button id="fullscreenBtn" title="Celá obrazovka (F)">Celá obr.</button>
-    <button id="exitPresentBtn" title="Zpět do webového režimu (P / Esc)">Web</button>
+  <!-- SPEAKER NOTES -->
+  <div class="notes-box" id="notesBox">
+    <h4>Poznámky pro mluvčího</h4>
+    <p id="notesText"></p>
+  </div>
+
+  <!-- BOTTOM FLOATING DOCK -->
+  <div class="bottom-dock">
+    <button class="tool-btn" id="prevBtn" title="Předchozí (←)">←</button>
+    <span class="counter" id="counter">1 / 9</span>
+    <button class="tool-btn" id="nextBtn" title="Další (→ / Mezerník)">→</button>
+    <button class="tool-btn" id="notesBtn" title="Poznámky (N)">Poznámky</button>
+    <button class="tool-btn" id="fsBtn" title="Celá obrazovka (F)">Celá obr.</button>
   </div>
 
   <script>
-    // 1. Theme Switcher (Apricot / Salmon / Dusk)
-    const htmlEl = document.documentElement;
-    const themeBtns = Array.from(document.querySelectorAll('[data-set-theme]'));
-    function setTheme(theme) {
-      htmlEl.setAttribute('data-theme', theme);
-      themeBtns.forEach(b => b.classList.toggle('active', b.dataset.setTheme === theme));
-      try { localStorage.setItem('narsil-theme', theme); } catch (_) {}
+    const STORAGE_KEY = 'narsil-deck-v2';
+    const deck = document.getElementById('deck');
+    const counter = document.getElementById('counter');
+    const notesBox = document.getElementById('notesBox');
+    const notesText = document.getElementById('notesText');
+    const editBtn = document.getElementById('editBtn');
+    const gridBtn = document.getElementById('gridBtn');
+    let current = 0;
+
+    function getSlides() {
+      return Array.from(deck.querySelectorAll('.slide'));
     }
-    themeBtns.forEach(btn => btn.addEventListener('click', () => setTheme(btn.dataset.setTheme)));
-    try {
-      const saved = localStorage.getItem('narsil-theme');
-      if (saved && ['apricot', 'salmon', 'dusk'].includes(saved)) setTheme(saved);
-    } catch (_) {}
 
-    // 2. Interactive 4 Pillars Phone Mockup
-    const pillarTabs = Array.from(document.querySelectorAll('.pillar-tab'));
-    const screenViews = Array.from(document.querySelectorAll('.screen-view'));
-    pillarTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const target = tab.dataset.screen;
-        pillarTabs.forEach(t => {
-          const active = t === tab;
-          t.classList.toggle('active', active);
-          t.setAttribute('aria-selected', active ? 'true' : 'false');
-        });
-        screenViews.forEach(v => v.classList.toggle('active', v.id === target));
+    function updateSlideNumbers() {
+      const slides = getSlides();
+      slides.forEach((s, i) => {
+        const lbl = s.querySelector('.slide-num-label');
+        if (lbl) lbl.textContent = `${i + 1} / ${slides.length}`;
       });
-    });
+    }
 
-    // 3. Exact 21-Day Mirror Chart rendered from mockdata/mirror.json values
-    (function renderMirrorChart() {
-      const svg = document.getElementById('mirrorChart');
-      if (!svg) return;
-      const days = [
-        { d: 1, f: 142, r: 0, ok: false }, { d: 2, f: 135, r: 0, ok: false },
-        { d: 3, f: 118, r: 20, ok: true }, { d: 4, f: 128, r: 0, ok: false },
-        { d: 5, f: 110, r: 25, ok: false }, { d: 6, f: 95, r: 45, ok: true },
-        { d: 7, f: 104, r: 15, ok: false }, { d: 8, f: 88, r: 55, ok: true },
-        { d: 9, f: 82, r: 35, ok: false }, { d: 10, f: 70, r: 70, ok: true },
-        { d: 11, f: 66, r: 65, ok: true }, { d: 12, f: 72, r: 35, ok: false },
-        { d: 13, f: 58, r: 70, ok: true }, { d: 14, f: 61, r: 45, ok: false },
-        { d: 15, f: 49, r: 90, ok: true }, { d: 16, f: 45, r: 80, ok: true },
-        { d: 17, f: 63, r: 25, ok: false }, { d: 18, f: 41, r: 90, ok: true },
-        { d: 19, f: 38, r: 80, ok: true }, { d: 20, f: 36, r: 80, ok: true },
-        { d: 21, f: 33, r: 105, ok: true }
-      ];
-      const W = 640, H = 240, padL = 42, padR = 18, padT = 20, padB = 34;
-      const plotW = W - padL - padR, plotH = H - padT - padB;
-      const maxVal = 150;
-      const xOf = (i) => padL + (i / (days.length - 1)) * plotW;
-      const yOf = (v) => padT + plotH - (v / maxVal) * plotH;
+    function showSlide(idx) {
+      const slides = getSlides();
+      if (!slides.length) return;
+      current = (idx + slides.length) % slides.length;
+      slides.forEach((s, i) => s.classList.toggle('active', i === current));
+      counter.textContent = `${current + 1} / ${slides.length}`;
+      notesText.textContent = slides[current].dataset.notes || 'Bez poznámky.';
+      updateSlideNumbers();
+    }
 
-      let out = '';
-      // Grid lines
-      [0, 50, 100, 150].forEach(val => {
-        const y = yOf(val).toFixed(1);
-        out += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="var(--outline)" stroke-dasharray="4 4"/>`;
-        out += `<text x="${padL - 8}" y="${Number(y) + 4}" text-anchor="end" fill="var(--ink-subtle)" font-size="11" font-weight="700">${val}</text>`;
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('[data-theme-btn]').forEach(b => {
+        b.classList.toggle('active', b.dataset.themeBtn === theme);
       });
+      saveState();
+    }
 
-      const feedPts = days.map((p, i) => `${xOf(i).toFixed(1)},${yOf(p.f).toFixed(1)}`).join(' ');
-      const recPts = days.map((p, i) => `${xOf(i).toFixed(1)},${yOf(p.r).toFixed(1)}`).join(' ');
+    function setEditMode(enable) {
+      document.body.classList.toggle('edit-mode', enable);
+      editBtn.classList.toggle('active', enable);
+      editBtn.textContent = enable ? '✓ Hotovo' : '✎ Upravit';
+      deck.querySelectorAll('[data-editable]').forEach(el => {
+        el.contentEditable = enable ? 'true' : 'false';
+      });
+    }
 
-      const recArea = `M${xOf(0).toFixed(1)},${yOf(0).toFixed(1)} ` +
-        days.map((p, i) => `L${xOf(i).toFixed(1)},${yOf(p.r).toFixed(1)}`).join(' ') +
-        ` L${xOf(days.length - 1).toFixed(1)},${yOf(0).toFixed(1)} Z`;
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          theme: document.documentElement.getAttribute('data-theme') || 'apricot',
+          deckHtml: deck.innerHTML
+        }));
+      } catch (_) {}
+    }
 
-      out += `<path d="${recArea}" fill="var(--sage)" opacity="0.14"/>`;
-      out += `<polyline points="${feedPts}" fill="none" stroke="var(--secondary)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-      out += `<polyline points="${recPts}" fill="none" stroke="var(--sage)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    function wireSlideActions() {
+      getSlides().forEach(slide => {
+        slide.onclick = () => {
+          if (document.body.classList.contains('grid-mode')) {
+            document.body.classList.remove('grid-mode');
+            gridBtn.classList.remove('active');
+            showSlide(getSlides().indexOf(slide));
+          }
+        };
 
-      days.forEach((p, i) => {
-        const cx = xOf(i).toFixed(1);
-        out += `<circle cx="${cx}" cy="${yOf(p.f).toFixed(1)}" r="4" fill="var(--secondary)"/>`;
-        out += `<circle cx="${cx}" cy="${yOf(p.r).toFixed(1)}" r="4" fill="var(--sage)"/>`;
-        if (p.d === 1 || p.d === 7 || p.d === 14 || p.d === 17 || p.d === 21) {
-          out += `<text x="${cx}" y="${H - 10}" text-anchor="middle" fill="var(--ink-muted)" font-size="11" font-weight="700">D${p.d}</text>`;
+        const bar = slide.querySelector('.slide-edit-bar');
+        if (bar) {
+          bar.onclick = (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            e.stopPropagation();
+            const action = btn.dataset.action;
+            const slides = getSlides();
+            const idx = slides.indexOf(slide);
+            if (action === 'left' && idx > 0) {
+              deck.insertBefore(slide, slides[idx - 1]);
+              showSlide(idx - 1);
+            } else if (action === 'right' && idx < slides.length - 1) {
+              deck.insertBefore(slides[idx + 1], slide);
+              showSlide(idx + 1);
+            } else if (action === 'hide') {
+              slide.classList.toggle('is-hidden');
+              btn.textContent = slide.classList.contains('is-hidden') ? 'Zobrazit' : 'Skrýt';
+            }
+            saveState();
+          };
         }
       });
 
-      // Highlight day 17 relapse
-      const relX = xOf(16).toFixed(1), relY = yOf(63).toFixed(1);
-      out += `<rect x="${Number(relX) - 34}" y="${Number(relY) - 30}" width="68" height="20" rx="10" fill="var(--primary-soft)"/>`;
-      out += `<text x="${relX}" y="${Number(relY) - 16}" text-anchor="middle" fill="var(--ink)" font-size="10.5" font-weight="800">Relaps 23.11.</text>`;
+      // Wire image upload inputs + drag&drop inside phone slots
+      deck.querySelectorAll('[data-upload-slot]').forEach(input => {
+        const slot = input.closest('.phone-slot');
+        const applyFile = (file) => {
+          if (!file || !file.type.startsWith('image/')) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            const inner = slot.querySelector('.phone-inner');
+            let img = inner.querySelector('img.uploaded-screen');
+            if (!img) {
+              img = document.createElement('img');
+              img.className = 'uploaded-screen';
+              inner.appendChild(img);
+            }
+            img.src = reader.result;
+            slot.classList.remove('empty-hint');
+            saveState();
+          };
+          reader.readAsDataURL(file);
+        };
 
-      svg.innerHTML = out;
-    })();
-
-    // 4. Web Mode Scroll Reveal & Active Nav
-    const sections = Array.from(document.querySelectorAll('.section-slide'));
-    const navLinks = Array.from(document.querySelectorAll('.nav-links a'));
-    if ('IntersectionObserver' in window) {
-      const revealObs = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting) e.target.classList.add('visible');
-        });
-      }, { threshold: 0.1 });
-      sections.forEach(s => revealObs.observe(s));
-
-      const navObs = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            const id = e.target.id;
-            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
-          }
-        });
-      }, { rootMargin: '-40% 0px -45% 0px' });
-      sections.forEach(s => navObs.observe(s));
-    } else {
-      sections.forEach(s => s.classList.add('visible'));
+        input.onchange = () => applyFile(input.files[0]);
+        slot.ondragover = (e) => { if (document.body.classList.contains('edit-mode')) e.preventDefault(); };
+        slot.ondrop = (e) => {
+          if (!document.body.classList.contains('edit-mode')) return;
+          e.preventDefault();
+          applyFile(e.dataTransfer.files[0]);
+        };
+      });
     }
 
-    // 5. Dual Mode: Web vs Presentation Slideshow
-    const bodyEl = document.body;
-    const togglePresentBtn = document.getElementById('togglePresentBtn');
-    const heroPresentBtn = document.getElementById('heroPresentBtn');
-    const prevSlideBtn = document.getElementById('prevSlideBtn');
-    const nextSlideBtn = document.getElementById('nextSlideBtn');
-    const slideCounter = document.getElementById('slideCounter');
-    const notesDrawer = document.getElementById('notesDrawer');
-    const notesTitle = document.getElementById('notesTitle');
-    const notesBody = document.getElementById('notesBody');
-    const notesToggleBtn = document.getElementById('notesToggleBtn');
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const exitPresentBtn = document.getElementById('exitPresentBtn');
-    let slideIdx = 0;
-
-    function showSlide(idx) {
-      slideIdx = (idx + sections.length) % sections.length;
-      sections.forEach((s, i) => s.classList.toggle('current-slide', i === slideIdx));
-      slideCounter.textContent = `${slideIdx + 1} / ${sections.length}`;
-      notesTitle.textContent = `Poznámky · ${sections[slideIdx].dataset.title || ''}`;
-      notesBody.textContent = sections[slideIdx].dataset.notes || 'Bez poznámky.';
+    // Try auto-loading optional files pitch/slidy/obrazky/screen-1..3.png if not overridden
+    function tryLoadLocalImages() {
+      [1, 2, 3].forEach(num => {
+        const slot = deck.querySelector(`.phone-slot[data-slot="${num}"]`);
+        if (!slot || slot.querySelector('img.uploaded-screen')) return;
+        const probe = new Image();
+        probe.onload = () => {
+          const inner = slot.querySelector('.phone-inner');
+          const img = document.createElement('img');
+          img.className = 'uploaded-screen';
+          img.src = `obrazky/screen-${num}.png`;
+          inner.appendChild(img);
+          slot.classList.remove('empty-hint');
+        };
+        probe.src = `obrazky/screen-${num}.png`;
+      });
     }
 
-    function setPresentMode(enable) {
-      bodyEl.classList.toggle('present-mode', enable);
-      togglePresentBtn.textContent = enable ? 'Zpět na web' : 'Režim prezentace';
-      if (enable) {
-        showSlide(slideIdx);
-      } else {
-        notesDrawer.classList.remove('open');
-        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    // Restore saved edits if present
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.deckHtml) deck.innerHTML = data.deckHtml;
+        if (data.theme) setTheme(data.theme);
       }
-    }
+    } catch (_) {}
 
-    togglePresentBtn.addEventListener('click', () => setPresentMode(!bodyEl.classList.contains('present-mode')));
-    heroPresentBtn.addEventListener('click', () => setPresentMode(true));
-    exitPresentBtn.addEventListener('click', () => setPresentMode(false));
-    prevSlideBtn.addEventListener('click', () => showSlide(slideIdx - 1));
-    nextSlideBtn.addEventListener('click', () => showSlide(slideIdx + 1));
-    notesToggleBtn.addEventListener('click', () => notesDrawer.classList.toggle('open'));
-    fullscreenBtn.addEventListener('click', () => {
+    wireSlideActions();
+    tryLoadLocalImages();
+    showSlide(0);
+
+    // Save on inline text edits
+    deck.addEventListener('input', () => saveState());
+
+    // Buttons
+    document.querySelectorAll('[data-theme-btn]').forEach(b => {
+      b.onclick = () => setTheme(b.dataset.themeBtn);
+    });
+    document.getElementById('prevBtn').onclick = () => showSlide(current - 1);
+    document.getElementById('nextBtn').onclick = () => showSlide(current + 1);
+    document.getElementById('notesBtn').onclick = () => notesBox.classList.toggle('open');
+    document.getElementById('fsBtn').onclick = () => {
       if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
       else document.exitFullscreen().catch(() => {});
-    });
+    };
+
+    editBtn.onclick = () => setEditMode(!document.body.classList.contains('edit-mode'));
+    gridBtn.onclick = () => {
+      const on = document.body.classList.toggle('grid-mode');
+      gridBtn.classList.toggle('active', on);
+    };
+
+    document.getElementById('addSlideBtn').onclick = () => {
+      const sec = document.createElement('section');
+      sec.className = 'slide';
+      sec.dataset.notes = 'Poznámka k novému slidu.';
+      sec.innerHTML = `
+        <div class="slide-edit-bar">
+          <span class="hidden-badge">Skrytý</span>
+          <button class="mini-btn" data-action="left">←</button>
+          <button class="mini-btn" data-action="right">→</button>
+          <button class="mini-btn" data-action="hide">Skrýt</button>
+        </div>
+        <div class="slide-meta">
+          <span class="tag-pill" data-editable>NOVÝ SLIDE</span>
+          <span data-editable>Narsil</span>
+        </div>
+        <div class="body-col">
+          <h2 data-editable>Nadpis <span class="grad-text">nového slidu</span></h2>
+          <div class="grid-2" style="flex:1; max-height:29cqi;">
+            <div class="bento white"><h3 data-editable>Bod 1</h3><p class="sub" style="font-size:1.4cqi;" data-editable>Doplňte krátký popis…</p></div>
+            <div class="bento tint"><h3 data-editable>Bod 2</h3><p class="sub" style="font-size:1.4cqi;" data-editable>Doplňte krátký popis…</p></div>
+          </div>
+        </div>
+        <div class="slide-foot">
+          <span data-editable>Narsil</span>
+          <span class="slide-num-label"></span>
+        </div>`;
+      deck.appendChild(sec);
+      wireSlideActions();
+      setEditMode(true);
+      showSlide(getSlides().length - 1);
+      saveState();
+    };
+
+    document.getElementById('exportBtn').onclick = () => {
+      const wasEdit = document.body.classList.contains('edit-mode');
+      setEditMode(false);
+      const clone = document.documentElement.cloneNode(true);
+      clone.querySelector('body').classList.remove('edit-mode', 'grid-mode');
+      const blob = new Blob(['<!DOCTYPE html>\n' + clone.outerHTML], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'index.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      if (wasEdit) setEditMode(true);
+    };
+
+    document.getElementById('resetBtn').onclick = () => {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+      location.reload();
+    };
 
     document.addEventListener('keydown', (e) => {
-      if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
-      if (e.key === 'p' || e.key === 'P') {
-        setPresentMode(!bodyEl.classList.contains('present-mode'));
-      } else if (e.key === 'Escape' && bodyEl.classList.contains('present-mode')) {
-        setPresentMode(false);
-      } else if (bodyEl.classList.contains('present-mode')) {
-        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); showSlide(slideIdx + 1); }
-        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); showSlide(slideIdx - 1); }
-        else if (e.key === 'n' || e.key === 'N') notesDrawer.classList.toggle('open');
-        else if (e.key === 'f' || e.key === 'F') fullscreenBtn.click();
-      }
+      if (e.target && e.target.isContentEditable) return;
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); showSlide(current + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); showSlide(current - 1); }
+      else if (e.key === 'n' || e.key === 'N') notesBox.classList.toggle('open');
+      else if (e.key === 'f' || e.key === 'F') document.getElementById('fsBtn').click();
+      else if (e.key === 'g' || e.key === 'G') gridBtn.click();
     });
-
-    showSlide(0);
   </script>
 </body>
 </html>
