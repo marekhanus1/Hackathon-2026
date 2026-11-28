@@ -15,7 +15,14 @@ import androidx.core.app.NotificationManagerCompat
  */
 class PartnerNotifier(private val context: Context) {
 
-    fun notifyDebtOverLimit(debtMinutes: Int) {
+    fun notifyDebtOverLimit(debtMinutes: Int) =
+        notify("Kamarád chtěl půjčit další minuty, dluh je už $debtMinutes min. Napiš mu!")
+
+    /** Pozastavení ochrany v nastavení (133). */
+    fun notifyProtectionPaused() =
+        notify("Kamarád si v Narsilu pozastavil ochranu do rána. Zeptej se, jestli je všechno v pohodě.")
+
+    private fun notify(text: String) {
         runCatching {
             if (Build.VERSION.SDK_INT >= 33 &&
                 context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
@@ -25,13 +32,13 @@ class PartnerNotifier(private val context: Context) {
             val manager = context.getSystemService(NotificationManager::class.java)
             manager?.createNotificationChannel(
                 NotificationChannel(CHANNEL_ID, "Parťák", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    description = "Zprávy pro Parťáka, když dluh přesáhne limit"
+                    description = "Zprávy pro Parťáka: dluh nad limit, pozastavená ochrana"
                 },
             )
             val notification = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle("Zpráva pro Parťáka")
-                .setContentText("Kamarád chtěl půjčit další minuty, dluh je už $debtMinutes min. Napiš mu!")
+                .setContentText(text)
                 .setAutoCancel(true)
                 .build()
             NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)

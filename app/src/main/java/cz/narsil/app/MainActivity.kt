@@ -41,6 +41,8 @@ class MainActivity : ComponentActivity() {
         val data = intent?.data ?: return
         if (data.scheme != "narsil" || data.host != "strava") return
         val strava = ServiceLocator.stravaRepository as? HttpStravaRepository ?: return
+        // Chyba návratu (zrušeno, bez oprávnění, síť) se ukáže jako hláška v nastavení (132).
         lifecycleScope.launch { runCatching { strava.handleRedirect(data.toString()) } }
+        intent?.data = null // otočení obrazovky nezpracuje stejný kód podruhé
     }
 }

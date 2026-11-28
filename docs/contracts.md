@@ -261,10 +261,32 @@ data class Settings(
     val demoMode: Boolean = false, val demoThresholdSec: Int? = null,
     val demoContractToday: Boolean = false, val demoAlwaysYes: Boolean = false,
     val exercise: Exercise = Exercise.SQUATS,
-)
+    val showScrollProgress: Boolean = true,            // 135: ukazatel limitu při scrollování
+    // 133: parametry chování z obrazovky Nastavení, výchozí = SPEC
+    val toleranceMinutes: Int = 5,                     // SPEC 3, demoThresholdSec má přednost
+    val videoChainLimit: Int = 3,                      // SPEC 3
+    val squatsPerUnlock: Int = 20, val pushupsPerUnlock: Int = 10,
+    val debtLimitMinutes: Int = 30,                    // SPEC 5
+    val trackedApps: Set<TrackedApp> = TrackedApp.entries.toSet(),
+    val protectionPausedUntilMillis: Long? = null,     // pozastavení nejdéle do 4:00
+    val partnerAlerts: Boolean = true,
+) {
+    fun toleranceMillis(): Long                        // demo práh, jinak toleranceMinutes
+    fun isProtectionActive(nowMillis: Long): Boolean
+    fun isTracked(appName: String): Boolean            // název WatchedApp z detekce
+    fun repsPerUnlock(exercise: Exercise = this.exercise): Int
+}
 enum class Exercise { SQUATS, PUSHUPS } // 232: odemčení 20 dřepů nebo 10 kliků (MovementRates.PUSHUPS_PER_UNLOCK)
+enum class TrackedApp { INSTAGRAM, TIKTOK, YOUTUBE, FIREFOX } // 133: názvy = WatchedApp
+object SettingsDefaults { /* volby pro UI: TOLERANCE_OPTIONS, VIDEO_CHAIN_OPTIONS, SQUATS_OPTIONS, PUSHUPS_OPTIONS, DEBT_LIMIT_OPTIONS */ }
 interface SettingsRepository { val settings: StateFlow<Settings>; suspend fun update(change: (Settings) -> Settings) }
 ```
+
+Čtenáři polí 133: pohyb už čte `debtLimitMinutes` a `partnerAlerts` (`MovementModule.create(…, settings)`).
+Detekce má číst `toleranceMillis()` (místo jen `demoThresholdSec`), `videoChainLimit`, `isTracked(app.name)`
+a `isProtectionActive(now)`; Ozvěna `repsPerUnlock()` místo `MovementRates.SQUATS/PUSHUPS_PER_UNLOCK`.
+Uvolnění (delší tolerance, méně opakování, vyšší dluh, méně aplikací, pozastavení, vypnutí Parťáka,
+ruční „Venku“) obrazovka uloží až po potvrzení s 10s odpočtem (`ui.screens.settings.SettingsGuard`).
 
 Skutečná implementace: `cz.narsil.core.data.DataStoreSettingsRepository(context)` (DataStore „settings“). Fake: `FakeSettingsRepository`.
 

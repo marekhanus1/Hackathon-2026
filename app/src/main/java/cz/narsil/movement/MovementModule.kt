@@ -1,6 +1,7 @@
 package cz.narsil.movement
 
 import android.content.Context
+import cz.narsil.core.SettingsRepository
 import cz.narsil.core.data.NarsilDatabase
 import cz.narsil.movement.currency.CurrencyBook
 import cz.narsil.movement.steps.CombinedStepsSource
@@ -18,11 +19,24 @@ import java.time.Clock
  * ```
  */
 object MovementModule {
-    fun create(context: Context, clock: Clock = Clock.systemDefaultZone()): StepsMovementRepository {
+    /**
+     * @param settings nastavení (133): limit dluhu a zprávy Parťákovi; null = výchozí hodnoty SPEC
+     */
+    fun create(
+        context: Context,
+        clock: Clock = Clock.systemDefaultZone(),
+        settings: SettingsRepository? = null,
+    ): StepsMovementRepository {
         val app = context.applicationContext
         val steps = CombinedStepsSource(HealthConnectStepsSource(app, clock), SensorStepsSource(app, clock))
-        val book = CurrencyBook(RoomLedgerStore(NarsilDatabase.get(app).ledgerDao()), clock)
+        val book = CurrencyBook(
+            RoomLedgerStore(NarsilDatabase.get(app).ledgerDao()),
+            clock,
+            debtLimitProvider = settings?.let { s -> { s.settings.value.debtLimitMinutes } },
+        )
         val partner = PartnerNotifier(app)
-        return StepsMovementRepository(steps, book, clock, onPartnerAlert = partner::notifyDebtOverLimit)
+        return StepsMovementRepository(steps, book, clock, onPartnerAlert = { debt ->
+            if (settings?.settings?.value?.partnerAlerts != false) partner.notifyDebtOverLimit(debt)
+        })
     }
 }

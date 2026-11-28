@@ -29,9 +29,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Narsil">
 
+        <!-- singleTask (132): návrat z OAuth Stravy přijde do běžící instance (onNewIntent), ne jako
+             druhá MainActivity v úloze prohlížeče, ze které by „Zpět“ vyhodilo uživatele z Narsilu. -->
         <activity
             android:name=".app.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
