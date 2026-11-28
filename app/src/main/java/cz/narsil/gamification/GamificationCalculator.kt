@@ -1,6 +1,7 @@
 package cz.narsil.gamification
 
 import cz.narsil.core.AvatarState
+import cz.narsil.core.CloseRules
 import cz.narsil.core.DailyScore
 import cz.narsil.core.GamificationState
 import java.time.LocalDate
@@ -26,13 +27,42 @@ object GamificationCalculator {
         }
     }
 
-    /** XP za CLOSED: 50, nejvýš 5× denně a s odstupem ≥ 10 min, jinak 0 (SPEC 4). */
+    /**
+     * XP za CLOSED v [nowMillis]: 50, nejvýš 5× denně a s odstupem ≥ 10 min od posledního odměněného zavření,
+     * jinak 0 (SPEC 4). Odměněné = potvrzené s XP (155), nebo staré CLOSED s XP (data před 155, mock).
+     */
     fun closeXp(records: List<XpRecord>, today: LocalDate, nowMillis: Long): Int {
-        val rewarded = records.filter { it.date == today && it.source == XpSource.CLOSED && it.xp > 0 }
+        val rewarded = records.filter {
+            it.date == today && it.xp > 0 && (it.source == XpSource.CLOSE_CONFIRMED || it.source == XpSource.CLOSED)
+        }
         if (rewarded.size >= GamificationRules.CLOSED_MAX_REWARDED_PER_DAY) return 0
-        val last = rewarded.maxOfOrNull { it.atMillis }
+        val last = rewarded.filter { it.atMillis <= nowMillis }.maxOfOrNull { it.atMillis }
         if (last != null && nowMillis - last < GamificationRules.CLOSED_MIN_GAP_MILLIS) return 0
         return GamificationRules.XP_CLOSED
+    }
+
+    /**
+     * Zavření, která vydržela (155): CLOSED, od kterého v [nowMillis] uplynulo [CloseRules.CONFIRM_MILLIS] a v tom
+     * okně nebyl žádný další zásah (návrat do feedu = Ozvěna hned = zásah). Staré CLOSED s XP platí vždy.
+     * Do odznaků, souboje i bosse se počítají jen tahle.
+     */
+    fun heldCloses(records: List<XpRecord>, nowMillis: Long): List<XpRecord> {
+        val window = CloseRules.CONFIRM_MILLIS
+        val interventions = records.filter { it.source in XpSource.INTERVENTIONS }.map { it.atMillis }
+        return records.filter { c ->
+            c.source == XpSource.CLOSED && (
+                c.xp > 0 || (
+                    nowMillis - c.atMillis >= window &&
+                        interventions.none { it > c.atMillis && it < c.atMillis + window }
+                    )
+                )
+        }
+    }
+
+    /** Vydržená zavření, za která ještě není záznam [XpSource.CLOSE_CONFIRMED] (staré CLOSED s XP ne). */
+    fun closesToConfirm(records: List<XpRecord>, nowMillis: Long): List<XpRecord> {
+        val confirmed = records.filter { it.source == XpSource.CLOSE_CONFIRMED }.map { it.atMillis }.toSet()
+        return heldCloses(records, nowMillis).filter { it.xp == 0 && it.atMillis !in confirmed }.sortedBy { it.atMillis }
     }
 
     /** XP za ohodnocené video: 5, nejvýš 10× denně. */
@@ -91,9 +121,10 @@ object GamificationCalculator {
      * Souboj s algoritmem za den [date]. [feedMinutes] = minuty feedu z detekce (121);
      * null = záloha 10 min za každé odemknutí.
      */
-    fun dailyScore(records: List<XpRecord>, date: LocalDate, feedMinutes: Int? = null): DailyScore {
+    fun dailyScore(records: List<XpRecord>, date: LocalDate, feedMinutes: Int? = null, nowMillis: Long = Long.MAX_VALUE): DailyScore {
         val day = records.filter { it.date == date }
-        val closes = day.count { it.source == XpSource.CLOSED }
+        // 155: jen zavření, která vydržela (Zavřít a hned zpátky nic neušetří).
+        val closes = heldCloses(records, nowMillis).count { it.date == date }
         val taskMinutes = day.filter { it.source == XpSource.TASK }.sumOf { it.minutes }
         val reclaimed = closes * GamificationRules.RECLAIMED_MINUTES_PER_CLOSE + taskMinutes
         val feed = feedMinutes ?: (day.count { it.source in XpSource.UNLOCKS } * GamificationRules.FEED_MINUTES_PER_UNLOCK)
@@ -101,12 +132,12 @@ object GamificationCalculator {
     }
 
     /** Vyhrané dny od prvního dne historie po dnešek (dnešek, jakmile je vyhraný). */
-    fun wonDays(records: List<XpRecord>, today: LocalDate, feedMinutesFor: (LocalDate) -> Int?): Int {
+    fun wonDays(records: List<XpRecord>, today: LocalDate, feedMinutesFor: (LocalDate) -> Int?, nowMillis: Long = Long.MAX_VALUE): Int {
         val first = firstDay(records) ?: return 0
         var won = 0
         var day = first
         while (!day.isAfter(today)) {
-            if (dailyScore(records, day, feedMinutesFor(day)).isWon) won++
+            if (dailyScore(records, day, feedMinutesFor(day), nowMillis).isWon) won++
             day = day.plusDays(1)
         }
         return won
@@ -114,7 +145,8 @@ object GamificationCalculator {
 
     /**
      * Má se za den [date] připsat boss? Ano, když už je po 22:00, boss za ten den ještě není,
-     * existuje historie (den není před instalací) a v kritické hodině nebyl zásah, nebo každý skončil CLOSED.
+     * existuje historie (den není před instalací) a v kritické hodině nebyl zásah, nebo každý skončil CLOSED,
+     * které vydrželo (155: nepotvrzené zatím ne, návrat do feedu nikdy).
      */
     fun bossDue(records: List<XpRecord>, date: LocalDate, nowMillis: Long, zone: ZoneId): Boolean {
         val first = firstDay(records) ?: return false
@@ -123,9 +155,10 @@ object GamificationCalculator {
         val start = date.atTime(GamificationRules.BOSS_START_HOUR, 0).atZone(zone).toInstant().toEpochMilli()
         val end = date.atTime(GamificationRules.BOSS_END_HOUR, 0).atZone(zone).toInstant().toEpochMilli()
         if (nowMillis < end) return false
+        val held = heldCloses(records, nowMillis).map { it.atMillis }.toSet()
         return records
             .filter { it.source in XpSource.INTERVENTIONS && it.atMillis in start until end }
-            .all { it.source == XpSource.CLOSED }
+            .all { it.source == XpSource.CLOSED && it.atMillis in held }
     }
 
     /** Dřepy celkem: 20 za odemknutí dřepy + 50 za každý žolík. */
@@ -149,8 +182,8 @@ object GamificationCalculator {
     }
 
     /** Odznaky, na které má historie nárok (docs/GAMIFICATION.md sekce 8). */
-    fun earnedBadges(records: List<XpRecord>, today: LocalDate): Set<String> {
-        val closes = records.count { it.source == XpSource.CLOSED }
+    fun earnedBadges(records: List<XpRecord>, today: LocalDate, nowMillis: Long = Long.MAX_VALUE): Set<String> {
+        val closes = heldCloses(records, nowMillis).size
         val (streak, _) = streakAndJokers(records, today)
         return buildSet {
             if (closes >= 1) add(Badges.FIRST_CLOSE)
@@ -167,6 +200,7 @@ object GamificationCalculator {
         today: LocalDate,
         feedMinutesFor: (LocalDate) -> Int? = { null },
         avatarOverride: AvatarState? = null,
+        nowMillis: Long = Long.MAX_VALUE,
     ): GamificationState {
         val records = effective(history.records)
         val xp = records.sumOf { it.xp }.coerceAtLeast(0)
@@ -179,8 +213,8 @@ object GamificationCalculator {
             streakDays = streak,
             jokers = jokers,
             avatar = avatarOverride ?: avatar(records, today),
-            today = dailyScore(records, today, feedMinutesFor(today)),
-            wonDays = wonDays(records, today, feedMinutesFor),
+            today = dailyScore(records, today, feedMinutesFor(today), nowMillis),
+            wonDays = wonDays(records, today, feedMinutesFor, nowMillis),
             badges = history.badges.entries.sortedBy { it.value }.map { it.key },
         )
     }

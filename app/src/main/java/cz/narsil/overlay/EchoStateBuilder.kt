@@ -23,6 +23,17 @@ object EchoStateBuilder {
         "com.ss.android.ugc.aweme" to "TikTok",
         "com.google.android.youtube" to "YouTube",
         "org.mozilla.firefox" to "Firefox",
+        // 149
+        "com.twitter.android" to "X",
+        "com.reddit.frontpage" to "Reddit",
+        "com.facebook.katana" to "Facebook",
+        "com.facebook.lite" to "Facebook",
+        "com.instagram.barcelona" to "Threads",
+        "com.pinterest" to "Pinterest",
+        "com.ninegag.android.app" to "9GAG",
+        "com.tumblr" to "Tumblr",
+        "com.linkedin.android" to "LinkedIn",
+        "xyz.blueskyweb.app" to "Bluesky",
     )
 
     fun appName(packageName: String): String = APP_NAMES[packageName] ?: packageName.substringAfterLast('.')
@@ -35,19 +46,24 @@ object EchoStateBuilder {
         exercise: Exercise = Exercise.SQUATS,
         /** Opakování na odemčení z Nastavení (136). */
         reps: Int = ExerciseText.target(exercise),
+        /** Věta z odpovědí „Co ti to video dalo?“ (156); má přednost před plánem v popisku. */
+        valueNote: String? = null,
     ): EchoContent {
         val firstTask = contract?.tasks?.firstOrNull()?.title ?: contract?.plannedContent?.firstOrNull()
         val fallback = firstTask?.let { "Dnes jsi chtěl: $it" }
         val minutes = (trigger.event.durationMillis / 60_000).toInt()
         val ui = EchoUiState(
             sourceAppName = appName(trigger.event.packageName),
-            videoCaption = fallback ?: "Scrolluješ už $minutes min.",
+            videoCaption = valueNote ?: fallback ?: "Scrolluješ už $minutes min.",
             // Obrazovka 310 počítá s kroky; zůstatek v minutách převedeme zpět na kroky podle kurzu.
             availableSteps = movement.balanceMinutes * MovementRates.STEPS_PER_MINUTE,
             stepCostForTenMin = MovementRates.MINUTES_PER_UNLOCK * MovementRates.STEPS_PER_MINUTE,
             currentDebtMinutes = movement.debtMinutes,
             isVideoPlaying = video != null,
             exerciseOptionTitle = ExerciseText.echoOption(exercise, reps),
+            // 159: stejné pravidlo jako EchoOutcomeHandler.canBorrow (SPEC 5), tlačítko nad limitem neaktivní.
+            canBorrow = movement.debtMinutes + MovementRates.MINUTES_PER_UNLOCK <= movement.debtLimitMinutes,
+            debtLimitMinutes = movement.debtLimitMinutes,
         )
         return EchoContent(ui, video?.uri, fallback)
     }

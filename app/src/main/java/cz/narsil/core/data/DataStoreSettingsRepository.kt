@@ -60,10 +60,10 @@ class DataStoreSettingsRepository(
         squatsPerUnlock = this[SQUATS_PER_UNLOCK] ?: DEFAULTS.squatsPerUnlock,
         pushupsPerUnlock = this[PUSHUPS_PER_UNLOCK] ?: DEFAULTS.pushupsPerUnlock,
         debtLimitMinutes = this[DEBT_LIMIT_MINUTES] ?: DEFAULTS.debtLimitMinutes,
-        trackedApps = this[TRACKED_APPS]?.mapNotNull { n -> TrackedApp.entries.firstOrNull { it.name == n } }?.toSet()
-            ?: DEFAULTS.trackedApps,
+        trackedApps = trackedAppsFrom(this[TRACKED_APPS], this[TRACKED_APPS_KNOWN]),
         protectionPausedUntilMillis = this[PAUSED_UNTIL],
         partnerAlerts = this[PARTNER_ALERTS] ?: DEFAULTS.partnerAlerts,
+        trackOtherFeedApps = this[TRACK_OTHER_FEED_APPS] ?: DEFAULTS.trackOtherFeedApps,
     )
 
     private fun androidx.datastore.preferences.core.MutablePreferences.write(s: Settings) {
@@ -81,6 +81,8 @@ class DataStoreSettingsRepository(
         this[PUSHUPS_PER_UNLOCK] = s.pushupsPerUnlock
         this[DEBT_LIMIT_MINUTES] = s.debtLimitMinutes
         this[TRACKED_APPS] = s.trackedApps.map { it.name }.toSet()
+        this[TRACKED_APPS_KNOWN] = TrackedApp.entries.map { it.name }.toSet()
+        this[TRACK_OTHER_FEED_APPS] = s.trackOtherFeedApps
         if (s.protectionPausedUntilMillis != null) this[PAUSED_UNTIL] = s.protectionPausedUntilMillis else remove(PAUSED_UNTIL)
         this[PARTNER_ALERTS] = s.partnerAlerts
     }
@@ -100,8 +102,21 @@ class DataStoreSettingsRepository(
         val PUSHUPS_PER_UNLOCK = intPreferencesKey("pushups_per_unlock")
         val DEBT_LIMIT_MINUTES = intPreferencesKey("debt_limit_minutes")
         val TRACKED_APPS = stringSetPreferencesKey("tracked_apps")
+        /** Aplikace, které existovaly při uložení [TRACKED_APPS]; novější (149) jsou ve výchozím stavu zapnuté. */
+        val TRACKED_APPS_KNOWN = stringSetPreferencesKey("tracked_apps_known")
+        val TRACK_OTHER_FEED_APPS = booleanPreferencesKey("track_other_feed_apps")
         val PAUSED_UNTIL = longPreferencesKey("protection_paused_until")
         val PARTNER_ALERTS = booleanPreferencesKey("partner_alerts")
         val DEFAULTS = Settings()
     }
+}
+
+/**
+ * Uložené sledované aplikace (149). Aplikace přidané do [TrackedApp] po uložení (chybí v [known]) se zapnou,
+ * jinak by nové sítě po aktualizaci tiše chyběly. Bez [known] (uloženo před 149) = původní čtyři.
+ */
+internal fun trackedAppsFrom(saved: Set<String>?, known: Set<String>?): Set<TrackedApp> {
+    if (saved == null) return TrackedApp.entries.toSet()
+    val knownAtSave = known ?: setOf("INSTAGRAM", "TIKTOK", "YOUTUBE", "FIREFOX")
+    return TrackedApp.entries.filter { it.name in saved || it.name !in knownAtSave }.toSet()
 }

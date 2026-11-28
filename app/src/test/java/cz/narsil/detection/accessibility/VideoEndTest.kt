@@ -184,9 +184,53 @@ class VideoEndTest {
         advanceTimeBy(60_000) // limit 20 s dávno pryč, video běží (tiky)
         runCurrent()
         assertEquals(0, got.size)
+        assertTrue(source.waitingForVideoEnd.value) // EchoOverlayStarter teď čte okno sám
         snapshots.emit(snap("m.youtube.com/watch?v=BBBBBBBBBBB", YouTubePlayback.parse("BBBBBBBBBBB", emptyList(), testScheduler.currentTime)))
         runCurrent()
         assertEquals(1, got.size)
         assertEquals(Surface.VIDEO, got[0].event.surface)
+        assertEquals(false, source.waitingForVideoEnd.value)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun staleEndScreenAtVideoOpenDoesNotTrigger() = runTest {
+        // 152: Shorts → video přes intent se zastaralým end-screenem; Ozvěna až na skutečném konci.
+        val snapshots = MutableSharedFlow<ForegroundSnapshot>(extraBufferCapacity = 8)
+        val source = AccessibilityTriggerSource(
+            contextRepository = cz.narsil.core.fake.FakeContextRepository(),
+            settings = FakeSettingsRepository(Settings(demoThresholdSec = 20)),
+            scope = backgroundScope,
+            snapshots = snapshots,
+            clock = { testScheduler.currentTime },
+            tickMillis = 5_000,
+        )
+        val got = mutableListOf<InterventionTrigger>()
+        backgroundScope.launch { source.triggers.collect { got += it } }
+        runCurrent()
+        fun snap(ids: String, video: VideoPlayback? = null) = ForegroundSnapshot(
+            yt, WatchedApp.YOUTUBE, SnapshotKind.CONTENT_CHANGED, testScheduler.currentTime, viewIds = setOf("$yt:id/$ids"), video = video,
+        )
+        snapshots.emit(snap("reel_player_underlay"))
+        runCurrent()
+        advanceTimeBy(25_000) // limit vyprší na Shorts → Ozvěna
+        runCurrent()
+        got.clear()
+        // Okno zavřené bez volby, relace běží dál: další zásah smí přijít, ale ne uprostřed videa.
+        source.onOutcome(cz.narsil.core.InterventionOutcome.PLANNED_FREE)
+        snapshots.emit(snap("watch_player", VideoPlayback(null, ended = true)))
+        runCurrent()
+        advanceTimeBy(5_000)
+        runCurrent()
+        assertEquals(0, got.size) // zastaralý end-screen
+        assertTrue(source.waitingForVideoEnd.value)
+        snapshots.emit(snap("watch_player", VideoPlayback(null)))
+        runCurrent()
+        advanceTimeBy(10_000)
+        runCurrent()
+        assertEquals(0, got.size)
+        snapshots.emit(snap("watch_player", VideoPlayback(null, ended = true)))
+        runCurrent()
+        assertEquals(1, got.size)
     }
 }

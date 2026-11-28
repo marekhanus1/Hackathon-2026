@@ -76,11 +76,14 @@ class GamificationWiringTest {
         engine.onTaskVerified(PlanTask(id = 1, type = TaskType.SCHOOL, title = "Úkol"))
         ledger.insert(LedgerEntryEntity(date = day.toString(), atMillis = 0, kind = LedgerKind.TASK_REWARD, minutes = 20))
         assertEquals(2, xp.rows.value.size)
-        assertEquals(listOf(Badges.FIRST_CLOSE), badges.rows.value.map { it.id })
+        assertEquals(emptyList<String>(), badges.rows.value.map { it.id }) // zavření ještě nepotvrzené (155)
 
+        clock.advanceMinutes(10)
         val restarted = RulesGamificationEngine(RoomGamificationStore(xp, badges, ledger, clock), clock)
         restarted.refresh()
         val state = restarted.state.value
+        assertEquals(3, xp.rows.value.size) // + CLOSE_CONFIRMED
+        assertEquals(listOf(Badges.FIRST_CLOSE), badges.rows.value.map { it.id })
         assertEquals(80, state.xp)
         assertEquals(15 + 20, state.today.reclaimedMinutes) // CLOSED × 15 + odměna úkolu z ledgeru
         assertEquals(listOf(Badges.FIRST_CLOSE), state.badges)

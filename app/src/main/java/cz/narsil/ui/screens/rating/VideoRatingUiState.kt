@@ -1,38 +1,32 @@
 package cz.narsil.ui.screens.rating
 
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+/**
+ * Odpověď na „Co ti to video dalo?“ (156). [rating] jde do `video_ratings.rating` (1–5, mapa hodnoty),
+ * [label] do `video_ratings.intent`.
+ */
+enum class VideoValue(val label: String, val emoji: String, val rating: Int) {
+    LEARNED("Naučil jsem se něco", "💡", 5),
+    INSPIRED("Inspirace, nápad", "✨", 4),
+    RESTED("Odpočinul jsem si", "🛋️", 3),
+    NOTHING("Nic, jen čas", "⏳", 2),
+    WORSE("Je mi hůř", "🌧️", 1);
 
-enum class WatchIntention(val label: String) {
-    LEARNING("Učení"),
-    REST("Odpočinek"),
-    INSPIRATION("Inspirace"),
-    AIMLESS("Jen tak")
+    companion object {
+        fun ofLabel(label: String?): VideoValue? = entries.firstOrNull { it.label == label }
+    }
 }
 
+/**
+ * Spodní panel po dosledovaném videu nebo zaplaceném čase feedu (156).
+ *
+ * @param videoTitle co uživatel sledoval („Rust Async…“, „10 minut feedu na TikToku“)
+ * @param question otázka v nadpisu
+ * @param earnedXp kolik XP odpověď dá (0 = strop dne, štítek se skryje)
+ * @param answered vybraná odpověď; panel pak jen poděkuje a sám zmizí
+ */
 data class VideoRatingUiState(
     val videoTitle: String = "Rust Async – kompletní průvodce pro začátečníky",
-    val channelName: String = "TechTalk CZ",
-    val selectedIntention: WatchIntention = WatchIntention.LEARNING,
-    val selectedRating: Int? = 4,
-    val earnedXp: Int = 5
-) {
-    val canSubmit: Boolean
-        get() = selectedRating != null
-}
-
-class VideoRatingViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(VideoRatingUiState())
-    val uiState: StateFlow<VideoRatingUiState> = _uiState.asStateFlow()
-
-    fun selectIntention(intention: WatchIntention) {
-        _uiState.update { it.copy(selectedIntention = intention) }
-    }
-
-    fun selectRating(rating: Int) {
-        _uiState.update { it.copy(selectedRating = rating.coerceIn(1, 5)) }
-    }
-}
+    val question: String = "Co ti to video dalo?",
+    val earnedXp: Int = 5,
+    val answered: VideoValue? = null,
+)

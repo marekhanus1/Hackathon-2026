@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/148-hledani-nepocitat
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/110
 ---
 
 # 148 – Výsledky vyhledávání se nepočítají

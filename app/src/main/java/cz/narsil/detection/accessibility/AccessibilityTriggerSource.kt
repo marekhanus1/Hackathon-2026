@@ -8,7 +8,9 @@ import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.InterventionTriggerSource
 import cz.narsil.core.SettingsRepository
 import cz.narsil.core.Surface
+import cz.narsil.detection.youtube.EndScreenFilter
 import cz.narsil.detection.youtube.VideoChainTracker
+import cz.narsil.detection.youtube.VideoWatchTracker
 import cz.narsil.detection.youtube.YouTubePlayback
 import kotlinx.coroutines.withTimeoutOrNull
 import cz.narsil.core.TriggerReason
@@ -45,9 +47,22 @@ class AccessibilityTriggerSource(
     private val planCheck: (suspend (title: String) -> Boolean)? = null,
     /** Čekání na titulek nového videu před dotazem (Firefox ho mění se zpožděním po změně URL). */
     private val planDelayMillis: Long = 2_000,
+    /** Ladicí výpis (149): změny obecné detekce feedu. ServiceLocator → Log.d. */
+    private val onDebug: (String) -> Unit = {},
+    /**
+     * Balíček aplikace skutečně v popředí (153, `NarsilAccessibilityService.foregroundPackage`), null = nevíme.
+     * Tik podle něj nepoužije zastaralý snímek sledované aplikace, když uživatel odešel (plocha bez události).
+     */
+    private val foreground: () -> String? = { null },
+    /** Uložení relace přes smrt procesu (MIUI); null = jen v paměti (testy). */
+    private val persistence: SessionPersistence? = null,
 ) : InterventionTriggerSource {
     private val tracker = ScrollSessionTracker()
     private val chain = VideoChainTracker()
+    private val feedBehavior = FeedBehavior()
+    private val endScreen = EndScreenFilter()
+    private val watch = VideoWatchTracker()
+    private val lastGeneric = HashMap<String, Surface?>()
     private val lock = Mutex()
     private var last: ForegroundSnapshot? = null
 
@@ -59,6 +74,11 @@ class AccessibilityTriggerSource(
     /** Probíhající úsek nekonečného obsahu (pro ukládání v 121 a UI); null = žádná relace. */
     val current: StateFlow<ConsumptionEvent?> = _current.asStateFlow()
 
+    private val _videoFinished = MutableSharedFlow<VideoWatchTracker.Finished>(extraBufferCapacity = 4)
+
+    /** Dosledované video doma (156): podnět pro otázku „Co ti to video dalo?“. Hot stream bez replay. */
+    val videoFinished: Flow<VideoWatchTracker.Finished> = _videoFinished.asSharedFlow()
+
     private val _progressPercent = MutableStateFlow<Int?>(null)
 
     /**
@@ -67,13 +87,39 @@ class AccessibilityTriggerSource(
      */
     val progressPercent: StateFlow<Int?> = _progressPercent.asStateFlow()
 
+    private val _watchingVideo = MutableStateFlow(false)
+
+    /**
+     * Doma běží přehrávač jednoho videa (156). Přehrávač YouTube během videa nehlásí události, konec videa
+     * pro otázku „Co ti to video dalo?“ proto `EchoOverlayStarter` dočte vlastním čtením okna.
+     */
+    val watchingVideo: StateFlow<Boolean> = _watchingVideo.asStateFlow()
+
+    private val _waitingForVideoEnd = MutableStateFlow(false)
+
+    /**
+     * Limit vypršel během videa a čeká se na jeho konec (134). Mezitím `EchoOverlayStarter` čte okno sám
+     * (`NarsilAccessibilityService.pollForeground`): přehrávač YouTube během videa nehlásí žádné události.
+     */
+    val waitingForVideoEnd: StateFlow<Boolean> = _waitingForVideoEnd.asStateFlow()
+
+    private var lastSaved: SavedSession? = null
+
     init {
+        // Po restartu procesu (systém Narsil vypnul) pokračovat v rozpracované relaci a odemčeném čase.
+        runCatching { persistence?.load() }.getOrNull()?.let { tracker.restore(it, clock()) }
         scope.launch { snapshots.collect { handle(it, scrolled = it.kind == SnapshotKind.SCROLLED) } }
         // Tik: video může běžet bez událostí (autoplay), čas relace musí běžet dál.
         scope.launch {
             while (isActive) {
                 delay(tickMillis)
-                last?.let { handle(it.copy(atMillis = clock()), scrolled = false) }
+                val snap = last ?: continue
+                val now = clock()
+                val fg = runCatching { foreground() }.getOrNull()
+                // 153: v popředí je jiná aplikace (odchod se neohlásil): jako mimo sledované, žádný zásah nad ní.
+                val current = if (fg != null && fg != snap.packageName) ForegroundSnapshot(fg, null, SnapshotKind.CONTENT_CHANGED, now)
+                else snap.copy(atMillis = now)
+                handle(current, scrolled = false)
             }
         }
     }
@@ -83,15 +129,30 @@ class AccessibilityTriggerSource(
         val now = snapshot.atMillis
         val prefs = settings.settings.value
         val active = snapshot.app?.let { prefs.isTracked(it.name) } == true && prefs.isProtectionActive(now)
-        val surface = if (active) SurfaceClassifier.classify(snapshot) else null
+        // 149: obecné aplikace a aplikace YouTube mimo přehrávač/hledání (domovský feed) – feed podle chování scrollu.
+        val generic = snapshot.app?.generic == true || snapshot.app == WatchedApp.YOUTUBE
+        // 149: obecné aplikace – feed podle chování scrollu; zprávy a hledání rozhodne snímek.
+        if (active && generic && scrolled) snapshot.scroll?.let { feedBehavior.onScroll(snapshot.packageName, it, now) }
+        val surface = when {
+            !active -> null
+            generic -> SurfaceClassifier.classify(snapshot) ?: feedBehavior.surface(snapshot.packageName, now)
+            else -> SurfaceClassifier.classify(snapshot)
+        }
+        if (active && generic && lastGeneric.put(snapshot.packageName, surface) != surface) {
+            onDebug("obecná detekce ${snapshot.packageName}: $surface (${feedBehavior.describe(snapshot.packageName)})")
+        }
         val context = contextRepository.context.value
         val threshold = prefs.toleranceMillis()
+        // 152: end-screen z minulého přehrání při otevření videa není konec.
+        val video = endScreen.filter(surface == Surface.VIDEO, snapshot.video)
         val hit = tracker.observe(
             snapshot.packageName, surface, context, now, threshold, scrolled,
-            video = snapshot.video,
+            video = video,
             onVideoSite = active && isVideoSite(snapshot),
+            startedAtHint = if (generic) feedBehavior.streakStart(snapshot.packageName, now) else null,
         )
         _progressPercent.value = tracker.progress(now, threshold, context)?.let(::toPercent)
+        _waitingForVideoEnd.value = tracker.isWaitingForVideoEnd
         val session = tracker.session
         // Relace běží na nekonečném povrchu, nebo pokračuje na videu (134).
         val counting = surface != null && context == ComfortContext.HOME &&
@@ -102,8 +163,12 @@ class AccessibilityTriggerSource(
             val event = _current.value ?: eventOf(hit, now, snapshot)
             _triggers.tryEmit(InterventionTrigger(event, TriggerReason.ENDLESS_SCROLL, now))
         }
+        persist(now)
         // Řetězení (137): přehrávač jednoho videa doma ve sledované aplikaci (surface je null mimo sledované).
-        val newVideo = chain.observe(surface == Surface.VIDEO && context == ComfortContext.HOME, snapshot.video, now)
+        val onVideoHome = surface == Surface.VIDEO && context == ComfortContext.HOME
+        watch.observe(onVideoHome, snapshot.packageName, video, now)?.let { _videoFinished.tryEmit(it) }
+        _watchingVideo.value = onVideoHome
+        val newVideo = chain.observe(onVideoHome, video, now)
         if (newVideo != null) scope.launch { evaluate(newVideo, snapshot) }
     }
 
@@ -147,7 +212,7 @@ class AccessibilityTriggerSource(
     suspend fun onOutcome(outcome: InterventionOutcome, unlockMinutes: Int = 10) = lock.withLock {
         when (outcome) {
             InterventionOutcome.CLOSED -> {
-                tracker.onClosed()
+                tracker.onClosed(clock())
                 chain.onClosed()
             }
             InterventionOutcome.PAID_STEPS, InterventionOutcome.SQUATS, InterventionOutcome.BORROWED -> {
@@ -161,6 +226,23 @@ class AccessibilityTriggerSource(
             }
         }
         _progressPercent.value = null // do dalšího pozorování (snímek nebo tik) skrytý
+        persist(clock(), force = true)
+    }
+
+    /**
+     * Uloží stav relace, když se změnil (začátek, aplikace, odemčení), nebo nejvýš jednou za 15 s kvůli
+     * času posledního obsahu – zápis do SharedPreferences při každém scrollu by byl zbytečný.
+     */
+    private fun persist(now: Long, force: Boolean = false) {
+        val p = persistence ?: return
+        val current = tracker.snapshot()
+        val prev = lastSaved
+        val changed = force || current?.startedAtMillis != prev?.startedAtMillis ||
+            current?.packageName != prev?.packageName || current?.unlockedUntilMillis != prev?.unlockedUntilMillis ||
+            (current != null && prev != null && current.lastEndlessAtMillis - prev.lastEndlessAtMillis >= 15_000)
+        if (!changed) return
+        lastSaved = current
+        runCatching { p.save(current) }
     }
 
     companion object {

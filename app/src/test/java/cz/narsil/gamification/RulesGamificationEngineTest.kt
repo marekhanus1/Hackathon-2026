@@ -46,34 +46,79 @@ class RulesGamificationEngineTest {
         assertEquals(30, engine.onTaskVerified(PlanTask(type = TaskType.SCHOOL, title = "Úkol")))
         assertEquals(100, engine.onContractFulfilled())
         assertEquals(5, engine.onVideoRated(4))
-        assertEquals(215, engine.state.value.xp)
+        // 155: CLOSED vrací čekající XP; hned po něm další zásah (dřepy) = návrat do feedu, XP za zavření nepřijde.
+        assertEquals(165, engine.state.value.xp)
+    }
+
+    /** Zavřít a 10 min bez dalšího zásahu; vrací čekající XP z volby. */
+    private suspend fun RulesGamificationEngine.closeAndHold(clock: TestClock): Int {
+        val pending = onOutcome(InterventionOutcome.CLOSED)
+        clock.advanceMinutes(10)
+        refresh()
+        return pending
     }
 
     @Test
-    fun closedIsCappedAndNeedsGap() = runTest {
+    fun closedXpOnlyAfterConfirmation() = runTest {
         val clock = TestClock(at(8))
         val engine = RulesGamificationEngine(clock = clock)
-        assertEquals(50, engine.onOutcome(InterventionOutcome.CLOSED))
-        clock.advanceMinutes(5)
-        assertEquals(0, engine.onOutcome(InterventionOutcome.CLOSED)) // odstup < 10 min
-        clock.advanceMinutes(5)
-        assertEquals(50, engine.onOutcome(InterventionOutcome.CLOSED))
-        repeat(3) {
-            clock.advanceMinutes(10)
-            assertEquals(50, engine.onOutcome(InterventionOutcome.CLOSED))
+        assertEquals(50, engine.onOutcome(InterventionOutcome.CLOSED)) // čekající
+        assertEquals(0, engine.state.value.xp)
+        clock.advanceMinutes(9)
+        engine.refresh()
+        assertEquals(0, engine.state.value.xp) // okno ještě běží
+        clock.advanceMinutes(1)
+        engine.refresh()
+        assertEquals(50, engine.state.value.xp)
+        engine.refresh()
+        assertEquals(50, engine.state.value.xp) // potvrzení jen jednou
+    }
+
+    @Test
+    fun closeAndReturnGivesNoXp() = runTest {
+        val clock = TestClock(at(8))
+        val engine = RulesGamificationEngine(clock = clock)
+        // Farmení: Zavřít, hned zpátky do feedu (Ozvěna hned) a znovu Zavřít – XP jen za poslední, které vydrželo.
+        repeat(5) {
+            engine.onOutcome(InterventionOutcome.CLOSED)
+            clock.advanceMinutes(2)
         }
-        clock.advanceMinutes(30)
-        assertEquals(0, engine.onOutcome(InterventionOutcome.CLOSED)) // 6. odměna ve dni ne
+        clock.advanceMinutes(10)
+        engine.refresh()
+        assertEquals(50, engine.state.value.xp)
+        assertEquals(15, engine.state.value.today.reclaimedMinutes)
+    }
+
+    @Test
+    fun closedIsCappedPerDay() = runTest {
+        val clock = TestClock(at(8))
+        val engine = RulesGamificationEngine(clock = clock)
+        repeat(5) { assertEquals(50, engine.closeAndHold(clock)) }
+        assertEquals(250, engine.state.value.xp)
+        assertEquals(0, engine.closeAndHold(clock)) // 6. odměna ve dni ne
+        assertEquals(250, engine.state.value.xp)
         clock.set(at(8, date = day.plusDays(1)))
-        assertEquals(50, engine.onOutcome(InterventionOutcome.CLOSED)) // nový den
+        assertEquals(50, engine.closeAndHold(clock)) // nový den
+        assertEquals(250 + 150 + 50, engine.state.value.xp) // + boss za včerejšek (21–22 bez zásahu)
+    }
+
+    @Test
+    fun legacyClosedWithXpCountsAsConfirmed() = runTest {
+        val legacy = (0 until 5).map { XpRecord(day, at(8).toInstant(ZoneOffset.UTC).toEpochMilli() + it * 60_000L, XpSource.CLOSED, 50) }
+        val clock = TestClock(at(12))
+        val engine = RulesGamificationEngine(InMemoryGamificationStore(GamificationHistory(legacy)), clock)
+        engine.refresh()
+        assertEquals(250, engine.state.value.xp) // mock data se znovu nepotvrzují
+        assertEquals(0, engine.closeAndHold(clock)) // strop počítá i staré záznamy
     }
 
     @Test
     fun levelsEvery500Xp() = runTest {
-        val engine = RulesGamificationEngine(clock = TestClock(at(10)))
+        val clock = TestClock(at(10))
+        val engine = RulesGamificationEngine(clock = clock)
         engine.addXp(480)
         assertEquals(1, engine.state.value.level)
-        engine.onOutcome(InterventionOutcome.CLOSED)
+        engine.closeAndHold(clock)
         assertEquals(530, engine.state.value.xp)
         assertEquals(2, engine.state.value.level)
         assertEquals(30, engine.state.value.xpInLevel)
@@ -155,7 +200,7 @@ class RulesGamificationEngineTest {
     fun dailyScoreAndWonDay() = runTest {
         val clock = TestClock(at(10))
         val engine = RulesGamificationEngine(clock = clock)
-        engine.onOutcome(InterventionOutcome.CLOSED)
+        engine.closeAndHold(clock)
         engine.onOutcome(InterventionOutcome.PAID_STEPS)
         val score = engine.state.value.today
         assertEquals(15, score.reclaimedMinutes)
@@ -180,12 +225,36 @@ class RulesGamificationEngineTest {
         val clock = TestClock(at(21, 15))
         val engine = RulesGamificationEngine(clock = clock)
         engine.onOutcome(InterventionOutcome.CLOSED)
-        val before = engine.state.value.xp
         clock.set(at(22, 5))
         engine.refresh()
-        assertEquals(before + 150, engine.state.value.xp)
+        assertEquals(50 + 150, engine.state.value.xp) // potvrzené zavření + boss
         engine.refresh()
-        assertEquals(before + 150, engine.state.value.xp) // jen jednou
+        assertEquals(200, engine.state.value.xp) // jen jednou
+    }
+
+    @Test
+    fun noBossWhenClosedThenReturned() = runTest {
+        val clock = TestClock(at(21, 15))
+        val engine = RulesGamificationEngine(clock = clock)
+        engine.onOutcome(InterventionOutcome.CLOSED)
+        clock.advanceMinutes(3)
+        engine.onOutcome(InterventionOutcome.CLOSED) // návrat do feedu a znovu Zavřít
+        clock.set(at(23))
+        engine.refresh()
+        assertEquals(50, engine.state.value.xp) // jen druhé zavření, boss ne
+    }
+
+    @Test
+    fun bossWaitsForPendingClose() = runTest {
+        val clock = TestClock(at(21, 55))
+        val engine = RulesGamificationEngine(clock = clock)
+        engine.onOutcome(InterventionOutcome.CLOSED)
+        clock.set(at(22, 1))
+        engine.refresh()
+        assertEquals(0, engine.state.value.xp) // zavření ještě není potvrzené
+        clock.set(at(22, 6))
+        engine.refresh()
+        assertEquals(200, engine.state.value.xp)
     }
 
     @Test
@@ -211,11 +280,11 @@ class RulesGamificationEngineTest {
         val store = InMemoryGamificationStore()
         val engine = RulesGamificationEngine(store, clock)
         engine.onOutcome(InterventionOutcome.CLOSED)
+        assertEquals(emptyList<String>(), engine.state.value.badges) // ještě nepotvrzené
+        clock.advanceMinutes(10)
+        engine.refresh()
         assertEquals(listOf(Badges.FIRST_CLOSE), engine.state.value.badges)
-        repeat(9) {
-            clock.advanceMinutes(1)
-            engine.onOutcome(InterventionOutcome.CLOSED)
-        }
+        repeat(9) { engine.closeAndHold(clock) }
         assertTrue(Badges.CLOSE_10 in engine.state.value.badges)
         assertEquals(2, store.load().badges.size)
     }
@@ -238,6 +307,7 @@ class RulesGamificationEngineTest {
             onOutcome(InterventionOutcome.CLOSED)
             onContractFulfilled()
         }
+        clock.advanceMinutes(10) // zavření se potvrdí až po restartu (historie, ne časovač)
         val restarted = RulesGamificationEngine(store, clock)
         restarted.refresh()
         assertEquals(150, restarted.state.value.xp)

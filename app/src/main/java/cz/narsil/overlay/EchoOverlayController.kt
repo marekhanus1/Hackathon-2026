@@ -18,12 +18,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 
 /** Volba v Ozvěně: výsledek a nepovinný pocit. Zpracuje 114. */
 fun interface EchoChoiceHandler {
-    suspend fun onChoice(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?)
+    /** Vrací XP za volbu; u CLOSED XP čekající na potvrzení (155), 0 = bez XP. */
+    suspend fun onChoice(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?): Int
 }
 
 /**
@@ -39,7 +44,7 @@ class EchoOverlayController(
     private val contracts: ContractRepository,
     private val videos: EchoVideoRepository,
     private val scope: CoroutineScope,
-    private val choiceHandler: EchoChoiceHandler = EchoChoiceHandler { _, _, _ -> },
+    private val choiceHandler: EchoChoiceHandler = EchoChoiceHandler { _, _, _ -> 0 },
     private val squatCounter: SquatCounter? = null,
     /** Počítadlo kliků (232); použije se, když [exercise] vrátí PUSHUPS. */
     private val pushupCounter: SquatCounter? = null,
@@ -58,14 +63,40 @@ class EchoOverlayController(
     /** Rozdělaná Ozvěna byla moc stará na obnovu: detekce smí zasáhnout znovu. */
     private val onRestoreExpired: suspend (InterventionTrigger) -> Unit = {},
     private val clock: () -> Long = System::currentTimeMillis,
+    /** Je aplikace zásahu pořád v popředí? (153) Ozvěna z detekce se nikdy neukáže nad jinou aplikací. */
+    private val isInForeground: (InterventionTrigger) -> Boolean = { true },
+    /** Zásah zahozen (uživatel už je jinde, nebo okno nejde ukázat, 159): detekce ho zopakuje. */
+    private val onSkipped: suspend (InterventionTrigger) -> Unit = {},
+    /**
+     * Systémový dialog kamery (157): spustí `CameraPermissionActivity`, false = nešlo. Okno Ozvěny leží nad
+     * všemi aplikacemi, proto se na dobu dialogu schová. null = slot dřepů si poradí sám (nastavení aplikace).
+     */
+    private val requestCamera: (() -> Boolean)? = null,
+    /** Odpověď z dialogu kamery (true = povoleno). */
+    private val cameraResults: Flow<Boolean> = emptyFlow(),
+    /** Věta z minulých odpovědí „Co ti to video dalo?“ (156), null = žádná. Nesmí házet. */
+    private val valueNote: suspend (InterventionTrigger) -> String? = { null },
+    /** Ozvěna se právě ukazuje (156: zavřít panel otázky pod ní). */
+    private val onEchoShown: () -> Unit = {},
 ) {
+    /** Je teď vidět Ozvěna, cvik nebo odměna? */
+    val isShowing: Boolean get() = window.isShowing
+
     private var job: Job? = null
 
     fun start() {
         if (job != null) return
         job = scope.launch {
             restore()
-            triggers.triggers.collect { show(it) }
+            triggers.triggers.collect { t ->
+                if (window.isShowing) return@collect
+                if (!isInForeground(t)) {
+                    Log.i(TAG, "Ozvěna neukázána: ${t.event.packageName} už není v popředí, odloženo do návratu")
+                    runCatching { onSkipped(t) }
+                    return@collect
+                }
+                show(t)
+            }
         }
     }
 
@@ -106,9 +137,11 @@ class EchoOverlayController(
         session.setPhase(EchoSessionStore.Phase.ECHO)
         session.setFeeling(feeling)
         val video = runCatching { videos.pickEchoVideo() }.getOrNull()
+        val note = runCatching { valueNote(trigger) }.getOrNull()
         val content = exercise().let { ex ->
-            EchoStateBuilder.build(trigger, movement.state.value, contracts.today.value, video, ex, repsPerUnlock(ex))
+            EchoStateBuilder.build(trigger, movement.state.value, contracts.today.value, video, ex, repsPerUnlock(ex), note)
         }
+        runCatching { onEchoShown() }
         val ui = MutableStateFlow(content.ui.copy(selectedFeeling = feeling))
         val shown = window.show {
             val state by ui.collectAsState()
@@ -128,6 +161,12 @@ class EchoOverlayController(
             }
         }
         Log.i(TAG, "Ozvěna ${if (shown) "ukázána" else "neukázána (oprávnění)"}: ${trigger.reason} ${trigger.event.packageName}")
+        if (!shown) {
+            // 159: bez okna by detekce čekala na volbu, která nepřijde, a v relaci už nezasáhla.
+            // Zásah se zahodí jako u aplikace mimo popředí; detekce ho zopakuje (po udělení oprávnění se ukáže).
+            session.clear()
+            runCatching { onSkipped(trigger) }
+        }
     }
 
     private fun startSquats(trigger: InterventionTrigger, feeling: EchoFeeling?) {
@@ -153,10 +192,22 @@ class EchoOverlayController(
                         if (extra > 0) scope.launch { runCatching { onExtraSquats(extra) } }
                     },
                     demoMode = demoMode(),
+                    onRequestPermission = requestCamera?.let { { askCamera(trigger, feeling) } },
                     exercise = ex,
                     target = reps,
                 )
             }
+        }
+    }
+
+    /** Schová okno dřepů, ukáže systémový dialog kamery a po odpovědi (nejvýš [CAMERA_WAIT_MILLIS]) okno vrátí. */
+    private fun askCamera(trigger: InterventionTrigger, feeling: EchoFeeling?) {
+        window.dismiss()
+        scope.launch {
+            val started = runCatching { requestCamera?.invoke() == true }.getOrDefault(false)
+            val granted = if (started) withTimeoutOrNull(CAMERA_WAIT_MILLIS) { cameraResults.first() } else null
+            Log.i(TAG, "kamera: dialog=${started}, povoleno=$granted")
+            startSquats(trigger, feeling)
         }
     }
 
@@ -166,12 +217,16 @@ class EchoOverlayController(
         // Okno se schová hned (Zavřít → plocha, odemknutí → zpět do aplikace); odměna se ukáže zvlášť.
         window.dismiss()
         scope.launch {
-            runCatching { choiceHandler.onChoice(trigger, outcome, feeling) }
+            val xp = runCatching { choiceHandler.onChoice(trigger, outcome, feeling) }
                 .onFailure { Log.e(TAG, "volba $outcome selhala", it) }
+                .getOrDefault(0)
             Log.i(TAG, "volba: $outcome, pocit: $feeling")
             val after = gamification?.state?.value
             val ex = exercise()
-            val reward = RewardBuilder.build(outcome, before, after, ex, repsPerUnlock(ex)) ?: return@launch
+            val reward = RewardBuilder.build(
+                outcome, before, after, ex, repsPerUnlock(ex),
+                pendingCloseXp = if (outcome == InterventionOutcome.CLOSED) xp else 0,
+            ) ?: return@launch
             Log.i(TAG, "odměna: +${reward.gainedXp} XP, úroveň ${reward.previousLevel} → ${reward.newLevel}")
             window.show {
                 NarsilTheme {
@@ -183,5 +238,6 @@ class EchoOverlayController(
 
     private companion object {
         const val TAG = "NarsilOverlay"
+        const val CAMERA_WAIT_MILLIS = 60_000L
     }
 }

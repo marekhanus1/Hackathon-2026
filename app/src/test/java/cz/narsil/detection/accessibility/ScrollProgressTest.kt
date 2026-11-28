@@ -78,9 +78,10 @@ class ScrollProgressTest {
         t.onUnlocked(15 * min)
         t.see(Surface.REELS, 6 * min)
         assertNull(t.progress(6 * min, threshold, HOME)) // zaplacený čas
-        t.onClosed()
-        t.see(Surface.REELS, 7 * min)
-        assertEquals(0f, t.progress(7 * min, threshold, HOME)!!, 0.001f) // nová relace od nuly
+        t.onClosed(6 * min)
+        t.see(null, 7 * min)
+        t.see(Surface.REELS, 17 * min)
+        assertEquals(0f, t.progress(17 * min, threshold, HOME)!!, 0.001f) // po 10 min nová relace od nuly
     }
 
     @Test

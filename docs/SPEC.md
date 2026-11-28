@@ -18,20 +18,20 @@ Názvy typů odpovídají kódu v `cz.narsil.core` (PR #8); co je nové, je v se
 
 ## 3. Detekce a zásah
 
-Povrchy (`Surface`): `FEED`, `REELS`, `SHORTS` jsou nekonečný obsah, `VIDEO` je jedno video, `MESSAGES` zprávy. V nejistotě `MESSAGES`.
+Povrchy (`Surface`): `FEED`, `REELS`, `SHORTS` jsou nekonečný obsah, `VIDEO` je jedno video, `MESSAGES` zprávy, `SEARCH` výsledky vyhledávání (nepočítají se a relaci nezačnou, 148). V nejistotě `MESSAGES`.
 
 - **Relace** = souvislý čas na nekonečném povrchu. Přepnutí mezi Instagramem a TikTokem relaci nepřeruší. Pauza delší než 2 min mimo nekonečný povrch relaci ukončí.
 - **Tolerance:** zásah (`ENDLESS_SCROLL`), když relace trvá ≥ **5 min** (demo 20 s) a kontext je `HOME`.
 - **Řetězení videí:** zásah (`UNPLANNED_VIDEO_CHAIN`) u **3.** neplánovaného videa po sobě. Pauza > 10 min řetěz nuluje. Plánované video (`ContentMatcher`) se nepočítá a zásah nespustí (`PLANNED_FREE` jen do statistik).
 - Během zaplaceného času se nezasahuje. Po jeho vypršení přijde zásah hned, bez nové tolerance, pokud relace pokračuje.
-- Po volbě „Zavřít“ začíná nová relace od nuly.
+- Po volbě „Zavřít“ začíná nová relace od nuly. Návrat na nekonečný povrch do **10 min** po „Zavřít“ ale zasáhne hned, bez nové tolerance (155): „Zavřít“ není 5 minut zdarma.
 - `MESSAGES`, `AWAY` a `UNKNOWN` nikdy nezasahují a nepočítají se do minut feedu.
 
 ## 4. Volby v Ozvěně (`InterventionOutcome`)
 
 | Volba | Efekt | XP |
 | --- | --- | --- |
-| `CLOSED` | Cílová aplikace se pošle do pozadí (návrat na plochu) | 50, nejvýš 5× denně a s odstupem ≥ 10 min, jinak 0 |
+| `CLOSED` | Cílová aplikace se pošle do pozadí (návrat na plochu) | 50 až po potvrzení: 10 min bez dalšího zásahu (155); nejvýš 5× denně a s odstupem ≥ 10 min, jinak 0 |
 | `PAID_STEPS` | Strhne 10 min ze zůstatku; když nestačí, tlačítko je neaktivní | 10 |
 | `SQUATS` | 20 dřepů odemkne 10 min, do zůstatku se nepřičítají | 20 |
 | `BORROWED` | Odemkne 10 min, dluh +10; nad limitem dluhu nejde | 0 |
@@ -100,7 +100,7 @@ Výstup nejvýš 96 tokenů. Chyba sítě nebo modelu se v UI ukazuje česky sro
 
 | Zdroj | XP |
 | --- | --- |
-| `CLOSED` | 50 (strop viz sekce 4) |
+| `CLOSED` | 50 po potvrzení (záznam `CLOSE_CONFIRMED`, strop viz sekce 4) |
 | `SQUATS` | 20 |
 | `PAID_STEPS` | 10 |
 | `BORROWED` | 0 |
@@ -113,8 +113,9 @@ Výstup nejvýš 96 tokenů. Chyba sítě nebo modelu se v UI ukazuje česky sro
 - **Série** = dny po sobě se splněnou smlouvou. Den bez splnění spotřebuje žolík, když je, jinak série = 0.
 - **Žolík:** za 50 dřepů navíc během dne (nad rámec odemykání), nejvýš 3 v zásobě.
 - **Postava (`AvatarState`)** podle počtu dní se splněnou smlouvou za posledních 7: 0–1 `EXHAUSTED`, 2 `TIRED`, 3–4 `OK`, 5–6 `FIT`, 7 `THRIVING`.
-- **Souboj s algoritmem (`DailyScore`):** `feedMinutes` = minuty neplánovaného nekonečného obsahu doma. `reclaimedMinutes` = počet `CLOSED` × 15 + odměny ověřených úkolů. Den vyhrává vyšší číslo (15 min je odhad ušetřené relace, vyladí 230).
-- **Boss:** kritická hodina pevně 21:00–22:00 (MVP). Když v ní není zásah, nebo každý skončí `CLOSED`, +150 XP.
+- **Potvrzené zavření (155):** `CLOSED` se zapíše s 0 XP. Když do 10 min nepřijde další zásah (návrat do feedu = Ozvěna hned = zásah), připíše se při nejbližším přepočtu (start aplikace, návrat do ní, další volba) záznam `CLOSE_CONFIRMED` s XP. Staré `CLOSED` s XP > 0 (mock data) platí jako potvrzené. Odznaky `FIRST_CLOSE`/`CLOSE_10`, souboj a boss počítají jen potvrzená zavření.
+- **Souboj s algoritmem (`DailyScore`):** `feedMinutes` = minuty neplánovaného nekonečného obsahu doma. `reclaimedMinutes` = počet potvrzených `CLOSED` × 15 + odměny ověřených úkolů. Den vyhrává vyšší číslo (15 min je odhad ušetřené relace, vyladí 230).
+- **Boss:** kritická hodina pevně 21:00–22:00 (MVP). Když v ní není zásah, nebo každý skončí potvrzeným `CLOSED`, +150 XP.
 - **Odznaky (MVP):** `FIRST_CLOSE`, `CLOSE_10`, `NO_DEBT_WEEK`, `SQUATS_1000`, `PLAN_STREAK_3`.
 - Nic nikdy XP nebere.
 
@@ -123,6 +124,22 @@ Výstup nejvýš 96 tokenů. Chyba sítě nebo modelu se v UI ukazuje česky sro
 1. Nejnovější večerní video ze smlouvy staršího dne.
 2. Jinak video z onboardingu (nahrává se při prvním spuštění).
 3. Jinak text: „Dnes jsi chtěl: {první úkol dnešního plánu}“. `EchoVideoRepository` vrací `null` a text složí UI ze smlouvy.
+
+Popisek pod videem: věta z odpovědí „Co ti to video dalo?“ (9a), jinak „Dnes jsi chtěl: …“, jinak délka relace.
+
+## 9a. Co ti to video dalo? (156)
+
+- **Kdy:** doma, po dosledovaném videu na YouTube (aplikace i Firefox): konec videa po ≥ 1 min sledování,
+  nebo odchod z videa po ≥ 2 min. A po vypršení zaplaceného času feedu („Co ti daly ty minuty?“), když
+  zrovna neběží další Ozvěna. Nejvýš 10× denně a s odstupem ≥ 3 min; přes Ozvěnu nikdy (Ozvěna panel zavře).
+- **Forma:** spodní panel přes aplikaci, nebere fokus, sám zmizí po 20 s, „Teď ne“ ho zavře.
+- **Odpovědi** (jedno ťuknutí) → `video_ratings.rating`: Naučil jsem se něco 5, Inspirace, nápad 4,
+  Odpočinul jsem si 3, Nic, jen čas 2, Je mi hůř 1. Text odpovědi jde do `intent`, název videa do `title`
+  (nečitelný název z aplikace YouTube = „Video na YouTube“, zaplacený feed = „Feed · {aplikace}“). +5 XP (SPEC 8).
+- **Ozvěna:** stejný pořad (název bez pořadového čísla) nebo feed stejné aplikace naposledy dostal ≤ 2 →
+  „Minule ti „…“ nedalo nic.“ (2× a víc za sebou: „Už 2× za sebou…“). Jinak dnešní odpovědi ≤ 2 stejného
+  druhu (videa / feed) → „Dnes ti už 2 videa nedala nic.“ / „Dnes ti feed už 2× nedal nic.“
+- **Zrcadlo:** mapa hodnoty seskupí opakované pořady podle názvu, ostatní videa podle odpovědi.
 
 ## 10. Demo režim (demo panel, 123)
 

@@ -26,7 +26,11 @@ data class EchoUiState(
     val currentDebtMinutes: Int = 0,
     val isVideoPlaying: Boolean = true,
     /** Titulek volby pohybu (232): „Udělat 20 dřepů hned“ nebo „Udělat 10 kliků hned“. */
-    val exerciseOptionTitle: String = "Udělat 20 dřepů hned"
+    val exerciseOptionTitle: String = "Udělat 20 dřepů hned",
+    /** Půjčka projde: dluh po ní nepřekročí limit (SPEC 4, 5). false = tlačítko neaktivní (159). */
+    val canBorrow: Boolean = true,
+    /** Limit dluhu z Nastavení, pro vysvětlení u neaktivní půjčky. */
+    val debtLimitMinutes: Int = 30,
 )
 
 class EchoViewModel : ViewModel() {

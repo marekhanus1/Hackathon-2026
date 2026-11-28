@@ -3,6 +3,8 @@ package cz.narsil.app.nav
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.runtime.remember
+import cz.narsil.core.TrackedApp
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,6 +59,8 @@ fun SettingsRoute(onNavigate: (NarsilRoute) -> Unit, onBack: () -> Unit) {
         },
     )
     val state by vm.uiState.collectAsState()
+    // 149: přepínače jen pro nainstalované sítě s obecnou detekcí (balíčky v <queries> manifestu).
+    val installed = remember { installedFeedApps(context) }
     val refreshPermissions = {
         vm.updatePermissionStatuses(
             accessibility = PermissionChecker.isGranted(context, PermissionStep.ACCESSIBILITY) == true,
@@ -81,7 +85,7 @@ fun SettingsRoute(onNavigate: (NarsilRoute) -> Unit, onBack: () -> Unit) {
             .onFailure { PermissionChecker.open(context, step) }
     }
     SettingsScreen(
-        state = state,
+        state = state.copy(installedApps = installed),
         actions = SettingsActions(
             onBack = onBack,
             onSaveHomeWifi = vm::saveCurrentWifiAsHome,
@@ -94,6 +98,7 @@ fun SettingsRoute(onNavigate: (NarsilRoute) -> Unit, onBack: () -> Unit) {
             onPushupsPerUnlock = vm::setPushupsPerUnlock,
             onDebtLimitMinutes = vm::setDebtLimitMinutes,
             onAppTracked = vm::setAppTracked,
+            onTrackOtherFeedApps = vm::setTrackOtherFeedApps,
             onPartnerAlerts = vm::setPartnerAlerts,
             onShowScrollProgress = vm::setShowScrollProgress,
             onPauseProtection = vm::pauseProtectionUntilMorning,
@@ -126,4 +131,13 @@ fun SettingsRoute(onNavigate: (NarsilRoute) -> Unit, onBack: () -> Unit) {
             onOpenDemoPanel = { onNavigate(NarsilRoute.Demo) },
         ),
     )
+}
+
+/** Nainstalované sledovatelné aplikace (149): názvy `WatchedApp` = `TrackedApp`. */
+private fun installedFeedApps(context: android.content.Context): Set<TrackedApp> {
+    val pm = context.packageManager
+    return TrackedApp.entries.filter { app ->
+        val packages = cz.narsil.detection.accessibility.WatchedApp.entries.firstOrNull { it.name == app.name }?.packages.orEmpty()
+        packages.any { p -> runCatching { pm.getPackageInfo(p, 0) }.isSuccess }
+    }.toSet()
 }

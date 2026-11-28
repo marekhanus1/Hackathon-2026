@@ -41,8 +41,8 @@ import cz.narsil.movement.squat.SquatTuningOverlay
  * Náhled kamery pro dřepy (124): s oprávněním CAMERA [SquatCameraPreview] (spustí a zastaví [counter]),
  * v demo režimu navrch [SquatTuningOverlay]. Bez oprávnění text a tlačítko; nic nespadne.
  *
- * @param onRequestPermission v aktivitě systémový dialog; null (okno Ozvěny, bez aktivity) = otevře
- *   nastavení aplikace
+ * @param onRequestPermission v aktivitě systémový dialog; null (okno Ozvěny, bez aktivity) = systémový dialog
+ *   přes průhlednou [cz.narsil.app.CameraPermissionActivity] (kamera až při prvním použití), záložně nastavení aplikace
  */
 @Composable
 fun SquatCameraSlot(
@@ -60,6 +60,13 @@ fun SquatCameraSlot(
         if (!needsCamera) return@LaunchedEffect
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) { granted = hasCamera(context) }
     }
+    // Okno Ozvěny zůstává „resumed“ i během dialogu – oprávnění kontrolovat průběžně, dokud nepřijde.
+    LaunchedEffect(granted, needsCamera) {
+        while (needsCamera && !granted) {
+            kotlinx.coroutines.delay(700)
+            granted = hasCamera(context)
+        }
+    }
     if (!granted) {
         Column(
             Modifier.fillMaxSize().padding(24.dp),
@@ -73,8 +80,13 @@ fun SquatCameraSlot(
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium,
             )
-            Button(onClick = { onRequestPermission?.invoke() ?: openAppSettings(context) }) {
-                Text(if (onRequestPermission != null) "Povolit kameru" else "Povolit kameru v nastavení")
+            Button(onClick = {
+                when {
+                    onRequestPermission != null -> onRequestPermission()
+                    !cz.narsil.app.CameraPermissionActivity.start(context) -> openAppSettings(context)
+                }
+            }) {
+                Text("Povolit kameru")
             }
         }
         return

@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Tichá služba na popředí, aby MIUI Narsil nevypínalo (GuardService). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -20,6 +22,23 @@
     <!-- 211: zjištění, zda je nainstalovaný Health Connect -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
+        <!-- 149: nainstalované sítě pro přepínače v Nastavení -->
+        <package android:name="com.twitter.android" />
+        <package android:name="com.reddit.frontpage" />
+        <package android:name="com.facebook.katana" />
+        <package android:name="com.facebook.lite" />
+        <package android:name="com.instagram.barcelona" />
+        <package android:name="com.pinterest" />
+        <package android:name="com.ninegag.android.app" />
+        <package android:name="com.tumblr" />
+        <package android:name="com.linkedin.android" />
+        <package android:name="xyz.blueskyweb.app" />
+        <package android:name="com.instagram.android" />
+        <package android:name="com.zhiliaoapp.musically" />
+        <package android:name="com.ss.android.ugc.trill" />
+        <package android:name="com.ss.android.ugc.aweme" />
+        <package android:name="com.google.android.youtube" />
+        <package android:name="org.mozilla.firefox" />
     </queries>
 
     <application
@@ -49,6 +68,22 @@
         </activity>
 
         <!-- 211: Health Connect vyžaduje obrazovku s vysvětlením oprávnění (Android 13- a 14+) -->
+        <service
+            android:name=".app.GuardService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Udržuje běžící detekci nekonečného feedu (služba přístupnosti), aby ji systém neukončil." />
+        </service>
+
+        <!-- Kamera až při použití: systémový dialog z okna Ozvěny (bez UI, průhledná). -->
+        <activity
+            android:name=".app.CameraPermissionActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <activity-alias
             android:name=".app.HealthPermissionsRationale"
             android:exported="true"
