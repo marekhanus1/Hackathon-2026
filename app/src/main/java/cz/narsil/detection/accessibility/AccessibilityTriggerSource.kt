@@ -8,6 +8,7 @@ import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.InterventionTriggerSource
 import cz.narsil.core.SettingsRepository
 import cz.narsil.core.Surface
+import cz.narsil.detection.youtube.EndScreenFilter
 import cz.narsil.detection.youtube.VideoChainTracker
 import cz.narsil.detection.youtube.YouTubePlayback
 import kotlinx.coroutines.withTimeoutOrNull
@@ -51,6 +52,7 @@ class AccessibilityTriggerSource(
     private val tracker = ScrollSessionTracker()
     private val chain = VideoChainTracker()
     private val feedBehavior = FeedBehavior()
+    private val endScreen = EndScreenFilter()
     private val lastGeneric = HashMap<String, Surface?>()
     private val lock = Mutex()
     private var last: ForegroundSnapshot? = null
@@ -109,9 +111,11 @@ class AccessibilityTriggerSource(
         }
         val context = contextRepository.context.value
         val threshold = prefs.toleranceMillis()
+        // 152: end-screen z minulého přehrání při otevření videa není konec.
+        val video = endScreen.filter(surface == Surface.VIDEO, snapshot.video)
         val hit = tracker.observe(
             snapshot.packageName, surface, context, now, threshold, scrolled,
-            video = snapshot.video,
+            video = video,
             onVideoSite = active && isVideoSite(snapshot),
             startedAtHint = if (generic) feedBehavior.streakStart(snapshot.packageName, now) else null,
         )
@@ -128,7 +132,7 @@ class AccessibilityTriggerSource(
             _triggers.tryEmit(InterventionTrigger(event, TriggerReason.ENDLESS_SCROLL, now))
         }
         // Řetězení (137): přehrávač jednoho videa doma ve sledované aplikaci (surface je null mimo sledované).
-        val newVideo = chain.observe(surface == Surface.VIDEO && context == ComfortContext.HOME, snapshot.video, now)
+        val newVideo = chain.observe(surface == Surface.VIDEO && context == ComfortContext.HOME, video, now)
         if (newVideo != null) scope.launch { evaluate(newVideo, snapshot) }
     }
 
