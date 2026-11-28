@@ -14,10 +14,13 @@ sealed class NarsilRoute(val route: String, val title: String) {
     data object Badges : NarsilRoute("badges", "Odznaky")
     data object Onboarding : NarsilRoute("onboarding", "Onboarding")
     data object Verify : NarsilRoute("verify", "Ověření úkolu")
+    data class VerifyTask(val taskId: Long) : NarsilRoute("verify/$taskId", "Ověření úkolu")
     data object Settings : NarsilRoute("settings", "Nastavení")
     data object Demo : NarsilRoute("demo", "Demo panel")
 
     companion object {
+        const val VERIFY_TASK_PATTERN = "verify/{taskId}"
+        const val TASK_ID_ARGUMENT = "taskId"
         val start: NarsilRoute get() = Home
         val all: List<NarsilRoute>
             get() = listOf(Home, Contract, Squat, Verify, EchoPreview, Mirror, Badges, Onboarding, Settings, Demo)

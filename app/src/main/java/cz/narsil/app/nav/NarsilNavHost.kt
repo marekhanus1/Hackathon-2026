@@ -3,9 +3,11 @@ package cz.narsil.app.nav
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.compose.ui.platform.LocalContext
 import cz.narsil.app.demo.DemoPanelScreen
 import cz.narsil.app.onboarding.OnboardingPrefs
@@ -64,6 +66,15 @@ fun NarsilNavHost(
         }
         composable(NarsilRoute.Verify.route) {
             VerifyRoute(onBack = back)
+        }
+        composable(
+            route = NarsilRoute.VERIFY_TASK_PATTERN,
+            arguments = listOf(navArgument(NarsilRoute.TASK_ID_ARGUMENT) { type = NavType.LongType }),
+        ) { entry ->
+            VerifyRoute(
+                onBack = back,
+                initialTaskId = entry.arguments?.getLong(NarsilRoute.TASK_ID_ARGUMENT),
+            )
         }
         composable(NarsilRoute.Settings.route) {
             SettingsRoute(onNavigate = navigate, onBack = back)

@@ -13,6 +13,13 @@ enum class ZoneStatus(val label: String) {
     UNKNOWN("Zóna nezjištěna")
 }
 
+data class HomeTaskUiState(
+    val id: Long,
+    val title: String,
+    val rewardMinutes: Int,
+    val verified: Boolean = false,
+)
+
 data class HomeUiState(
     val level: Int = 4,
     val levelTitle: String = "Kovář klidu",
@@ -36,6 +43,10 @@ data class HomeUiState(
     /** Podepsaná smlouva platí dnes (jinak zítra). */
     val contractSignedForToday: Boolean = true,
     val contractTaskCount: Int = 0,
+    val tasks: List<HomeTaskUiState> = listOf(
+        HomeTaskUiState(id = 1L, title = "Dokončit kapitolu 3 z fyziky", rewardMinutes = 30),
+        HomeTaskUiState(id = 2L, title = "Jít na 20minutovou procházku", rewardMinutes = 20),
+    ),
     val plannedContentSummary: String = "Přednáška o Rustu, 1 díl seriálu",
     val zoneStatus: ZoneStatus = ZoneStatus.HOME
 ) {

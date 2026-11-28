@@ -48,7 +48,7 @@ import kotlinx.coroutines.launch
  * úkol se dokládá fotkou nebo popisem. Demo „vždy ANO“ jde přes DemoAwareTaskVerifier.
  */
 @Composable
-fun VerifyRoute(onBack: () -> Unit) {
+fun VerifyRoute(onBack: () -> Unit, initialTaskId: Long? = null) {
     val sl = ServiceLocator
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -56,7 +56,7 @@ fun VerifyRoute(onBack: () -> Unit) {
     val events by sl.verification.events.collectAsState()
 
     // Zobrazený úkol se drží, dokud uživatel neklepne na „Další úkol“ – po ověření uvidí výsledek a odměnu.
-    var shownTaskId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var shownTaskId by rememberSaveable(initialTaskId) { mutableStateOf(initialTaskId) }
     val tasks = contract?.tasks.orEmpty()
     val task: PlanTask? = pickVerifyTask(tasks, shownTaskId)
     if (task == null) {
