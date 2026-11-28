@@ -37,7 +37,7 @@ object VerifyRules {
 
     /** Text do promptu: zkrácený a bez značek, kterými by šlo „utéct“ z ohraničení. */
     fun sanitizeProofText(text: String): String =
-        clampText(text).replace(Regex("</?\\s*dukaz\\s*>", RegexOption.IGNORE_CASE), "")
+        clampText(text.replace(Regex("</?\\s*dukaz\\s*>", RegexOption.IGNORE_CASE), ""))
 
     /**
      * Odpověď oříznout, velká písmena, bez diakritiky (SPEC 7). První slovo ANO → YES, NE → NO,
