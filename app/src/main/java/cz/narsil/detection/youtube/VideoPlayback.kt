@@ -40,9 +40,15 @@ object YouTubePlayback {
     /** End-screen. Malými písmeny, česky i anglicky (jazyk telefonu i stránky se může lišit). */
     private val ENDED_MARKERS = listOf(
         "přehrát znovu", "přehrát video znovu", "spustit znovu", "replay", "watch again",
-        // Aplikace YouTube na konci videa (Nothing 3a, 11/2026): „Navrhované video · Zavřít · Přehrát“.
-        "navrhované video", "suggested video",
     )
+
+    /**
+     * End-screen aplikace YouTube (Nothing 3a, 11/2026): „Navrhované video · Zavřít · Přehrát“, u hudby
+     * „Navrhovaná hudba“ (154). Konec = „Navrhovan…“ / „Suggested“ spolu s tlačítkem Zavřít nebo Přehrát;
+     * samotné slovo nestačí (může být i jinde na stránce).
+     */
+    private val SUGGESTED_HEADINGS = listOf("navrhovan", "suggested")
+    private val SUGGESTED_BUTTONS = listOf("zavřít", "přehrát", "close", "play", "cancel")
 
     /** Odpočet autoplay: „Další video za 5“, „Up next in 8“. Samotné tlačítko „Další video“ konec neznamená. */
     private val AUTOPLAY_COUNTDOWN = Regex("""(další video|následující video|up next|next video|playing next)\D{0,8}\b(za|in)\s*\d{1,2}\b""")
@@ -95,7 +101,9 @@ object YouTubePlayback {
         val pos = time?.groupValues?.get(1)?.let(::parseClock)
         val dur = time?.groupValues?.get(2)?.let(::parseClock)?.takeIf { it > 0 }
         val atEnd = pos != null && dur != null && pos >= dur - END_TOLERANCE_MILLIS
-        val ended = atEnd || ENDED_MARKERS.any { it in lower } || AUTOPLAY_COUNTDOWN.containsMatchIn(lower)
+        val words = texts.map { it.trim().lowercase() }
+        val suggestedEndScreen = SUGGESTED_HEADINGS.any { it in lower } && words.any { it in SUGGESTED_BUTTONS }
+        val ended = atEnd || suggestedEndScreen || ENDED_MARKERS.any { it in lower } || AUTOPLAY_COUNTDOWN.containsMatchIn(lower)
         return VideoPlayback(videoKey, pos, dur, ended, readAtMillis)
     }
 

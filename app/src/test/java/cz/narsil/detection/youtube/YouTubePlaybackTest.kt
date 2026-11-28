@@ -48,6 +48,10 @@ class YouTubePlaybackTest {
         assertTrue(YouTubePlayback.parse("id", listOf("4:32 / 4:32"), 0).ended)
         // Aplikace YouTube na Nothingu: end-screen „Navrhované video · Zavřít · Přehrát“.
         assertTrue(YouTubePlayback.parse(null, listOf("Navrhované video", "Zavřít", "Přehrát"), 0).ended)
+        // 154: hudební videa, angličtina; samotný nadpis bez tlačítka konec není.
+        assertTrue(YouTubePlayback.parse(null, listOf("Navrhovaná hudba", "Zavřít", "Přehrát"), 0).ended)
+        assertTrue(YouTubePlayback.parse(null, listOf("Suggested video", "Close", "Play"), 0).ended)
+        assertFalse(YouTubePlayback.parse(null, listOf("Navrhovaná videa", "Odebírat", "1:00 / 4:32"), 0).ended)
         // Tlačítko „Další video“ a přepínač autoplay jsou vidět i během přehrávání.
         assertFalse(YouTubePlayback.parse("id", listOf("Další video", "Automatické přehrávání je zapnuto", "1:00 / 4:32"), 0).ended)
     }
