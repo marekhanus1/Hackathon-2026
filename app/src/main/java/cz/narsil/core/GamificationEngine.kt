@@ -42,7 +42,10 @@ data class GamificationState(
 interface GamificationEngine {
     val state: StateFlow<GamificationState>
 
-    /** Výsledek Ozvěny. Vrací přidané XP. */
+    /**
+     * Výsledek Ozvěny. Vrací přidané XP; u CLOSED XP čekající na potvrzení (155: připíší se, když do 10 min
+     * nepřijde další zásah; 0 = nad stropem).
+     */
     suspend fun onOutcome(outcome: InterventionOutcome): Int
 
     /** Splněná večerní smlouva (+100, prodlouží sérii). Vrací přidané XP. */
