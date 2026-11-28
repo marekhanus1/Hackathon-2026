@@ -197,6 +197,16 @@ class NarsilAccessibilityService : AccessibilityService() {
         return fromWindows ?: active
     }
 
+    /**
+     * Aplikace v popředí podle oken (153): okno TYPE_APPLICATION s fokusem, jinak aktivní, jinak nejvyšší.
+     * Překryvy (Ozvěna, Minimalist launcher, systém) se nepočítají. null = nezjištěno.
+     */
+    fun foregroundPackage(): String? = runCatching {
+        val apps = windows.filter { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_APPLICATION }
+        val w = apps.firstOrNull { it.isFocused } ?: apps.firstOrNull { it.isActive } ?: apps.maxByOrNull { it.layer }
+        w?.root?.packageName?.toString()
+    }.getOrNull()
+
     /** Typ okna události (getWindows, flagRetrieveInteractiveWindows), null = nezjištěno. */
     private fun windowType(e: AccessibilityEvent): Int? =
         runCatching { windows.firstOrNull { it.id == e.windowId }?.type }.getOrNull()

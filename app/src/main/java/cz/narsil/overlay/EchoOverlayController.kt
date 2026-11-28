@@ -58,6 +58,10 @@ class EchoOverlayController(
     /** Rozdělaná Ozvěna byla moc stará na obnovu: detekce smí zasáhnout znovu. */
     private val onRestoreExpired: suspend (InterventionTrigger) -> Unit = {},
     private val clock: () -> Long = System::currentTimeMillis,
+    /** Je aplikace zásahu pořád v popředí? (153) Ozvěna z detekce se nikdy neukáže nad jinou aplikací. */
+    private val isInForeground: (InterventionTrigger) -> Boolean = { true },
+    /** Zásah zahozen, protože uživatel už je jinde: detekce ho zopakuje po návratu do feedu. */
+    private val onSkipped: suspend (InterventionTrigger) -> Unit = {},
 ) {
     private var job: Job? = null
 
@@ -65,7 +69,15 @@ class EchoOverlayController(
         if (job != null) return
         job = scope.launch {
             restore()
-            triggers.triggers.collect { show(it) }
+            triggers.triggers.collect { t ->
+                if (window.isShowing) return@collect
+                if (!isInForeground(t)) {
+                    Log.i(TAG, "Ozvěna neukázána: ${t.event.packageName} už není v popředí, odloženo do návratu")
+                    runCatching { onSkipped(t) }
+                    return@collect
+                }
+                show(t)
+            }
         }
     }
 
