@@ -205,7 +205,11 @@ class GenericFeedTest {
         scrollApp(r, linkedIn, WatchedApp.LINKEDIN, 30_000, ids = setOf("search_results_list"))
         assertTrue(r.got.isEmpty())
         assertNull(r.source.progressPercent.value)
-        scrollApp(r, linkedIn, WatchedApp.LINKEDIN, 27_000, ids = setOf("search_bar", "search_input"))
+        val header = setOf("search_bar", "search_input")
+        scrollApp(r, linkedIn, WatchedApp.LINKEDIN, 3_000, ids = header)
+        assertTrue(r.got.isEmpty())
+        assertNull(r.source.progressPercent.value)
+        scrollApp(r, linkedIn, WatchedApp.LINKEDIN, 24_000, ids = header)
         assertEquals(Surface.FEED, r.got.single().event.surface)
     }
 

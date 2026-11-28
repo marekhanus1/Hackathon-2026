@@ -33,6 +33,10 @@ class FeedBehavior(
 
     private val states = HashMap<String, State>()
 
+    fun reset(packageName: String) {
+        states.remove(packageName)
+    }
+
     /** Zpracuje scroll událost aplikace [packageName]. */
     fun onScroll(packageName: String, sample: ScrollSample, now: Long) {
         val cls = sample.className.orEmpty()
