@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
-branch: marek/claude/124-integrace-g3
-pr:
+branch: marek/claude/124-drepy, 124-moduly, 124-uroven, 124-obrazovky
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/49 #50 #51 #61
 ---
 
 # 124 – Skutečné moduly a obrazovky (G3)
