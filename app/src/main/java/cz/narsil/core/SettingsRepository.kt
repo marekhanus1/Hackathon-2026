@@ -19,6 +19,8 @@ data class Settings(
     val demoAlwaysYes: Boolean = false,
     /** Cvik v Ozvěně a na obrazovce pohybu (232): dřepy, nebo kliky na podlaze. */
     val exercise: Exercise = Exercise.SQUATS,
+    /** Tenký ukazatel blížícího se limitu při scrollování (135). */
+    val showScrollProgress: Boolean = true,
 )
 
 /** Cvik, kterým se odemyká čas (232). Počet na odemčení viz [MovementRates]. */
