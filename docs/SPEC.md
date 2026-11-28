@@ -80,7 +80,7 @@ Smlouva = krokový cíl (výchozí 6 000) + plánovaný obsah (nejvýš 5 polož
   ```
 
 - Parametry: teplota 0, výstup nejvýš ~5 tokenů, timeout 5 s, nejmenší rychlý model poskytovatele.
-- Poskytovatel (`LlmProvider`): `GEMINI` (výchozí, bezplatná úroveň API, model `gemini-2.5-flash-lite`), `CLAUDE`, `OPENAI`, přepínač v nastavení (zatím demo panel).
+- Poskytovatel (`LlmProvider`): `GEMINI` (výchozí, bezplatná úroveň API, model `gemini-3.5-flash-lite`, `thinkingLevel: minimal`), `CLAUDE`, `OPENAI`, přepínač v nastavení (zatím demo panel).
 - Parsování: odpověď oříznout, převést na velká písmena a bez diakritiky. Začíná `ANO` → `VERIFIED`, `NE` → `REJECTED`. Cokoli jiného, chyba nebo timeout → `VERIFY_LATER`: znovu při další síti, nejvýš 3 pokusy, pak tlačítko „ověřit znovu“.
 - **Opakovaná fotka:** SHA-256 otisk souboru. Už použitý otisk (u jakéhokoli úkolu) → `REJECTED` bez volání LLM.
 - Bez sítě nikdy automaticky neschvalovat.

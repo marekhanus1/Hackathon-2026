@@ -55,6 +55,30 @@ class LlmClientTest {
     }
 
     @Test
+    fun geminiUsesCurrentModelWithMinimalThinking() {
+        val g = LlmProtocols.build(LlmProvider.GEMINI, LlmRequest("Q"), "gk")
+        assertTrue(g.url.contains("/models/gemini-3.5-flash-lite:"))
+        val config = Json.parseToJsonElement(g.body).jsonObject["generationConfig"]!!.jsonObject
+        assertEquals("minimal", config["thinkingConfig"]!!.jsonObject["thinkingLevel"]!!.jsonPrimitive.content)
+        assertEquals(LlmDefaults.MAX_TOKENS.toString(), config["maxOutputTokens"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun geminiParsesThinkingModelResponse() {
+        // Skutečná odpověď gemini-3.5-flash-lite (28. 11. 2026, zkrácený podpis).
+        val real = """{"candidates":[{"content":{"parts":[{"text":"ANO","thoughtSignature":"EpYBCpMBAVjVB3tp"}],"role":"model"},
+            "finishReason":"STOP","index":0}],"usageMetadata":{"promptTokenCount":22,"candidatesTokenCount":1}}"""
+        assertEquals("ANO", LlmProtocols.parse(LlmProvider.GEMINI, real))
+        // Shrnutí přemýšlení (thought: true) a části bez textu se přeskočí.
+        val mixed = """{"candidates":[{"content":{"parts":[{"text":"Uvažuji o fotce…","thought":true},
+            {"thoughtSignature":"abc"},{"text":"NE"}]}}]}"""
+        assertEquals("NE", LlmProtocols.parse(LlmProvider.GEMINI, mixed))
+        // Přemýšlení snědlo celý limit: žádný text → null (ověření dá LATER).
+        val onlyThoughts = """{"candidates":[{"content":{"parts":[{"thoughtSignature":"abc"}]},"finishReason":"MAX_TOKENS"}]}"""
+        assertNull(LlmProtocols.parse(LlmProvider.GEMINI, onlyThoughts))
+    }
+
+    @Test
     fun parsesAllProviders() {
         assertEquals("ANO", LlmProtocols.parse(LlmProvider.CLAUDE, """{"content":[{"type":"text","text":" ANO\n"}],"stop_reason":"end_turn"}"""))
         assertNull(LlmProtocols.parse(LlmProvider.CLAUDE, """{"content":[],"stop_reason":"refusal"}"""))

@@ -56,13 +56,16 @@ interface LlmClient {
 /** Výchozí parametry (SPEC 7): teplota 0, krátký výstup, timeout 5 s, nejmenší rychlý model. */
 object LlmDefaults {
     const val TIMEOUT_MILLIS = 5_000L
-    const val MAX_TOKENS = 16
+    /** Rezerva nad jedno slovo: thinking modely (Gemini 3.5) můžou část limitu spotřebovat na přemýšlení. */
+    const val MAX_TOKENS = 32
 
     /**
-     * Nejmenší rychlé modely. Claude ověřen podle dokumentace Anthropic (Haiku 5.5);
-     * Gemini a OpenAI ověřit s klíčem (530) – kdyby model neexistoval, API vrátí 404 a ověření dá LATER.
+     * Nejmenší rychlé modely. Claude ověřen podle dokumentace Anthropic (Haiku 5.5).
+     * Gemini ověřen s klíčem 28. 11. 2026 (540): `gemini-2.5-flash-lite` vrací novým uživatelům 404,
+     * `gemini-3.5-flash-lite` odpovídá do ~1 s (thinking model, viz `thinkingLevel` v [LlmProtocols]).
+     * OpenAI jen podle dokumentace (bez klíče) – kdyby model neexistoval, API vrátí 404 a ověření dá LATER.
      */
     const val CLAUDE_MODEL = "claude-haiku-5-5"
-    const val GEMINI_MODEL = "gemini-2.5-flash-lite"
+    const val GEMINI_MODEL = "gemini-3.5-flash-lite"
     const val OPENAI_MODEL = "gpt-4.1-nano"
 }
