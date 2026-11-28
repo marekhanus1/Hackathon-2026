@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -78,7 +79,14 @@ fun SquatCameraSlot(
     Box(Modifier.fillMaxSize()) {
         SquatCameraPreview(counter, Modifier.fillMaxSize())
         if (demoMode && counter is PoseSquatCounter) {
-            SquatTuningOverlay(counter, Modifier.align(Alignment.TopStart).padding(8.dp))
+            // Nahoře je Janova bublina s instrukcí, dole počítadlo: ukazatel mezi ně, nad počítadlo.
+            SquatTuningOverlay(
+                counter,
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth(0.92f)
+                    .padding(bottom = 136.dp),
+            )
         }
     }
 }
