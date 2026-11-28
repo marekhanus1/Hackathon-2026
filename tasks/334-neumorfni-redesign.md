@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/334-neumorfni-redesign
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/132
 ---
 
 # 334 – Neumorfní redesign (koncept E: tmavý, všechno vnořené)
@@ -22,3 +22,7 @@ smlouva, odznaky a Ozvěna ve stylu E.
 ## Poznámky
 - Nahrazuje draft PR #128 (úkol 332, flat home) a #130 (úkol 333, task-first
   contract) – obě sahají na HomeScreen.kt / ContractScreen.kt.
+- Hotovo v PR #132: téma E (`neuInset`), spodní menu, domov s todo listem, výběr úkolu
+  (`verify_pick`), ověření `verify?taskId=` se záložkami, smlouva na jedné obrazovce,
+  nastavení přehled + detaily, odznaky (Zrcadlo odtud), Ozvěna. Drafty #128 a #130
+  jsou tím nahrazené – doporučeno je po sloučení zavřít. Na telefonu zatím neověřeno.
