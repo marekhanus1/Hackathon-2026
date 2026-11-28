@@ -80,7 +80,7 @@ object KillWatcher {
             },
         )
         val text = if (PermissionChecker.isMiui) {
-            "Xiaomi Narsil vypnulo a hlídání feedu chvíli neběželo. Klepni a v průvodci zaškrtni kroky pro Xiaomi – hlavně zámek v posledních aplikacích."
+            "Xiaomi Narsil vypnulo a hlídání feedu chvíli neběželo. Klepni a v průvodci zaškrtni kroky pro Xiaomi – hlavně automatické spouštění a baterii bez omezení."
         } else {
             "Telefon Narsil vypnul a hlídání feedu chvíli neběželo. Klepni a vypni pro Narsil optimalizaci baterie."
         }
