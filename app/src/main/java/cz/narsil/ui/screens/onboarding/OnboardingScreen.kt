@@ -142,7 +142,7 @@ fun OnboardingScreen(
 
                     Button(
                         onClick = onConfirmHomeWifi,
-                        enabled = !state.isOnHomeWifi,
+                        enabled = state.homeWifiButtonEnabled,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (state.homeWifiSsid != null) colors.positive else colors.ember,

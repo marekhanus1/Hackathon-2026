@@ -26,6 +26,8 @@ data class OnboardingUiState(
     /** Aktuální Wi-Fi; null = žádná, nebo chybí poloha (Android název bez ní neprozradí). */
     val detectedWifiSsid: String? = "Domov_5G",
     val homeWifiSsid: String? = null,
+    /** Systémová poloha je vypnutá: Android pak název Wi-Fi neprozradí ani s oprávněním. */
+    val locationServiceOff: Boolean = false,
     val permissions: List<PermissionItem> = defaultPermissions(),
     val isMiuiDevice: Boolean = true,
     val miuiStepsExpanded: Boolean = true,
@@ -50,18 +52,27 @@ data class OnboardingUiState(
      */
     val homeWifiButtonLabel: String
         get() = when {
+            detectedWifiSsid == null && locationServiceOff && homeWifiSsid != null -> "Domov uložen: $homeWifiSsid"
+            detectedWifiSsid == null && locationServiceOff -> "Zapnout polohu"
             detectedWifiSsid == null -> "Najít moji Wi-Fi (povolit polohu)"
             homeWifiSsid == null -> "Tohle je můj domov: $detectedWifiSsid"
             isOnHomeWifi -> "Domov uložen: $homeWifiSsid"
             else -> "Uložit jako domov: $detectedWifiSsid"
         }
 
+    /** Uložený domov + vypnutá poloha: není co dělat, domov se pozná podle otisku sítě. */
+    val homeWifiButtonEnabled: Boolean
+        get() = !isOnHomeWifi && !(homeWifiSsid != null && detectedWifiSsid == null && locationServiceOff)
+
     /** Řádek nad tlačítkem. */
     val homeWifiStatusText: String
         get() = when {
             homeWifiSsid != null && detectedWifiSsid != null && !isOnHomeWifi ->
                 "Domov: $homeWifiSsid · teď jsi na: $detectedWifiSsid"
+            homeWifiSsid != null && locationServiceOff -> "Domov: $homeWifiSsid · poloha je vypnutá, domov poznám podle sítě"
             homeWifiSsid != null -> "Domov: $homeWifiSsid"
+            detectedWifiSsid == null && locationServiceOff ->
+                "Poloha v telefonu je vypnutá, a tak Android neprozradí název Wi-Fi. Zapni ji na chvíli – až uložíš domov, můžeš ji zase vypnout."
             detectedWifiSsid == null -> "Nevidím žádnou Wi-Fi. Připoj se k domácí síti, nebo povol polohu."
             else -> "Teď jsi připojený k: $detectedWifiSsid"
         }
