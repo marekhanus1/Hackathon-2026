@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/136-napojeni-nastaveni
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/95
 ---
 
 # 136 – Napojení nastavení (133) do detekce a Ozvěny
