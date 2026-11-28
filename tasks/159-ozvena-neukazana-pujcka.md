@@ -1,8 +1,8 @@
 ---
-status: todo
-owner:
-agent:
-branch:
+status: in-progress
+owner: marek
+agent: claude
+branch: marek/claude/159-ozvena-neukazana-pujcka
 pr:
 ---
 
