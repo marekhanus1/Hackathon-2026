@@ -6,6 +6,9 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * Průhledná aktivita jen pro systémový dialog „Povolit kameru?“ (kamera až při prvním použití).
@@ -13,7 +16,10 @@ import androidx.activity.result.contract.ActivityResultContracts
  * aktivitu, uživatel klepne Povolit a vrátí se rovnou k dřepům. Žádné UI navíc.
  */
 class CameraPermissionActivity : ComponentActivity() {
-    private val request = registerForActivityResult(ActivityResultContracts.RequestPermission()) { finish() }
+    private val request = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        _results.tryEmit(granted)
+        finish()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +27,11 @@ class CameraPermissionActivity : ComponentActivity() {
     }
 
     companion object {
+        private val _results = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
+
+        /** Odpověď z dialogu (157): okno Ozvěny se během dialogu schová a podle tohohle se vrátí. */
+        val results: SharedFlow<Boolean> = _results.asSharedFlow()
+
         /** Spustí dialog; false = nešlo (pak zbývá nastavení aplikace). */
         fun start(context: Context): Boolean = runCatching {
             context.startActivity(

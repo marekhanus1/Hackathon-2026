@@ -141,6 +141,9 @@ object EchoOverlayStarter {
                     // Prošlá rozdělaná Ozvěna: okno zmizelo bez volby, detekce smí zasáhnout znovu.
                     onRestoreExpired = { (triggers as? AccessibilityTriggerSource)?.onOutcome(InterventionOutcome.PLANNED_FREE) },
                     onExtraSquats = { n -> (sl.gamificationEngine as? RulesGamificationEngine)?.onExtraSquats(n) },
+                    // 157: dialog kamery až při prvních dřepech; okno Ozvěny se na jeho dobu schová.
+                    requestCamera = { CameraPermissionActivity.start(service) },
+                    cameraResults = CameraPermissionActivity.results,
                 ).also { it.start() }
                 _ready.value = true
                 Log.i(TAG, "Ozvěna připravena (fakes=${sl.useFakes})")
