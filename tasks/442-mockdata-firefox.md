@@ -1,8 +1,8 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:              # jméno člověka
-agent:              # claude | gemini | codex | human
-branch:
+status: in-progress
+owner: stepan
+agent: codex
+branch: stepan/codex/442-mockdata-firefox
 pr:
 ---
 
