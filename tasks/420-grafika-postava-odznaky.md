@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: stepan
 agent: codex
 branch: stepan/codex/420-grafika-postava-odznaky
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/79
 ---
 
 # 420 – Postava budoucího já a ikony odznaků
