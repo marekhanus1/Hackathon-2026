@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: codex
 branch: simon/codex/165-kontrast-ozveny
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/135
 ---
 
 # 165 – Čitelný text Ozvěny bez videa
