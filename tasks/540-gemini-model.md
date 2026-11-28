@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/540-gemini-model
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/88
 ---
 
 # 540 – Oprava modelu Gemini
