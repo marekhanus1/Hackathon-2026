@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/165-otazky-bez-predpripravenych
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/136
 ---
 
 # 165 – Slide Otázky bez předpřipravených otázek
