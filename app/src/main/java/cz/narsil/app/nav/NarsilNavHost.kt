@@ -6,7 +6,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.platform.LocalContext
 import cz.narsil.app.demo.DemoPanelScreen
+import cz.narsil.app.onboarding.OnboardingPrefs
+import cz.narsil.app.onboarding.OnboardingRoute
 
 /**
  * Navigace aplikace. Každá trasa zatím ukazuje [PlaceholderScreen];
@@ -27,7 +30,8 @@ fun NarsilNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = NarsilRoute.start.route,
+        // Při prvním spuštění průvodce oprávněními (122).
+        startDestination = if (OnboardingPrefs.isDone(LocalContext.current)) NarsilRoute.start.route else NarsilRoute.Onboarding.route,
         modifier = modifier,
     ) {
         composable(NarsilRoute.Home.route) {
@@ -50,8 +54,13 @@ fun NarsilNavHost(
             BadgesRoute()
         }
         composable(NarsilRoute.Onboarding.route) {
-            // 320 + 122: OnboardingScreen
-            PlaceholderScreen(NarsilRoute.Onboarding, onNavigate = navigate, onBack = back)
+            // 122: logika + funkční obrazovka; Janova 320 ji později nahradí
+            OnboardingRoute(onDone = {
+                navController.navigate(NarsilRoute.Home.route) {
+                    popUpTo(NarsilRoute.Onboarding.route) { inclusive = true }
+                    launchSingleTop = true
+                }
+            })
         }
         composable(NarsilRoute.Verify.route) {
             VerifyRoute(onBack = back)
