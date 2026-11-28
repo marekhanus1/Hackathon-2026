@@ -1,6 +1,5 @@
 package cz.narsil.app.nav
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,21 +20,20 @@ import cz.narsil.app.onboarding.OnboardingPrefs
 import cz.narsil.app.onboarding.OnboardingRoute
 import cz.narsil.ui.components.NeuTab
 import cz.narsil.ui.components.NeuTabBar
-import cz.narsil.ui.theme.NeuColors
 
 /** Záložka spodního menu pro trasu; null = obrazovka bez menu (334). */
 internal fun tabFor(route: String?): NeuTab? = when (route) {
     NarsilRoute.Home.route -> NeuTab.HOME
+    NarsilRoute.Mirror.route -> NeuTab.MIRROR
     NarsilRoute.Badges.route -> NeuTab.BADGES
-    NarsilRoute.Settings.route -> NeuTab.SETTINGS
     else -> null
 }
 
 private fun NeuTab.route(): NarsilRoute = when (this) {
     NeuTab.HOME -> NarsilRoute.Home
-    NeuTab.CONTRACT -> NarsilRoute.Contract
+    NeuTab.MIRROR -> NarsilRoute.Mirror
     NeuTab.BADGES -> NarsilRoute.Badges
-    NeuTab.SETTINGS -> NarsilRoute.Settings
+    NeuTab.CONTRACT -> NarsilRoute.Contract
 }
 
 /**
@@ -54,7 +52,8 @@ fun NarsilNavHost(
         }
     }
     val openTab: (NeuTab) -> Unit = { tab ->
-        navController.navigate(tab.route().route) {
+        // Plán (smlouva) je průvodce přes celou obrazovku se zpět, ne záložka.
+        if (tab == NeuTab.CONTRACT) navigate(NarsilRoute.Contract) else navController.navigate(tab.route().route) {
             launchSingleTop = true
             popUpTo(NarsilRoute.Home.route) { inclusive = false }
         }
@@ -68,7 +67,8 @@ fun NarsilNavHost(
     val entry by navController.currentBackStackEntryAsState()
     val tab = tabFor(entry?.destination?.route)
 
-    Column(modifier.fillMaxSize().background(NeuColors.Base)) {
+    // Frutiger Aero: pozadí (nebe, ryby, tráva) kreslí MainActivity přes celý displej, obrazovky jsou průhledné.
+    Column(modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
             // Při prvním spuštění průvodce oprávněními (122).
@@ -129,7 +129,7 @@ fun NarsilNavHost(
             }
         }
         if (tab != null) {
-            NeuTabBar(tab, openTab, Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 16.dp))
+            NeuTabBar(tab, openTab, Modifier.padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 12.dp))
         }
     }
 }

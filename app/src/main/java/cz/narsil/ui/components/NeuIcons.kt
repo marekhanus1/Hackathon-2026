@@ -29,6 +29,11 @@ object NeuIcons {
     val Person: ImageVector by lazy { icon("person", circle(12f, 7f, 4f), "M4 21c1-4 4-6 8-6s7 2 8 6") }
     val Pause: ImageVector by lazy { icon("pause", "M8 7v10M16 7v10", width = 2.2f) }
     val Play: ImageVector by lazy { icon("play", "M8 5l11 7-11 7z", width = 2.2f) }
+    // Frutiger Aero dok (narsil-frontend-v2): ☑ ◉ ★ ✎
+    val Mirror: ImageVector by lazy { icon("mirror", circle(12f, 12f, 8f), circle(12f, 12f, 3.5f)) }
+    val Star: ImageVector by lazy { icon("star", "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z") }
+    val Pen: ImageVector by lazy { icon("pen", "M4 20l4-1 11-11-3-3L5 16z", "M14 7l3 3") }
+    val Gear: ImageVector get() = Settings
 
     private fun circle(cx: Float, cy: Float, r: Float): String =
         "M${cx - r} ${cy}a$r $r 0 1 0 ${2 * r} 0a$r $r 0 1 0 ${-2 * r} 0"

@@ -1,7 +1,6 @@
 package cz.narsil.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,11 +22,17 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -42,13 +47,39 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cz.narsil.ui.theme.AeroStyle
 import cz.narsil.ui.theme.NeuColors
 import cz.narsil.ui.theme.NeuDepth
+import cz.narsil.ui.theme.aeroSurface
 import cz.narsil.ui.theme.neuInset
 
-// Sdílené prvky konceptu E (334): tmavý neumorfismus, kde je všechno vnořené.
+// Sdílené prvky ve stylu Frutiger Aero (narsil-frontend-v2). Jména a parametry zůstaly z konceptu E (334),
+// aby obrazovky a ostatní moduly nemusely měnit volání.
 
-/** Text konceptu E: písmo systémové (Manrope by byla nová závislost), váhy a velikosti z návrhu. */
+/** true = text leží přímo na nebi (bílý se stínem), false = na skle (tmavě modrý). */
+val LocalOnSky = compositionLocalOf { false }
+
+/** Obsah přímo na pozadí: [NeuText] kreslí bíle se stínem. */
+@Composable
+fun OnSky(content: @Composable () -> Unit) = CompositionLocalProvider(LocalOnSky provides true, content = content)
+
+/** Obsah na skle (zruší [OnSky] uvnitř panelu). */
+@Composable
+fun OnGlass(content: @Composable () -> Unit) = CompositionLocalProvider(LocalOnSky provides false, content = content)
+
+/** Barva textu podle podkladu: barvy „na skle“ se na nebi převedou na světlé. */
+@Composable
+@ReadOnlyComposable
+fun aeroTextColor(color: Color): Color = if (!LocalOnSky.current) color else when (color) {
+    NeuColors.Text, NeuColors.Label -> NeuColors.OnSky
+    NeuColors.Muted -> NeuColors.OnSkyMuted
+    NeuColors.Accent -> NeuColors.OnSkyAccent
+    NeuColors.Success -> NeuColors.OnSkySuccess
+    NeuColors.Error -> NeuColors.OnSkyError
+    else -> color
+}
+
+/** Text: systémové písmo, váhy a velikosti z návrhu; na nebi bílý se stínem (`text-shadow`). */
 @Composable
 fun NeuText(
     text: String,
@@ -61,69 +92,74 @@ fun NeuText(
     lineHeight: TextUnit = TextUnit.Unspecified,
     letterSpacing: TextUnit = TextUnit.Unspecified,
 ) {
+    val onSky = LocalOnSky.current
     Text(
         text = text,
         modifier = modifier,
         style = TextStyle(
             fontSize = size,
             fontWeight = weight,
-            color = color,
+            color = aeroTextColor(color),
             lineHeight = lineHeight,
             letterSpacing = letterSpacing,
             textAlign = align ?: TextAlign.Unspecified,
+            shadow = if (onSky) Shadow(NeuColors.SkyTextShadow, Offset(0f, 2f), 6f) else null,
         ),
         maxLines = maxLines,
         overflow = if (maxLines == Int.MAX_VALUE) TextOverflow.Clip else TextOverflow.Ellipsis,
     )
 }
 
-/** Malý nadpis sekce velkými písmeny („POHYBOVÝ CÍL“). */
+/** Malý nadpis sekce (`.section-label`). */
 @Composable
-fun NeuLabel(text: String, modifier: Modifier = Modifier, color: Color = NeuColors.Muted) {
-    NeuText(text.uppercase(), modifier, size = 11.sp, weight = FontWeight.ExtraBold, color = color, letterSpacing = 0.9.sp)
+fun NeuLabel(text: String, modifier: Modifier = Modifier, color: Color = NeuColors.Label) {
+    NeuText(text, modifier, size = 13.sp, weight = FontWeight.Bold, color = color, letterSpacing = 0.1.sp)
 }
 
-/** Obrazovka: podklad, okraje 20/22 dp a svislé mezery mezi panely; nic se neposouvá. */
+/** Obrazovka: průhledná (pozadí kreslí [cz.narsil.ui.theme.AeroBackdrop]), okraje 18 dp, text na nebi. */
 @Composable
 fun NeuScreen(
     modifier: Modifier = Modifier,
     gap: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(NeuColors.Base)
-            .padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(gap),
-        content = content,
-    )
+    OnSky {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(start = 18.dp, end = 18.dp, top = 14.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(gap),
+            content = content,
+        )
+    }
 }
 
-/** Vnořený panel (`.in`). */
+/** Skleněný panel (`.glass-panel`); obsah má tmavý text. */
 @Composable
 fun NeuPanel(
     modifier: Modifier = Modifier,
-    radius: Dp = 24.dp,
+    radius: Dp = 22.dp,
     depth: NeuDepth = NeuDepth.Normal,
     padding: PaddingValues = PaddingValues(16.dp),
     gap: Dp = 8.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(
-        modifier = modifier.neuInset(depth, RoundedCornerShape(radius)).padding(padding),
-        verticalArrangement = Arrangement.spacedBy(gap),
-        content = content,
-    )
+    OnGlass {
+        Column(
+            modifier = modifier.neuInset(depth, RoundedCornerShape(radius)).padding(padding),
+            verticalArrangement = Arrangement.spacedBy(gap),
+            content = content,
+        )
+    }
 }
 
-/** Tenká dělicí čára mezi řádky ve vaně. */
+/** Tenká modrá dělicí čára mezi řádky ve skle. */
 @Composable
 fun NeuDivider(modifier: Modifier = Modifier) {
     Box(modifier.fillMaxWidth().height(1.dp).background(NeuColors.Divider))
 }
 
-/** Hlavička: volitelné tlačítko zpět, nadpis, podnadpis a prvek vpravo. */
+/** Hlavička na nebi: volitelné tlačítko zpět, velký bílý nadpis (`h1`), podnadpis a prvek vpravo. */
 @Composable
 fun NeuHeader(
     title: String,
@@ -133,33 +169,43 @@ fun NeuHeader(
     backDescription: String = "Zpět",
     trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (onBack != null) NeuIconButton(NeuIcons.Back, backDescription, onBack)
-        Column(Modifier.weight(1f)) {
-            NeuText(title, size = 22.sp, weight = FontWeight.ExtraBold, maxLines = 1)
-            if (subtitle != null) NeuText(subtitle, size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted)
+    OnSky {
+        Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (onBack != null) NeuIconButton(NeuIcons.Back, backDescription, onBack)
+            Column(Modifier.weight(1f)) {
+                NeuText(title, size = 26.sp, weight = FontWeight.Bold, maxLines = 1, letterSpacing = (-0.6).sp, lineHeight = 30.sp)
+                if (subtitle != null) NeuText(subtitle, size = 13.sp, weight = FontWeight.Medium, color = NeuColors.Muted, lineHeight = 17.sp)
+            }
+            trailing?.invoke(this)
         }
-        trailing?.invoke(this)
     }
 }
 
-/** Kulaté mělce vnořené tlačítko s ikonou (zpět). */
+/** Modré skleněné tlačítko s bílou ikonou (`.aero-icon-button.compact`). */
 @Composable
 fun NeuIconButton(icon: ImageVector, description: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(15.dp)
     Box(
         modifier
-            .size(44.dp)
-            .neuInset(NeuDepth.Shallow, CircleShape)
-            .clip(CircleShape)
+            .size(46.dp)
+            .aeroSurface(AeroStyle.BlueGlass, shape)
+            .clip(shape)
             .clickable(onClickLabel = description, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = null, tint = NeuColors.Text, modifier = Modifier.size(20.dp))
+        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
     }
 }
 
-/** Hluboce vnořené menší tlačítko s barevným textem („Ověřit“, „Pozastavit“). */
+/** Lesk podle barvy textu: zelená pro běžnou akci, červená pro chybu, matné sklo pro neutrální. */
+private fun glossFor(color: Color): Pair<AeroStyle, Color> = when (color) {
+    NeuColors.Error -> AeroStyle.RedGloss to Color.White
+    NeuColors.Muted -> AeroStyle.Frost to NeuColors.Muted
+    else -> AeroStyle.GreenBubble to NeuColors.OnAccent
+}
+
+/** Menší lesklé tlačítko („Ověřit“, „Pozastavit“). */
 @Composable
 fun NeuSmallButton(
     text: String,
@@ -169,22 +215,25 @@ fun NeuSmallButton(
     enabled: Boolean = true,
     height: Dp = 36.dp,
 ) {
-    val shape = RoundedCornerShape(12.dp)
-    Box(
-        modifier
-            .height(height)
-            .neuInset(NeuDepth.Deep, shape)
-            .clip(shape)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .alpha(if (enabled) 1f else 0.45f)
-            .padding(horizontal = 14.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        NeuText(text, size = 12.sp, weight = FontWeight.ExtraBold, color = color, maxLines = 1)
+    val shape = RoundedCornerShape(13.dp)
+    val (style, textColor) = glossFor(color)
+    OnGlass {
+        Box(
+            modifier
+                .height(height)
+                .alpha(if (enabled) 1f else 0.5f)
+                .aeroSurface(style, shape)
+                .clip(shape)
+                .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+                .padding(horizontal = 14.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            NeuText(text, size = 13.sp, weight = FontWeight.Bold, color = textColor, maxLines = 1)
+        }
     }
 }
 
-/** Hlavní akce: plné jantarové tlačítko ve vnořené liště (jediné „barevné“ místo obrazovky). */
+/** Hlavní akce: lesklé zelené tlačítko (`.primary-aero`); chybová barva = červený lesk. */
 @Composable
 fun NeuPrimaryButton(
     text: String,
@@ -194,30 +243,35 @@ fun NeuPrimaryButton(
     color: Color = NeuColors.Accent,
     contentColor: Color = NeuColors.OnAccent,
 ) {
-    val shape = RoundedCornerShape(18.dp)
-    Box(modifier.fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(24.dp)).padding(8.dp)) {
+    val shape = RoundedCornerShape(17.dp)
+    val style = when (color) {
+        NeuColors.Error -> AeroStyle.RedGloss
+        NeuColors.Muted -> AeroStyle.Frost
+        else -> AeroStyle.GreenGloss
+    }
+    val textColor = when {
+        !enabled -> NeuColors.Muted
+        style == AeroStyle.RedGloss -> Color.White
+        contentColor == NeuColors.OnAccent || contentColor == NeuColors.OnSuccess -> NeuColors.OnAccent
+        else -> contentColor
+    }
+    OnGlass {
         Box(
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .height(54.dp)
+                .aeroSurface(if (enabled) style else AeroStyle.Frost, shape)
                 .clip(shape)
-                .background(if (enabled) color else NeuColors.Deep)
                 .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            NeuText(
-                text,
-                size = 16.sp,
-                weight = FontWeight.ExtraBold,
-                color = if (enabled) contentColor else NeuColors.Muted,
-                maxLines = 1,
-            )
+            NeuText(text, size = 16.sp, weight = FontWeight.Bold, color = textColor, maxLines = 1)
         }
     }
 }
 
 /**
- * Řada záložek ve vnořené liště; vybraná je zamáčknutá hlouběji ([NeuDepth.Deep]) s jantarovým textem.
+ * Řada záložek ve skle (`.proof-tabs`); vybraná je bílo-zelená bublina.
  * Použití: proof mód, úkoly na ověření, pocity v Ozvěně, zóna v nastavení.
  */
 @Composable
@@ -228,46 +282,47 @@ fun <T> NeuSegmented(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 40.dp,
-    outerRadius: Dp = 20.dp,
-    innerRadius: Dp = 14.dp,
+    outerRadius: Dp = 18.dp,
+    innerRadius: Dp = 13.dp,
     outerDepth: NeuDepth = NeuDepth.Normal,
     selectedDepth: NeuDepth = NeuDepth.Deep,
     ring: Boolean = false,
     fontSize: TextUnit = 12.sp,
 ) {
-    Row(
-        modifier.fillMaxWidth().neuInset(outerDepth, RoundedCornerShape(outerRadius)).padding(5.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        options.forEach { option ->
-            val isSel = option == selected
-            val shape = RoundedCornerShape(innerRadius)
-            Box(
-                Modifier
-                    .weight(1f)
-                    .height(height)
-                    .neuInset(if (isSel) selectedDepth else NeuDepth.Flat, shape)
-                    .then(if (isSel && ring) Modifier.border(1.dp, NeuColors.Accent, shape) else Modifier)
-                    .clip(shape)
-                    .clickable(role = Role.Tab) { onSelect(option) }
-                    .semantics { this.selected = isSel }
-                    .padding(horizontal = 4.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                NeuText(
-                    label(option),
-                    size = fontSize,
-                    weight = FontWeight.ExtraBold,
-                    color = if (isSel) NeuColors.Accent else NeuColors.Muted,
-                    maxLines = 1,
-                    align = TextAlign.Center,
-                )
+    OnGlass {
+        Row(
+            modifier.fillMaxWidth().neuInset(outerDepth, RoundedCornerShape(outerRadius)).padding(5.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            options.forEach { option ->
+                val isSel = option == selected
+                val shape = RoundedCornerShape(innerRadius)
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .height(height)
+                        .neuInset(if (isSel) selectedDepth else NeuDepth.Flat, shape)
+                        .clip(shape)
+                        .clickable(role = Role.Tab) { onSelect(option) }
+                        .semantics { this.selected = isSel }
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    NeuText(
+                        label(option),
+                        size = fontSize,
+                        weight = FontWeight.Bold,
+                        color = if (isSel) NeuColors.OnAccent else NeuColors.Label,
+                        maxLines = 1,
+                        align = TextAlign.Center,
+                    )
+                }
             }
         }
     }
 }
 
-/** Čtvereček se zkratkou („ŠK“, „OZ“) – hluboce vnořený. */
+/** Zelená ikona odznaku (`.badge-icon`) se zkratkou („ŠK“, „OZ“) bílým písmem. */
 @Composable
 fun NeuBadgeIcon(
     text: String,
@@ -277,34 +332,61 @@ fun NeuBadgeIcon(
     color: Color = NeuColors.Accent,
     fontSize: TextUnit = 11.sp,
 ) {
-    Box(modifier.size(size).neuInset(NeuDepth.Deep, RoundedCornerShape(radius)), contentAlignment = Alignment.Center) {
-        NeuText(text, size = fontSize, weight = FontWeight.ExtraBold, color = color, maxLines = 1)
+    val style = when (color) {
+        NeuColors.Muted -> AeroStyle.Frost
+        NeuColors.Error -> AeroStyle.RedGloss
+        else -> AeroStyle.GreenOrb
+    }
+    Box(modifier.size(size).aeroSurface(style, RoundedCornerShape(radius)), contentAlignment = Alignment.Center) {
+        Text(
+            text,
+            style = TextStyle(
+                fontSize = fontSize,
+                fontWeight = FontWeight.ExtraBold,
+                color = if (style == AeroStyle.Frost) NeuColors.Muted else Color.White,
+                shadow = if (style == AeroStyle.Frost) null else Shadow(Color(0xAA08722A), Offset(0f, 2f), 4f),
+            ),
+            maxLines = 1,
+        )
     }
 }
 
-/** Ukazatel postupu: hluboce vnořená drážka s výplní. */
+/** Ukazatel postupu (`.progress`): průsvitná drážka se zeleným leskem. */
 @Composable
 fun NeuProgress(
     fraction: Float,
     modifier: Modifier = Modifier,
     color: Color = NeuColors.Accent,
-    height: Dp = 10.dp,
+    height: Dp = 12.dp,
 ) {
+    val fill = when (color) {
+        NeuColors.Error -> listOf(Color(0xFFFFB4A6), Color(0xFFD9432E))
+        NeuColors.Muted -> listOf(Color(0xFFB9D3DC), Color(0xFF7FA3B0))
+        NeuColors.Accent, NeuColors.Success -> listOf(Color(0xFFADF87A), Color(0xFF22AF42))
+        else -> listOf(color.copy(alpha = 0.6f), color)
+    }
     Box(
         modifier
             .fillMaxWidth()
             .height(height)
-            .neuInset(NeuDepth.Deep, RoundedCornerShape(height / 2))
-            .padding(2.dp),
+            .aeroSurface(AeroStyle.Track, RoundedCornerShape(height / 2)),
     ) {
         val f = fraction.coerceIn(0f, 1f)
         if (f > 0f) {
-            Box(Modifier.fillMaxHeight().fillMaxWidth(f).clip(RoundedCornerShape(height / 2)).background(color))
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(f)
+                    .clip(RoundedCornerShape(height / 2))
+                    .background(Brush.verticalGradient(fill)),
+            ) {
+                Box(Modifier.fillMaxWidth().height(height * 0.35f).background(Color(0x99FFFFFF), RoundedCornerShape(height / 2)))
+            }
         }
     }
 }
 
-/** Jednořádkové / víceřádkové pole ve vnořené ploše. */
+/** Jednořádkové / víceřádkové pole (`.add-task input`, `.proof-textarea`). */
 @Composable
 fun NeuTextField(
     value: String,
@@ -312,7 +394,7 @@ fun NeuTextField(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     singleLine: Boolean = true,
-    radius: Dp = 16.dp,
+    radius: Dp = 14.dp,
 ) {
     BasicTextField(
         value = value,
@@ -320,17 +402,17 @@ fun NeuTextField(
         singleLine = singleLine,
         textStyle = TextStyle(color = NeuColors.Text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, lineHeight = 20.sp),
         cursorBrush = SolidColor(NeuColors.Accent),
-        modifier = modifier.neuInset(NeuDepth.Normal, RoundedCornerShape(radius)).padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = modifier.aeroSurface(AeroStyle.Frost, RoundedCornerShape(radius)).padding(horizontal = 14.dp, vertical = 13.dp),
         decorationBox = { inner ->
             Box {
-                if (value.isEmpty()) NeuText(placeholder, size = 14.sp, weight = FontWeight.Medium, color = NeuColors.Muted)
+                if (value.isEmpty()) OnGlass { NeuText(placeholder, size = 14.sp, weight = FontWeight.Medium, color = NeuColors.Muted) }
                 inner()
             }
         },
     )
 }
 
-/** Řádek seznamu ve vaně: ikona, nadpis, podnadpis, prvek vpravo; volitelně klikací. */
+/** Řádek seznamu ve skle (`.task-row`): ikona, nadpis, podnadpis, prvek vpravo; volitelně klikací. */
 @Composable
 fun NeuListRow(
     title: String,
@@ -353,18 +435,34 @@ fun NeuListRow(
     ) {
         leading?.invoke()
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            NeuText(title, size = 14.sp, weight = FontWeight.Bold, color = titleColor, maxLines = 1)
-            if (!subtitle.isNullOrBlank()) NeuText(subtitle, size = 11.sp, weight = FontWeight.SemiBold, color = subtitleColor, maxLines = 2)
+            NeuText(title, size = 15.sp, weight = FontWeight.Bold, color = titleColor, maxLines = 1)
+            if (!subtitle.isNullOrBlank()) NeuText(subtitle, size = 12.sp, weight = FontWeight.Medium, color = subtitleColor, maxLines = 2)
         }
         trailing?.invoke()
     }
 }
 
-/** Kolonka s číslem a popiskem („45 / min získáno“). */
+/** Kolonka s číslem a popiskem (`.stats div`). */
 @Composable
 fun NeuStat(value: String, label: String, modifier: Modifier = Modifier, color: Color = NeuColors.Text) {
     Column(modifier.widthIn(min = 40.dp)) {
-        NeuText(value, size = 16.sp, weight = FontWeight.ExtraBold, color = color)
-        NeuText(label, size = 11.sp, weight = FontWeight.Medium, color = NeuColors.Muted)
+        NeuText(value, size = 17.sp, weight = FontWeight.Bold, color = if (color == NeuColors.Text) NeuColors.Accent else color)
+        NeuText(label, size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted)
+    }
+}
+
+/** Zelená koule s textem (`.task-count`, `.aero-orb`). */
+@Composable
+fun AeroOrb(text: String, modifier: Modifier = Modifier, size: Dp = 52.dp, fontSize: TextUnit = 16.sp) {
+    Box(modifier.size(size).aeroSurface(AeroStyle.GreenOrb, CircleShape), contentAlignment = Alignment.Center) {
+        Text(text, style = TextStyle(fontSize = fontSize, fontWeight = FontWeight.Bold, color = Color(0xFF075821)), maxLines = 1)
+    }
+}
+
+/** Modrá skleněná koule s ikonou (`.verify-orb`). */
+@Composable
+fun AeroBlueOrb(icon: ImageVector, modifier: Modifier = Modifier, size: Dp = 96.dp) {
+    Box(modifier.size(size).aeroSurface(AeroStyle.BlueOrb, CircleShape), contentAlignment = Alignment.Center) {
+        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(size * 0.38f))
     }
 }

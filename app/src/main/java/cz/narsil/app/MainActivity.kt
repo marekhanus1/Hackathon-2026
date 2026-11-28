@@ -7,13 +7,13 @@ import kotlinx.coroutines.launch
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import cz.narsil.app.nav.NarsilNavHost
 import cz.narsil.integrations.strava.HttpStravaRepository
+import cz.narsil.ui.theme.AeroBackdrop
 import cz.narsil.ui.theme.NarsilTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,10 +22,14 @@ class MainActivity : ComponentActivity() {
         openSetupIfAsked(intent)
         handleStravaRedirect(intent)
         GuardService.start(this)
-        enableEdgeToEdge()
+        // Nebe nahoře i tráva dole jsou tmavé dost na bílé ikony systémových lišt.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+        )
         setContent {
             NarsilTheme {
-                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                AeroBackdrop {
                     // Edge-to-edge: obsah všech obrazovek mimo stavovou a navigační lištu (i výřez a klávesnici).
                     NarsilNavHost(Modifier.safeDrawingPadding())
                 }

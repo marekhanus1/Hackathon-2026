@@ -11,12 +11,12 @@ import androidx.compose.runtime.ReadOnlyComposable
  */
 @Composable
 fun NarsilTheme(
-    // Koncept E (334) je jen tmavý; světlé schéma zůstává pro náhledy.
     darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) NarsilDarkColorScheme else NarsilLightColorScheme
-    val extendedColors = if (darkTheme) DarkNarsilExtendedColors else LightNarsilExtendedColors
+    // Frutiger Aero (narsil-frontend-v2) je jen světlé; parametr zůstal kvůli volajícím.
+    val colorScheme = AeroColorScheme
+    val extendedColors = AeroNarsilExtendedColors
 
     CompositionLocalProvider(
         LocalNarsilColors provides extendedColors,

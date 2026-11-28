@@ -1,108 +1,66 @@
 package cz.narsil.ui.theme
 
-import android.graphics.BlurMaskFilter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.addOutline
-import androidx.compose.ui.graphics.asAndroidPath
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Neumorfismus obráceně (koncept E, 334): nic nevystupuje, všechno je vnořené.
- * Podklad [Base], vnořené plochy [Inset], hlubší vnoření [Deep] pro aktivní / vybraný stav.
+ * Frutiger Aero (narsil-frontend-v2): sklo na modrém nebi s rybami a trávou.
+ *
+ * Jména zůstala z neumorfismu (334), aby obrazovky nemusely měnit API: [Text] a [Muted] jsou barvy
+ * textu NA SKLE (tmavě modrá), text přímo na nebi kreslí [cz.narsil.ui.components.NeuText] bíle se stínem
+ * uvnitř [cz.narsil.ui.components.OnSky].
  */
 object NeuColors {
-    val Base = Color(0xFF272B34)
-    val Inset = Color(0xFF23272F)
-    val Deep = Color(0xFF20232A)
-    val ShadowDark = Color(0xFF181B20)
-    val ShadowLight = Color(0xFF2E333D)
-    val DeepShadowDark = Color(0xFF15181C)
-    val DeepShadowLight = Color(0xFF2B3039)
-    val Divider = Color(0xFF30353F)
-    val Dashed = Color(0xFF4A505C)
+    /** Obrazovky jsou průhledné, pozadí kreslí [AeroBackdrop]. */
+    val Base = Color.Transparent
+    val Sky = Color(0xFF159DE9)
+    val Inset = Color(0xEBFFFFFF)
+    val Deep = Color(0xFFDDF6FF)
+    val ShadowDark = Color(0x33004270)
+    val ShadowLight = Color(0xF2FFFFFF)
+    val DeepShadowDark = Color(0x2E005040)
+    val DeepShadowLight = Color(0xFFFFFFFF)
+    val Divider = Color(0x2B0076B0)
+    val Dashed = Color(0x520078B5)
 
-    val Accent = Color(0xFFF2A359)
-    val OnAccent = Color(0xFF3A1A00)
-    val Success = Color(0xFF5CC497)
-    val OnSuccess = Color(0xFF10241B)
-    val Error = Color(0xFFF59A8B)
-    val Text = Color(0xFFE9ECF2)
-    val Muted = Color(0xFFA3AAB8)
+    /** Aero modrá: čísla, zvýraznění na skle. */
+    val Accent = Color(0xFF0A7FC0)
+    /** Text na zeleném lesklém tlačítku / bublině. */
+    val OnAccent = Color(0xFF064F20)
+    val Success = Color(0xFF168231)
+    val OnSuccess = Color(0xFFFFFFFF)
+    val Error = Color(0xFFC2412F)
+    val Text = Color(0xFF063B5C)
+    val Muted = Color(0xFF3F6B78)
+    val Label = Color(0xFF075B79)
+
+    val OnSky = Color(0xFFFFFFFF)
+    val OnSkyMuted = Color(0xF2FFFFFF)
+    val SkyTextShadow = Color(0xCC00578E)
+    /** Světlé varianty pro text na nebi. */
+    val OnSkyAccent = Color(0xFFD8F6FF)
+    val OnSkySuccess = Color(0xFFBAFF73)
+    val OnSkyError = Color(0xFFFFD2C8)
+    val Warning = Color(0xFFFFD166)
 }
 
 /**
- * Hloubka vnoření; odpovídá třídám `.in`, `.in-s`, `.in-d` z návrhu.
- * [Flat] = bez plochy i stínu (nevybraná položka v řadě záložek).
+ * Druh plochy. Jména zůstala z neumorfismu:
+ * [Normal] = skleněný panel, [Shallow] = modré skleněné tlačítko, [Deep] = zelená lesklá bublina
+ * (vybraná záložka, malé tlačítko, ikona odznaku), [Flat] = nic.
  */
-enum class NeuDepth(
-    internal val fill: Color,
-    internal val dark: Color,
-    internal val light: Color,
-    internal val darkOffset: Dp,
-    internal val darkBlur: Dp,
-    internal val lightOffset: Dp,
-    internal val lightBlur: Dp,
-) {
-    Normal(NeuColors.Inset, NeuColors.ShadowDark, NeuColors.ShadowLight, 6.dp, 12.dp, 6.dp, 12.dp),
-    Shallow(NeuColors.Inset, NeuColors.ShadowDark, NeuColors.ShadowLight, 3.dp, 6.dp, 3.dp, 6.dp),
-    Deep(NeuColors.Deep, NeuColors.DeepShadowDark, NeuColors.DeepShadowLight, 4.dp, 8.dp, 3.dp, 6.dp),
-    Flat(Color.Transparent, Color.Transparent, Color.Transparent, 0.dp, 0.dp, 0.dp, 0.dp),
-}
+enum class NeuDepth { Normal, Shallow, Deep, Flat }
 
-/**
- * Vnořená plocha: výplň + vnitřní stín (tmavý vlevo nahoře, světlý vpravo dole) uvnitř [shape].
- * Jediné místo, kde se vnitřní stín kreslí – obrazovky ho jen používají.
- *
- * Stín = tlustý rozmazaný obrys tvaru posunutý o offset a oříznutý tvarem; rozmazání (BlurMaskFilter)
- * funguje s hardwarovou akcelerací od API 28 (minSdk 29).
- */
+/** Plocha podle [depth]; jediné místo, které obrazovky volají. */
 fun Modifier.neuInset(
     depth: NeuDepth = NeuDepth.Normal,
     shape: Shape = RoundedCornerShape(24.dp),
-): Modifier = if (depth == NeuDepth.Flat) this else drawWithCache {
-    val outline = shape.createOutline(size, layoutDirection, this)
-    val path = Path().apply { addOutline(outline) }
-    val androidPath = path.asAndroidPath()
-
-    fun shadowPaint(color: Color, blur: Dp): Paint = Paint().also { p ->
-        p.asFrameworkPaint().apply {
-            isAntiAlias = true
-            style = android.graphics.Paint.Style.STROKE
-            strokeWidth = blur.toPx() * 2f
-            this.color = color.toArgb()
-            if (blur.toPx() > 0f) maskFilter = BlurMaskFilter(blur.toPx(), BlurMaskFilter.Blur.NORMAL)
-        }
-    }
-    val dark = shadowPaint(depth.dark, depth.darkBlur)
-    val light = shadowPaint(depth.light, depth.lightBlur)
-    val dOff = depth.darkOffset.toPx()
-    val lOff = depth.lightOffset.toPx()
-
-    onDrawBehind {
-        drawPath(path, depth.fill)
-        clipPath(path) {
-            drawIntoCanvas { canvas ->
-                val native = canvas.nativeCanvas
-                native.save()
-                native.translate(dOff, dOff)
-                native.drawPath(androidPath, dark.asFrameworkPaint())
-                native.restore()
-                native.save()
-                native.translate(-lOff, -lOff)
-                native.drawPath(androidPath, light.asFrameworkPaint())
-                native.restore()
-            }
-        }
-    }
+): Modifier = when (depth) {
+    NeuDepth.Normal -> aeroSurface(AeroStyle.Glass, shape)
+    NeuDepth.Shallow -> aeroSurface(AeroStyle.BlueGlass, shape)
+    NeuDepth.Deep -> aeroSurface(AeroStyle.GreenBubble, shape)
+    NeuDepth.Flat -> this
 }

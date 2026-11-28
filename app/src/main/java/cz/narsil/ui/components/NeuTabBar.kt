@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
@@ -21,56 +22,53 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cz.narsil.ui.theme.NeuColors
-import cz.narsil.ui.theme.NeuDepth
-import cz.narsil.ui.theme.neuInset
+import cz.narsil.ui.theme.AeroStyle
+import cz.narsil.ui.theme.aeroSurface
 
-/** Záložky spodního menu (334). */
+/**
+ * Záložky doku podle narsil-frontend-v2: Úkoly · Zrcadlo · Odznaky · Plán.
+ * Nastavení je ozubené kolo v hlavičce domova, plán (smlouva) se otevírá přes celou obrazovku.
+ */
 enum class NeuTab(val label: String) {
-    HOME("Domů"),
-    CONTRACT("Smlouva"),
+    HOME("Úkoly"),
+    MIRROR("Zrcadlo"),
     BADGES("Odznaky"),
-    SETTINGS("Nastavení");
+    CONTRACT("Plán");
 
     val icon: ImageVector
         get() = when (this) {
-            HOME -> NeuIcons.Home
-            CONTRACT -> NeuIcons.Contract
-            BADGES -> NeuIcons.Badge
-            SETTINGS -> NeuIcons.Settings
+            HOME -> NeuIcons.Check
+            MIRROR -> NeuIcons.Mirror
+            BADGES -> NeuIcons.Star
+            CONTRACT -> NeuIcons.Pen
         }
 }
 
-/** Spodní menu: jedna vnořená lišta, aktivní záložka zamáčknutá hlouběji s jantarovým textem. */
+private val DockText = Color(0xFF07596A)
+
+/** Spodní dok (`.dock`): zelené sklo, aktivní záložka je bílo-zelená bublina. */
 @Composable
 fun NeuTabBar(selected: NeuTab?, onSelect: (NeuTab) -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier.fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(24.dp)).padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier.fillMaxWidth().aeroSurface(AeroStyle.Dock, RoundedCornerShape(24.dp)).padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         NeuTab.entries.forEach { tab ->
             val active = tab == selected
-            val shape = RoundedCornerShape(18.dp)
-            val color = if (active) NeuColors.Accent else NeuColors.Muted
+            val shape = RoundedCornerShape(17.dp)
             Column(
                 Modifier
                     .weight(1f)
-                    .height(52.dp)
-                    .neuInset(if (active) NeuDepth.Deep else NeuDepth.Flat, shape)
+                    .height(58.dp)
+                    .then(if (active) Modifier.aeroSurface(AeroStyle.GreenBubble, shape) else Modifier)
                     .clip(shape)
                     .clickable(role = Role.Tab) { onSelect(tab) }
                     .semantics { this.selected = active },
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
             ) {
-                Icon(tab.icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
-                NeuText(
-                    tab.label,
-                    size = 12.sp,
-                    weight = if (active) FontWeight.ExtraBold else FontWeight.Bold,
-                    color = color,
-                    maxLines = 1,
-                )
+                Icon(tab.icon, contentDescription = null, tint = DockText, modifier = Modifier.size(22.dp))
+                OnGlass { NeuText(tab.label, size = 11.sp, weight = FontWeight.Bold, color = DockText, maxLines = 1) }
             }
         }
     }
