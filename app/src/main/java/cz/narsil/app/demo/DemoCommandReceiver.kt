@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.ComfortContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -23,6 +24,8 @@ class DemoCommandReceiver : BroadcastReceiver() {
             try {
                 val ok = runCatching { run(cmd) }.getOrDefault(false)
                 DemoBridge.emit(DemoEvent.Ack(cmd, ok))
+                // Kontext a gamifikace se propíšou asynchronně – stav poslat až po nich (jinak by byl starý).
+                delay(STATE_DELAY_MILLIS)
                 DemoBridge.emitState()
             } finally {
                 pending.finish()
@@ -41,5 +44,9 @@ class DemoCommandReceiver : BroadcastReceiver() {
         "reset" -> { DemoActions.resetDay(); true }
         "state" -> true
         else -> false
+    }
+
+    private companion object {
+        const val STATE_DELAY_MILLIS = 600L
     }
 }
