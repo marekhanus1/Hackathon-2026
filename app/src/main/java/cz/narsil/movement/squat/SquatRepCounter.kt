@@ -33,19 +33,19 @@ data class SquatThresholds(
     val standAngle: Double = 170.0,
     /** Úhel v koleni (°), který odpovídá hlubokému dřepu (hloubka 1). */
     val deepAngle: Double = 90.0,
-    /** Od této hloubky je dřep „dole“ (0,6 ≈ úhel 122°; SPEC původně 100° – tolerance pro sál). */
-    val downDepth: Double = 0.6,
+    /** Od této hloubky je dřep „dole“ (0,55 ≈ úhel 126°; tolerantní pro sál i šikmý záběr). */
+    val downDepth: Double = 0.55,
     /** Pod touto hloubkou je „nahoře“ (0,25 ≈ úhel 150°). */
     val upDepth: Double = 0.25,
     /** Kolik snímků po sobě musí poloha trvat (tlumení zákmitů). */
     val stableFrames: Int = 2,
     /** Nejkratší doba mezi dvěma dřepy. */
-    val minRepMillis: Long = 600,
+    val minRepMillis: Long = 550,
     /** Pod touto jistotou se kloub ignoruje (v šeru ML Kit hlásí nižší jistotu). */
-    val minLikelihood: Float = 0.4f,
+    val minLikelihood: Float = 0.35f,
     /** Vyhlazení hloubky (EMA): 1 = bez vyhlazení. */
-    val smoothing: Double = 0.6,
-    /** Poměr stehno/trup ve stoji se kalibruje z prvních snímků; tolik snímků stačí ke kalibraci. */
+    val smoothing: Double = 0.55,
+    /** Poměr ve stoji se kalibruje z prvních snímků; tolik snímků stačí ke kalibraci. */
     val calibrationFrames: Int = 5,
     /** Kolikrát se musí stehno (svisle) zkrátit proti stoji pro hloubku 1 (0 = stehno vodorovně). */
     val deepThighRatio: Double = 0.25,
@@ -59,10 +59,10 @@ data class SquatThresholds(
 /**
  * Čistá logika počítání dřepů (210, 231). Bez Androidu – testuje se v unit testech.
  *
- * Signál = **hloubka dřepu** 0–1 ze dvou zdrojů, bere se vyšší:
- * 1. úhel kyčel–koleno–kotník (dobře funguje z boku),
- * 2. svislá délka stehna (kyčel → koleno) vůči trupu (rameno → kyčel), kalibrovaná ve stoji –
- *    funguje i **čelem ke kameře**, kde se 2D úhel v koleni skoro nemění, a i bez kotníků v záběru.
+ * Signál = **hloubka dřepu** 0–1 ze tří zdrojů:
+ * 1. úhel kyčel–koleno–kotník (z boku bere prioritně lépe viditelnou bližší nohu, ne zakrytou),
+ * 2. svislá délka stehna vůči holeni (odolná proti předklonu trupu i vzdálenosti zepředu),
+ * 3. záloha: svislá délka stehna vůči trupu (s pamětí stoje proti předklonu), když nejsou vidět kotníky.
  *
  * Dřep = nahoře → dole → nahoře. Zákmity tlumí vyhlazení, [SquatThresholds.stableFrames]
  * a [SquatThresholds.minRepMillis]; mezi prahy se stav nemění (hystereze).
@@ -87,11 +87,17 @@ class SquatRepCounter(private val thresholds: SquatThresholds = SquatThresholds(
     var standingThighRatio: Double? = null
         private set
 
+    /** Poměr svislé délky stehna a holeni ve stoji (kalibrace); null = zatím neznámý. */
+    var standingShinRatio: Double? = null
+        private set
+
+    private var standingTorso: Double? = null
     private var candidate: Phase = Phase.UNKNOWN
     private var candidateFrames = 0
     private var wasDown = false
     private var lastRepAt = Long.MIN_VALUE / 2
-    private val calibration = ArrayList<Double>()
+    private val torsoCalibration = ArrayList<Double>()
+    private val shinCalibration = ArrayList<Double>()
 
     fun reset() {
         count = 0
@@ -99,11 +105,14 @@ class SquatRepCounter(private val thresholds: SquatThresholds = SquatThresholds(
         lastDepth = null
         lastAngle = null
         standingThighRatio = null
+        standingShinRatio = null
+        standingTorso = null
         candidate = Phase.UNKNOWN
         candidateFrames = 0
         wasDown = false
         lastRepAt = Long.MIN_VALUE / 2
-        calibration.clear()
+        torsoCalibration.clear()
+        shinCalibration.clear()
     }
 
     /** Snímek s klouby. Vrací true, když přibyl dřep. */
@@ -157,23 +166,46 @@ class SquatRepCounter(private val thresholds: SquatThresholds = SquatThresholds(
         return false
     }
 
-    /** Hloubka dřepu ze snímku (vyšší z úhlu a ze stehna), null = nohy nejsou vidět. */
+    /**
+     * Hloubka dřepu ze snímku.
+     * Když jsou vidět kotníky, kombinuje úhel kolene a poměr stehno/holeň (odolný vůči předklonu).
+     * Bez kotníků použije zálohu stehno/trup s referencí stoje.
+     */
     fun depthOf(frame: PoseFrame): Double? {
         val angle = kneeAngle(frame)
         if (angle != null) lastAngle = angle
         val byAngle = angle?.let(::angleDepth)
-        val byThigh = thighDepth(frame)
-        return listOfNotNull(byAngle, byThigh).maxOrNull()
+        val byShin = shinThighDepth(frame)
+        return if (byShin != null) {
+            listOfNotNull(byAngle, byShin).maxOrNull()
+        } else {
+            val byTorso = torsoThighDepth(frame)
+            listOfNotNull(byAngle, byTorso).maxOrNull()
+        }
     }
 
-    /** Úhel z dobře viditelných nohou (průměr, když jsou vidět obě). */
+    /** Úhel z dobře viditelných nohou (z boku bere dominantní bližší nohu, jinak vážený průměr). */
     fun kneeAngle(frame: PoseFrame): Double? {
-        val legs = listOfNotNull(
-            leg(frame.leftHip, frame.leftKnee, frame.leftAnkle),
-            leg(frame.rightHip, frame.rightKnee, frame.rightAnkle),
-        )
-        if (legs.isEmpty()) return null
-        return legs.map { angleAt(it.hip, it.knee, it.ankle) }.average()
+        val left = leg(frame.leftHip, frame.leftKnee, frame.leftAnkle)
+        val right = leg(frame.rightHip, frame.rightKnee, frame.rightAnkle)
+        return when {
+            left == null && right == null -> null
+            left != null && right == null -> angleAt(left.hip, left.knee, left.ankle)
+            right != null && left == null -> angleAt(right.hip, right.knee, right.ankle)
+            left != null && right != null -> {
+                if (abs(left.likelihood - right.likelihood) > SIDE_CONFIDENCE_GAP) {
+                    val primary = if (left.likelihood >= right.likelihood) left else right
+                    angleAt(primary.hip, primary.knee, primary.ankle)
+                } else {
+                    val wl = left.likelihood.toDouble()
+                    val wr = right.likelihood.toDouble()
+                    val al = angleAt(left.hip, left.knee, left.ankle)
+                    val ar = angleAt(right.hip, right.knee, right.ankle)
+                    (al * wl + ar * wr) / (wl + wr)
+                }
+            }
+            else -> null
+        }
     }
 
     /** Zpětná kompatibilita (210). */
@@ -189,41 +221,107 @@ class SquatRepCounter(private val thresholds: SquatThresholds = SquatThresholds(
         ((thresholds.standAngle - angle) / (thresholds.standAngle - thresholds.deepAngle)).coerceIn(0.0, 1.0)
 
     /**
-     * Hloubka ze svislé délky stehna vůči trupu. Ve stoji je stehno svisle dlouhé, v dřepu se
-     * (v obraze) zkracuje k nule. Poměr ve stoji se kalibruje (medián prvních snímků, pak maximum).
+     * Hloubka ze svislé délky stehna vůči holeni. Holeň zůstává při dřepu svislá a nemění
+     * délku při předklonu trupu ani při různé vzdálenosti od kamery.
      */
-    private fun thighDepth(frame: PoseFrame): Double? {
-        val ratio = thighRatio(frame) ?: return null
-        val standing = standingThighRatio
+    private fun shinThighDepth(frame: PoseFrame): Double? {
+        val ratio = shinThighRatio(frame) ?: return null
+        val standing = standingShinRatio
         if (standing == null) {
-            calibration += ratio
-            if (calibration.size >= thresholds.calibrationFrames) {
-                standingThighRatio = calibration.sorted()[calibration.size / 2]
+            shinCalibration += ratio.coerceIn(0.65, 1.45)
+            if (shinCalibration.size >= thresholds.calibrationFrames) {
+                standingShinRatio = shinCalibration.sorted()[shinCalibration.size / 2]
             }
             return null
         }
-        if (ratio > standing) standingThighRatio = ratio // narovnal se víc než při kalibraci
+        if (ratio > standing && ratio <= 1.35) {
+            standingShinRatio = standing + UPWARD_CALIBRATION_EMA * (ratio - standing)
+        }
+        val ref = standingShinRatio ?: return null
+        val deep = ref * thresholds.deepThighRatio
+        return ((ref - ratio) / (ref - deep)).coerceIn(0.0, 1.0)
+    }
+
+    private fun shinThighRatio(frame: PoseFrame): Double? {
+        fun legRatio(l: Leg): Double? {
+            val shin = hypot((l.ankle.x - l.knee.x).toDouble(), (l.ankle.y - l.knee.y).toDouble())
+            if (shin < 10.0) return null
+            return ((l.knee.y - l.hip.y) / shin).coerceAtLeast(0.0)
+        }
+        val left = leg(frame.leftHip, frame.leftKnee, frame.leftAnkle)
+        val right = leg(frame.rightHip, frame.rightKnee, frame.rightAnkle)
+        val leftRatio = left?.let(::legRatio)
+        val rightRatio = right?.let(::legRatio)
+        return when {
+            leftRatio == null && rightRatio == null -> null
+            leftRatio != null && rightRatio == null -> leftRatio
+            rightRatio != null && leftRatio == null -> rightRatio
+            left != null && right != null && leftRatio != null && rightRatio != null -> {
+                if (abs(left.likelihood - right.likelihood) > SIDE_CONFIDENCE_GAP) {
+                    if (left.likelihood >= right.likelihood) leftRatio else rightRatio
+                } else {
+                    (leftRatio + rightRatio) / 2.0
+                }
+            }
+            else -> null
+        }
+    }
+
+    /**
+     * Záložní hloubka ze svislé délky stehna vůči trupu (když kotníky nejsou v záběru).
+     * Používá paměť délky trupu ve stoji, aby předklon trupu nesrazil jmenovatel.
+     */
+    private fun torsoThighDepth(frame: PoseFrame): Double? {
+        val measured = torsoMeasurements(frame) ?: return null
+        val (thighDrop, torsoLen) = measured
+        val currentStandingTorso = standingTorso
+        val refTorso = if (currentStandingTorso == null) {
+            standingTorso = torsoLen
+            torsoLen
+        } else {
+            if (torsoLen > currentStandingTorso) {
+                standingTorso = currentStandingTorso + UPWARD_CALIBRATION_EMA * (torsoLen - currentStandingTorso)
+            }
+            maxOf(torsoLen, standingTorso ?: torsoLen)
+        }
+        val ratio = (thighDrop / refTorso).coerceAtLeast(0.0)
+        val standing = standingThighRatio
+        if (standing == null) {
+            torsoCalibration += ratio.coerceIn(0.55, 1.30)
+            if (torsoCalibration.size >= thresholds.calibrationFrames) {
+                standingThighRatio = torsoCalibration.sorted()[torsoCalibration.size / 2]
+            }
+            return null
+        }
+        if (ratio > standing && ratio <= 1.25) {
+            standingThighRatio = standing + UPWARD_CALIBRATION_EMA * (ratio - standing)
+        }
         val ref = standingThighRatio ?: return null
         val deep = ref * thresholds.deepThighRatio
         return ((ref - ratio) / (ref - deep)).coerceIn(0.0, 1.0)
     }
 
-    private fun thighRatio(frame: PoseFrame): Double? {
-        val shoulder = mid(frame.leftShoulder, frame.rightShoulder) ?: return null
-        val hip = mid(frame.leftHip, frame.rightHip) ?: return null
-        val knee = mid(frame.leftKnee, frame.rightKnee) ?: return null
+    private fun torsoMeasurements(frame: PoseFrame): Pair<Double, Double>? {
+        val shoulder = selectPoint(frame.leftShoulder, frame.rightShoulder) ?: return null
+        val hip = selectPoint(frame.leftHip, frame.rightHip) ?: return null
+        val knee = selectPoint(frame.leftKnee, frame.rightKnee) ?: return null
         val torso = hypot((hip.x - shoulder.x).toDouble(), (hip.y - shoulder.y).toDouble())
         if (torso < 1.0) return null
-        return ((knee.y - hip.y) / torso).coerceAtLeast(0.0)
+        val thighDrop = (knee.y - hip.y).toDouble().coerceAtLeast(0.0)
+        return thighDrop to torso
     }
 
     private fun ok(j: Joint?): Joint? = j?.takeIf { it.likelihood >= thresholds.minLikelihood }
 
-    private fun mid(a: Joint?, b: Joint?): Joint? {
+    private fun selectPoint(a: Joint?, b: Joint?): Joint? {
         val pa = ok(a)
         val pb = ok(b)
         return when {
-            pa != null && pb != null -> Joint((pa.x + pb.x) / 2, (pa.y + pb.y) / 2, minOf(pa.likelihood, pb.likelihood))
+            pa != null && pb != null -> when {
+                pa.likelihood - pb.likelihood > SIDE_CONFIDENCE_GAP -> pa
+                pb.likelihood - pa.likelihood > SIDE_CONFIDENCE_GAP -> pb
+                else -> Joint((pa.x + pb.x) / 2f, (pa.y + pb.y) / 2f, minOf(pa.likelihood, pb.likelihood))
+            }
             else -> pa ?: pb
         }
     }
@@ -236,6 +334,9 @@ class SquatRepCounter(private val thresholds: SquatThresholds = SquatThresholds(
     }
 
     companion object {
+        private const val SIDE_CONFIDENCE_GAP = 0.15f
+        private const val UPWARD_CALIBRATION_EMA = 0.15
+
         /** Úhel ABC ve vrcholu [b] ve stupních (0–180). */
         fun angleAt(a: Joint, b: Joint, c: Joint): Double {
             val deg = Math.toDegrees(
