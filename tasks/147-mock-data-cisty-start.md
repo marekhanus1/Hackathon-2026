@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/147-mock-data-cisty-start
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/107
 ---
 
 # 147 – Mock data vždy na čistou historii
