@@ -37,8 +37,8 @@ object SurfaceClassifier {
         val chat = SurfaceRules.CHAT_IDS.matches(ids) ||
             edits.any { e -> SurfaceRules.CHAT_HINTS.any { e.contains(it) } }
         if (chat) return Surface.MESSAGES
-        val search = edits.any { e -> SurfaceRules.SEARCH_HINTS.any { e.contains(it) } } ||
-            SurfaceClassifier.Rule(Surface.SEARCH, SurfaceRules.SEARCH_FRAGMENTS, SurfaceRules.SEARCH_EXCLUDE).matches(ids)
+        val searchIds = if (s.app == WatchedApp.LINKEDIN) SurfaceRules.LINKEDIN_SEARCH else SurfaceRules.GENERIC_SEARCH
+        val search = edits.any(SurfaceRules::isSearchField) || searchIds.matches(ids)
         return if (search) Surface.SEARCH else null
     }
 
@@ -169,6 +169,7 @@ object SurfaceRules {
 
     /** Obecná aplikace (149): nápověda pole hledání (malými písmeny). */
     val SEARCH_HINTS = listOf("hledat", "vyhled", "search")
+    fun isSearchField(field: String): Boolean = SEARCH_HINTS.any { field.contains(it) }
 
     /** Obecná aplikace (149): nápověda pole pro zprávu. */
     val CHAT_HINTS = listOf("zpráv", "message", "napiš", "napište", "chat", "odpověz soukrom")
@@ -180,6 +181,10 @@ object SurfaceRules {
         exclude = listOf("tab", "nav", "button", "icon", "badge", "menu", "fab", "count", "indicator", "bottom_bar", "toolbar_action"),
     )
     val SEARCH_EXCLUDE = listOf("button", "icon", "menu", "tab", "voice", "action_search", "_hint")
+    val GENERIC_SEARCH = SurfaceClassifier.Rule(Surface.SEARCH, SEARCH_FRAGMENTS, SEARCH_EXCLUDE)
+    val LINKEDIN_SEARCH = SurfaceClassifier.Rule(
+        Surface.SEARCH, listOf("search_result", "search_suggestion", "search_typeahead", "searchactivity"),
+    )
 
     /**
      * YouTube (148): nejdřív přehrávač (Shorts, otevřené video), pak vyhledávání, nakonec obecné „shorts“

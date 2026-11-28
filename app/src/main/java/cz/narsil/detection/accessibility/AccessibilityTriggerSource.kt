@@ -132,11 +132,16 @@ class AccessibilityTriggerSource(
         // 149: obecné aplikace a aplikace YouTube mimo přehrávač/hledání (domovský feed) – feed podle chování scrollu.
         val generic = snapshot.app?.generic == true || snapshot.app == WatchedApp.YOUTUBE
         // 149: obecné aplikace – feed podle chování scrollu; zprávy a hledání rozhodne snímek.
-        if (active && generic && scrolled) snapshot.scroll?.let { feedBehavior.onScroll(snapshot.packageName, it, now) }
+        val classified = if (active) SurfaceClassifier.classify(snapshot) else null
+        if (snapshot.app == WatchedApp.LINKEDIN && classified == Surface.SEARCH) {
+            feedBehavior.reset(snapshot.packageName)
+        } else if (active && generic && scrolled) {
+            snapshot.scroll?.let { feedBehavior.onScroll(snapshot.packageName, it, now) }
+        }
         val surface = when {
             !active -> null
-            generic -> SurfaceClassifier.classify(snapshot) ?: feedBehavior.surface(snapshot.packageName, now)
-            else -> SurfaceClassifier.classify(snapshot)
+            generic -> classified ?: feedBehavior.surface(snapshot.packageName, now)
+            else -> classified
         }
         if (active && generic && lastGeneric.put(snapshot.packageName, surface) != surface) {
             onDebug("obecná detekce ${snapshot.packageName}: $surface (${feedBehavior.describe(snapshot.packageName)})")

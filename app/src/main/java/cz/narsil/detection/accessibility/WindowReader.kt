@@ -81,7 +81,11 @@ internal object WindowReader {
                 url = extractUrl(node.text?.toString()) ?: extractUrl(node.contentDescription?.toString())
             }
             if (node.isEditable && editFields.size < MAX_EDIT_FIELDS) {
-                editFields += "${id?.substringAfter(":id/").orEmpty()}|${node.hintText?.toString().orEmpty()}".lowercase().take(MAX_TEXT_LEN)
+                val field = "${id?.substringAfter(":id/").orEmpty()}|${node.hintText?.toString().orEmpty()}".lowercase().take(MAX_TEXT_LEN)
+                // Vyhledávací pole v záhlaví LinkedInu je vidět i na feedu.
+                if (app != WatchedApp.LINKEDIN || node.isFocused || !SurfaceRules.isSearchField(field)) {
+                    editFields += field
+                }
             }
             if (generic) {
                 // Výpis jen tříd a ID, bez textů (ladění obecné detekce, 149).
