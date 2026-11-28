@@ -1,8 +1,8 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:
-agent:
-branch:
+status: in-progress
+owner: marek
+agent: claude
+branch: marek/claude/163-partak-misto-pujcky
 pr:
 ---
 
