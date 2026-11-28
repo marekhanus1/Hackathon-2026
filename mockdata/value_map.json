@@ -352,10 +352,10 @@
     },
     {
       "date": "2026-11-27",
-      "title": "Přednáška: Rust v embedded",
-      "channel": "Rust za kafe",
+      "title": "Divoká příroda Šumavy – dokument",
+      "channel": "Příroda zblízka",
       "format": "LONG",
-      "intent": "přednáška o Rustu",
+      "intent": "dokument o přírodě",
       "planned": true,
       "watched_percent": 97,
       "rating": 5
@@ -385,10 +385,10 @@
     {
       "channel": "Rust za kafe",
       "format": "LONG",
-      "views": 9,
-      "minutes": 174,
-      "avg_watched_percent": 88,
-      "avg_rating": 4.7,
+      "views": 8,
+      "minutes": 153,
+      "avg_watched_percent": 87,
+      "avg_rating": 4.6,
       "verdict": "KEEP"
     },
     {
@@ -408,6 +408,15 @@
       "avg_watched_percent": 88,
       "avg_rating": 1.6,
       "verdict": "TRAP"
+    },
+    {
+      "channel": "Příroda zblízka",
+      "format": "LONG",
+      "views": 1,
+      "minutes": 48,
+      "avg_watched_percent": 97,
+      "avg_rating": 5.0,
+      "verdict": "KEEP"
     },
     {
       "channel": "Memes denně",

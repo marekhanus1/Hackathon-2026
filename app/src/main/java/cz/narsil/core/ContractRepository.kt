@@ -61,7 +61,7 @@ data class PlanTask(
  * Večerní smlouva na den [date] (píše se večer předem, SPEC 1 a 6).
  *
  * @param stepGoal pohybový cíl v krocích
- * @param plannedContent plánovaný obsah volným textem (nejvýš 5), např. ["přednáška o Rustu", "jeden díl seriálu"]
+ * @param plannedContent plánovaný obsah volným textem (nejvýš 5), např. ["dokument o přírodě", "jeden díl seriálu"]
  * @param videoUri lokální URI ≤ 15s videa (content:// nebo file://), null = bez videa
  * @param tasks úkoly plánu (nejvýš 6)
  */

@@ -29,7 +29,9 @@ pr:
 - app/src/test/java/cz/narsil/app/demo/ (testy formátu událostí)
 - scripts/demo-most.py (nový)
 - pitch/narsil-pitch.html, pitch/snimky/README.md, pitch/demo.md (sekce Propojení s prezentací)
-- pitch/osnova.md (persona: Tereza → Šimon, 18 let – na žádost Marka, i v narsil-pitch.html a demo.md)
+- pitch/osnova.md (persona: Tereza → Šimon Sketa, 18 let – na žádost Marka, i v narsil-pitch.html a demo.md)
+- Na žádost Marka: „Přednáška o Rustu“ → „Dokument o přírodě“ (pitch, demo smlouva FakeContractRepository, výchozí texty
+  ui/screens/contract a home – Janovy soubory, mock data mockdata/generuj.py + value_map.json + MockDataGenerator), Nikolas v týmu.
 
 ## Poznámky
 - Větev stojí na marek/claude/151-pitch-lotr (PR #112) – sloučit až po něm.

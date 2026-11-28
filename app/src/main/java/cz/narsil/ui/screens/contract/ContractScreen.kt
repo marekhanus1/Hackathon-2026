@@ -329,7 +329,7 @@ private fun PlannedContentStep(
 ) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
-    val suggestions = listOf("Přednáška o Rustu", "Jeden díl seriálu", "Dokument o přírodě")
+    val suggestions = listOf("Dokument o přírodě", "Jeden díl seriálu", "Online přednáška")
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
         Text(
@@ -346,7 +346,7 @@ private fun PlannedContentStep(
             OutlinedTextField(
                 value = state.draftItemText,
                 onValueChange = onDraftChange,
-                placeholder = { Text("Např. přednáška o Rustu") },
+                placeholder = { Text("Např. dokument o přírodě") },
                 singleLine = true,
                 modifier = Modifier.weight(1f)
             )
@@ -630,7 +630,7 @@ private fun ContractStep2LightPreview() {
         ContractScreen(
             state = ContractUiState(
                 currentStep = ContractStep.PLANNED_CONTENT,
-                plannedItems = listOf("Přednáška o Rustu", "Jeden díl seriálu")
+                plannedItems = listOf("Dokument o přírodě", "Jeden díl seriálu")
             ),
             onSelectGoalType = {},
             onSetGoalAmount = {},

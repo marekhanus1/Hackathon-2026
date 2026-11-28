@@ -36,7 +36,7 @@ data class HomeUiState(
     /** Podepsaná smlouva platí dnes (jinak zítra). */
     val contractSignedForToday: Boolean = true,
     val contractTaskCount: Int = 0,
-    val plannedContentSummary: String = "Přednáška o Rustu, 1 díl seriálu",
+    val plannedContentSummary: String = "Dokument o přírodě, 1 díl seriálu",
     val zoneStatus: ZoneStatus = ZoneStatus.HOME
 ) {
     /** Nadpis karty smlouvy: splněná / podepsaná (dnes, zítra) / čeká. */

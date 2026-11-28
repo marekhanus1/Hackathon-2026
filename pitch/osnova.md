@@ -24,18 +24,18 @@ Doporučení: **A** pro otevření, z **C** si vzít video jako první obraz dem
 
 ## Persona
 
-**Šimon, 18 let, student (maturitní ročník), bydlí u rodičů.**
+**Šimon Sketa, 18 let, student (maturitní ročník), bydlí u rodičů.**
 - Večer přijde domů unavený, „na chvilku“ otevře TikTok – a v půl jedné zjistí, že úkol z matiky neudělal.
 - Zkoušel limity obrazovky (vypnul je), blokovací aplikace (smazal je), „digitální detox“ (tři dny).
 - Venku sociální sítě používá normálně a nechce, aby mu do toho cokoli mluvilo – ukáže kamarádovi video, odpoví na zprávu.
 - Chce: aby mu telefon připomněl, **kým chce být**, ve chvíli, kdy na to sám zapomene. Ne aby ho trestal.
 
 **Jeho příběh v pitchi (jeden den):**
-1. Večer (2 min): podepíše smlouvu se sebou – 6 000 kroků, „přednáška o Rustu“ je v plánu, krátké video.
+1. Večer (2 min): podepíše smlouvu se sebou – 6 000 kroků, „dokument o přírodě“ je v plánu, krátké video.
 2. Odpoledne venku ukazuje kamarádovi Reels – Narsil mlčí.
 3. Doma ve 21:40 se zasekne na TikToku. Po 5 minutách naskočí jeho včerejší video: „Čemu se teď vyhýbáš?“
 4. Vybere „20 dřepů hned“ – kamera je počítá, odemkne si 10 minut. Nebo odejde sám a dostane nejvíc XP.
-5. Přednáška o Rustu na YouTube projde zdarma – je v plánu.
+5. Dokument o přírodě na YouTube projde zdarma – je v plánu.
 6. Kdyby aplikaci smazal, nedozví se to server, ale jeho kamarád.
 
 ## Osnova (8 slidů, demo uprostřed)

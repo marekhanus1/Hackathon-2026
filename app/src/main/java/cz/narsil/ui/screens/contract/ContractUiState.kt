@@ -53,7 +53,7 @@ data class ContractUiState(
     val currentStep: ContractStep = ContractStep.MOVEMENT_GOAL,
     val goalType: MovementGoalType = MovementGoalType.STEPS,
     val goalAmount: Int = 6000,
-    val plannedItems: List<String> = listOf("Přednáška o Rustu"),
+    val plannedItems: List<String> = listOf("Dokument o přírodě"),
     val draftItemText: String = "",
     val isRecordingVideo: Boolean = false,
     val recordedSeconds: Int = 0,
