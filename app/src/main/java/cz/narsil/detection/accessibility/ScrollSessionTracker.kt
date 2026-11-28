@@ -2,6 +2,8 @@ package cz.narsil.detection.accessibility
 
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.Surface
+import cz.narsil.detection.youtube.VideoEndGate
+import cz.narsil.detection.youtube.VideoPlayback
 
 /**
  * Heuristika relace nekonečného obsahu (SPEC 3). Čistý Kotlin, bez času ze systému.
@@ -12,9 +14,13 @@ import cz.narsil.core.Surface
  * - Během zaplaceného času ([unlockedUntil]) se nezasahuje; po vypršení hned, pokud relace pokračuje.
  * - Po CLOSED ([onClosed]) nová relace od nuly.
  * - Odkaz z chatu: video otevřené hned po zprávách se nepočítá, dokud uživatel neposune na další.
+ * - Video (134): VIDEO relaci nezačne, ale probíhající relaci prodlužuje (ze Shorts/feedu na video).
+ *   Když limit vyprší na videu, zásah počká na konec videa / jiné video ([VideoEndGate]); odchod z videa
+ *   na nekonečný povrch nebo jinou stránku YouTube ([observe] `onVideoSite`) zasáhne hned.
  */
 class ScrollSessionTracker(
     private val pauseMillis: Long = 2 * 60_000,
+    private val videoGate: VideoEndGate = VideoEndGate(),
 ) {
     data class Session(val startedAtMillis: Long, val packageName: String, val surface: Surface)
 
@@ -31,6 +37,8 @@ class ScrollSessionTracker(
      *
      * @param surface povrch, null = mimo sledované (plocha, jiná aplikace, chat)
      * @param scrolled pozorování vzniklo scrollem (posun na další obsah)
+     * @param video stav přehrávače na povrchu VIDEO (134), null = nečitelný
+     * @param onVideoSite pozorování je z YouTube (aplikace nebo youtube.com ve Firefoxu)
      */
     fun observe(
         packageName: String,
@@ -39,19 +47,27 @@ class ScrollSessionTracker(
         now: Long,
         thresholdMillis: Long,
         scrolled: Boolean = false,
+        video: VideoPlayback? = null,
+        onVideoSite: Boolean = false,
     ): Session? {
         val prevSurface = lastSurface
         lastSurface = surface
-        if (surface == null || !surface.isEndless) {
+        if (surface == null || !counts(surface, context, now)) {
             if (surface == Surface.MESSAGES || (surface == null && WatchedApp.isIgnored(packageName))) {
-                fromChatPending = true
+                // Stránky YouTube mimo video (domů, hledání) jsou MESSAGES jen „v nejistotě“, nejde o chat.
+                if (!onVideoSite) fromChatPending = true
             }
-            if (session != null && now - lastEndlessAt > pauseMillis) session = null
+            if (session != null && now - lastEndlessAt > pauseMillis) endSession()
+            // Limit vypršel během videa a uživatel z videa odešel na jinou stránku YouTube: hranice videa.
+            if (videoGate.isWaiting && onVideoSite && surface != Surface.VIDEO && context == ComfortContext.HOME) {
+                val s = session ?: return null
+                if (!awaitingOutcome && now >= unlockedUntil) return fire(s)
+            }
             return null
         }
         // Kontext mimo domov: nic nepočítat, relace se neudržuje.
         if (context != ComfortContext.HOME) {
-            session = null
+            endSession()
             return null
         }
         if (fromChatPending) {
@@ -65,6 +81,7 @@ class ScrollSessionTracker(
         if (current == null || now - lastEndlessAt > pauseMillis) {
             session = Session(now, packageName, surface)
             awaitingOutcome = false
+            videoGate.reset()
         } else if (current.packageName != packageName || current.surface != surface) {
             session = current.copy(packageName = packageName, surface = surface)
         }
@@ -72,8 +89,42 @@ class ScrollSessionTracker(
         val s = session ?: return null
         if (awaitingOutcome || now < unlockedUntil) return null
         if (now - s.startedAtMillis < thresholdMillis) return null
+        if (surface == Surface.VIDEO && !videoGate.mayIntervene(video, now)) return null
+        return fire(s)
+    }
+
+    /** Limit vypršel na videu a zásah čeká na jeho konec (134). Pro UI a ladění. */
+    val isWaitingForVideoEnd: Boolean get() = videoGate.isWaiting
+
+    /**
+     * Počítá se [surface] do relace? Nekonečný povrch vždy; VIDEO jen jako pokračování živé relace doma
+     * (samotné video, např. odkaz z chatu, relaci nezačne).
+     */
+    private fun counts(surface: Surface, context: ComfortContext, now: Long): Boolean =
+        surface.isEndless ||
+            (surface == Surface.VIDEO && context == ComfortContext.HOME && session != null && now - lastEndlessAt <= pauseMillis)
+
+    private fun fire(s: Session): Session {
+        videoGate.reset()
         awaitingOutcome = true
         return s
+    }
+
+    private fun endSession() {
+        session = null
+        videoGate.reset()
+    }
+
+    /**
+     * Jak blízko je limit (135): 0..1 podle délky relace, null = ukazatel skrýt (žádná relace, mimo nekonečný
+     * povrch nebo pauza, mimo domov, odemčeno, Ozvěna už běží nebo čeká na konec videa).
+     * Volat po [observe] se stejným [now] a kontextem.
+     */
+    fun progress(now: Long, thresholdMillis: Long, context: ComfortContext): Float? {
+        val s = session ?: return null
+        if (context != ComfortContext.HOME || lastSurface?.isEndless != true) return null
+        if (awaitingOutcome || now < unlockedUntil || videoGate.isWaiting || thresholdMillis <= 0) return null
+        return ((now - s.startedAtMillis).toFloat() / thresholdMillis).coerceIn(0f, 1f)
     }
 
     /** Délka relace v [now], 0 bez relace. */
@@ -81,7 +132,7 @@ class ScrollSessionTracker(
 
     /** Zavřít: nová relace od nuly. */
     fun onClosed() {
-        session = null
+        endSession()
         awaitingOutcome = false
         unlockedUntil = 0
     }
@@ -90,10 +141,12 @@ class ScrollSessionTracker(
     fun onUnlocked(untilMillis: Long) {
         unlockedUntil = untilMillis
         awaitingOutcome = false
+        videoGate.reset()
     }
 
     /** Okno zavřeno bez volby (např. systémem): dovolí další zásah. */
     fun onDismissed() {
         awaitingOutcome = false
+        videoGate.reset()
     }
 }

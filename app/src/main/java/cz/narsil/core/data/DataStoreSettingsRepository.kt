@@ -51,6 +51,7 @@ class DataStoreSettingsRepository(
         demoContractToday = this[DEMO_CONTRACT_TODAY] ?: false,
         demoAlwaysYes = this[DEMO_ALWAYS_YES] ?: false,
         exercise = enumOr(this[EXERCISE], Settings().exercise),
+        showScrollProgress = this[SHOW_SCROLL_PROGRESS] ?: true,
     )
 
     private fun androidx.datastore.preferences.core.MutablePreferences.write(s: Settings) {
@@ -61,6 +62,7 @@ class DataStoreSettingsRepository(
         this[DEMO_CONTRACT_TODAY] = s.demoContractToday
         this[DEMO_ALWAYS_YES] = s.demoAlwaysYes
         this[EXERCISE] = s.exercise.name
+        this[SHOW_SCROLL_PROGRESS] = s.showScrollProgress
     }
 
     private companion object {
@@ -71,5 +73,6 @@ class DataStoreSettingsRepository(
         val DEMO_THRESHOLD_SEC = intPreferencesKey("demo_threshold_sec")
         val DEMO_CONTRACT_TODAY = booleanPreferencesKey("demo_contract_today")
         val DEMO_ALWAYS_YES = booleanPreferencesKey("demo_always_yes")
+        val SHOW_SCROLL_PROGRESS = booleanPreferencesKey("show_scroll_progress")
     }
 }
