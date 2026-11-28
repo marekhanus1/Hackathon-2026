@@ -52,6 +52,8 @@ class ResetDayTest {
         engine.onContractFulfilled() // včera
         clock.set(java.time.LocalDateTime.of(2026, 11, 29, 10, 0))
         engine.onOutcome(cz.narsil.core.InterventionOutcome.CLOSED)
+        clock.set(java.time.LocalDateTime.of(2026, 11, 29, 10, 10)) // zavření vydrželo (155)
+        engine.refresh()
         engine.setAvatar(AvatarState.THRIVING)
         assertEquals(300, engine.state.value.xp) // smlouva 100 + včerejší boss 150 + CLOSED 50
         assertTrue(GamificationDebug.resetDay(engine))
@@ -59,6 +61,7 @@ class ResetDayTest {
         assertEquals(0, engine.state.value.today.reclaimedMinutes)
         assertEquals(AvatarState.OK, engine.state.value.avatar)
         assertEquals(50, engine.onOutcome(cz.narsil.core.InterventionOutcome.CLOSED)) // strop CLOSED od nuly
+        clock.set(java.time.LocalDateTime.of(2026, 11, 29, 10, 20))
         val restarted = RulesGamificationEngine(store, clock)
         restarted.refresh()
         assertEquals(300, restarted.state.value.xp)

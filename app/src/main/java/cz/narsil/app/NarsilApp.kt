@@ -8,5 +8,8 @@ class NarsilApp : Application() {
         super.onCreate()
         ServiceLocator.init(this)
         EchoOverlayStarter.start()
+        // Proces mohl vypnout systém (MIUI): jednou za čas říct, co nastavit, a obnovit hlídací službu.
+        KillWatcher.check(this)
+        GuardService.start(this)
     }
 }

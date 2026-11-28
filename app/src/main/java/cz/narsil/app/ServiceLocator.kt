@@ -148,6 +148,8 @@ object ServiceLocator {
                 onDebug = { android.util.Log.d("NarsilA11y", it) },
                 // 153: tik a zásahy jen nad aplikací skutečně v popředí.
                 foreground = { cz.narsil.detection.accessibility.NarsilAccessibilityService.instance?.foregroundPackage() },
+                // MIUI proces vypíná: relace a zaplacený čas přežijí restart.
+                persistence = cz.narsil.detection.accessibility.PrefsSessionPersistence(appContext),
             )
         }
 

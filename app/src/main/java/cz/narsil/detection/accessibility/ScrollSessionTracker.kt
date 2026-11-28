@@ -1,5 +1,6 @@
 package cz.narsil.detection.accessibility
 
+import cz.narsil.core.CloseRules
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.Surface
 import cz.narsil.detection.youtube.VideoEndGate
@@ -12,7 +13,8 @@ import cz.narsil.detection.youtube.VideoPlayback
  * - Pauza > [pauseMillis] mimo nekonečný povrch relaci ukončí.
  * - Zásah, když relace ≥ práh a kontext je HOME. MESSAGES, AWAY, UNKNOWN nikdy.
  * - Během zaplaceného času ([unlockedUntil]) se nezasahuje; po vypršení hned, pokud relace pokračuje.
- * - Po CLOSED ([onClosed]) nová relace od nuly.
+ * - Po CLOSED ([onClosed]) nová relace od nuly. Návrat na nekonečný povrch do [closeConfirmMillis] po zavření
+ *   (155) ale zasáhne hned, bez nové tolerance: „Zavřít“ nesmí být 5 minut zadarmo.
  * - Odkaz z chatu: video otevřené hned po zprávách se nepočítá, dokud uživatel neposune na další.
  * - Video (134): VIDEO relaci nezačne, ale probíhající relaci prodlužuje (ze Shorts/feedu na video).
  *   Když limit vyprší na videu, zásah počká na konec videa / jiné video ([VideoEndGate]); odchod z videa
@@ -21,6 +23,7 @@ import cz.narsil.detection.youtube.VideoPlayback
 class ScrollSessionTracker(
     private val pauseMillis: Long = 2 * 60_000,
     private val videoGate: VideoEndGate = VideoEndGate(),
+    private val closeConfirmMillis: Long = CloseRules.CONFIRM_MILLIS,
 ) {
     data class Session(val startedAtMillis: Long, val packageName: String, val surface: Surface)
 
@@ -31,6 +34,8 @@ class ScrollSessionTracker(
     private var fromChatPending = false
     private var awaitingOutcome = false
     private var unlockedUntil = 0L
+    /** Do kdy návrat na feed po „Zavřít“ zasáhne hned (155); 0 = žádné okno. */
+    private var relapseUntil = 0L
 
     /**
      * Zpracuje pozorování (snímek nebo tik). Vrací relaci, pro kterou má přijít zásah, jinak null.
@@ -91,6 +96,8 @@ class ScrollSessionTracker(
         lastEndlessAt = now
         val s = session ?: return null
         if (awaitingOutcome || now < unlockedUntil) return null
+        // 155: návrat do feedu krátce po „Zavřít“ – Ozvěna hned, tolerance se znovu nedává.
+        if (now < relapseUntil) return fire(s)
         if (now - s.startedAtMillis < thresholdMillis) return null
         if (surface == Surface.VIDEO && !videoGate.mayIntervene(video, now)) return null
         return fire(s)
@@ -108,6 +115,7 @@ class ScrollSessionTracker(
             (surface == Surface.VIDEO && context == ComfortContext.HOME && session != null && now - lastEndlessAt <= pauseMillis)
 
     private fun fire(s: Session): Session {
+        relapseUntil = 0
         videoGate.reset()
         awaitingOutcome = true
         return s
@@ -133,11 +141,15 @@ class ScrollSessionTracker(
     /** Délka relace v [now], 0 bez relace. */
     fun durationMillis(now: Long): Long = session?.let { now - it.startedAtMillis } ?: 0
 
-    /** Zavřít: nová relace od nuly. */
-    fun onClosed() {
+    /**
+     * Zavřít v [nowMillis]: relace končí; návrat na nekonečný povrch do [closeConfirmMillis] zasáhne hned (155),
+     * později začne nová relace od nuly.
+     */
+    fun onClosed(nowMillis: Long) {
         endSession()
         awaitingOutcome = false
         unlockedUntil = 0
+        relapseUntil = nowMillis + closeConfirmMillis
     }
 
     /** Zaplaceno / odemčeno do [untilMillis]: do té doby bez zásahu, pak hned znovu. */
@@ -145,6 +157,28 @@ class ScrollSessionTracker(
         unlockedUntil = untilMillis
         awaitingOutcome = false
         videoGate.reset()
+    }
+
+    /** Stav k uložení přes smrt procesu (MIUI); null = není co ukládat. */
+    fun snapshot(): SavedSession? {
+        val s = session
+        return when {
+            s != null -> SavedSession(s.startedAtMillis, s.packageName, s.surface, lastEndlessAt, unlockedUntil)
+            unlockedUntil > 0 -> SavedSession(0, "", Surface.FEED, 0, unlockedUntil, hasSession = false)
+            else -> null
+        }
+    }
+
+    /**
+     * Obnoví relaci po restartu procesu: pokračuje, jen když od posledního nekonečného obsahu neuběhla
+     * pauza (jinak by stejně skončila). Zaplacený čas platí, dokud nevyprší.
+     */
+    fun restore(saved: SavedSession, now: Long) {
+        if (saved.unlockedUntilMillis > now) unlockedUntil = saved.unlockedUntilMillis
+        if (!saved.hasSession || saved.packageName.isEmpty() || now - saved.lastEndlessAtMillis > pauseMillis) return
+        session = Session(saved.startedAtMillis, saved.packageName, saved.surface)
+        lastEndlessAt = saved.lastEndlessAtMillis
+        lastSurface = saved.surface
     }
 
     /** Okno zavřeno bez volby (např. systémem): dovolí další zásah. */
