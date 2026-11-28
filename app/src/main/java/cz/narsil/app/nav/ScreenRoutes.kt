@@ -17,12 +17,18 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.data.DayKey
+import cz.narsil.core.data.LedgerKind
+import cz.narsil.core.data.NarsilDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.RewardBuilder
 import cz.narsil.ui.screens.badges.BadgesScreen
@@ -105,7 +111,30 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
 fun MirrorRoute() {
     val vm: MirrorViewModel = viewModel()
     val state by vm.uiState.collectAsState()
-    MirrorScreen(state = state, onSelectTab = vm::selectTab)
+    // Skutečná data z Room (121): posledních 21 dní včetně dneška. Bez dat zůstanou připravená čísla.
+    val days by produceState(emptyList<MirrorStats.Day>()) {
+        value = withContext(Dispatchers.IO) {
+            runCatching {
+                val db = NarsilDatabase.get(ServiceLocator.appContext)
+                val to = DayKey.today()
+                val from = to.minusDays(MirrorStats.DAYS - 1L)
+                val fromMillis = DayKey.startMillis(from)
+                val toMillis = DayKey.startMillis(to.plusDays(1))
+                val tasks = (0 until MirrorStats.DAYS).associate { i ->
+                    val d = from.plusDays(i.toLong())
+                    d to db.ledgerDao().sumForDate(d.toString(), LedgerKind.TASK_REWARD)
+                }
+                MirrorStats.days(
+                    consumption = db.consumptionDao().between(fromMillis, toMillis),
+                    interventions = db.interventionDao().between(fromMillis, toMillis),
+                    taskMinutes = { d -> tasks[d] ?: 0 },
+                    from = from,
+                    to = to,
+                )
+            }.getOrDefault(emptyList())
+        }
+    }
+    MirrorScreen(state = MirrorStats.apply(state, days), onSelectTab = vm::selectTab)
 }
 
 @Composable

@@ -69,6 +69,10 @@ interface ConsumptionDao {
     @Insert
     suspend fun insert(event: ConsumptionEventEntity): Long
 
+    /** Probíhající úsek se prodlužuje (121): řádek se založí na začátku a průběžně se mu zvětšuje délka. */
+    @Query("UPDATE consumption_events SET durationMillis = :durationMillis WHERE id = :id")
+    suspend fun updateDuration(id: Long, durationMillis: Long)
+
     @Query("SELECT * FROM consumption_events WHERE startedAtMillis >= :fromMillis AND startedAtMillis < :toMillis ORDER BY startedAtMillis")
     suspend fun between(fromMillis: Long, toMillis: Long): List<ConsumptionEventEntity>
 
