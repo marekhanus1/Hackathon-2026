@@ -732,6 +732,7 @@ svg text{font-family:var(--f)}
   <ol start="2"><li>„Sdílet okno telefonu“ → vybrat okno <b>Narsil-live</b>.</li><li>Zavřít tento panel klávesou <b>S</b> a přepnout na celou obrazovku (<b>F</b>).</li></ol>
   <button class="sbtn solid" id="lvWin">Sdílet okno telefonu</button><button class="sbtn" id="lvStop">Zastavit přenos</button><button class="sbtn" id="lvClose">Zavřít (S)</button>
   <div id="live-st">Přenos neběží – prezentace použije záložní slidy s maketami.</div>
+  <div id="relay-st" class="sm" style="margin-top:6px"></div>
   <h3 style="margin-top:28px;font-size:30px">Demo most (telefon ↔ prezentace)</h3>
   <p class="sm">Prezentaci spusť přes <b>python3 scripts/demo-most.py --scrcpy</b> (místo http.server). Slide Demo pak posouvá scény podle telefonu, ukazuje počítadlo dřepů a scény Venku/Doma přepnou telefon samy. Záloha na slidu Demo z klávesnice: <b>E</b> Ozvěna hned, <b>X</b> +500 XP, <b>H</b> doma, <b>V</b> venku.</p>
   <div class="mrow"><button class="sbtn solid" data-cmd="prepare">Připravit demo v telefonu</button><button class="sbtn" data-cmd="away">Venku</button><button class="sbtn" data-cmd="home">Doma</button><button class="sbtn" data-cmd="echo">Ozvěna hned</button><button class="sbtn" data-cmd="xp">+500 XP</button><button class="sbtn" data-cmd="state">Stav</button></div>
@@ -889,15 +890,18 @@ function applyLive(){$$('.phone[data-live]').forEach(p=>{const own=!!stream,rem=
   p.classList.toggle('live',own||rem)});
   $('#liveDot').classList.toggle('on',!!stream&&$('#setup').classList.contains('on'))}
 // Sdílí-li tahle záložka okno a běží most, posílá snímky telefonu ostatním prezentacím (http://IP:8000).
-// Záložka musí zůstat viditelná (skrytou Firefox zpomalí na 1 snímek za sekundu).
-const RELAY={on:false,busy:false,v:null,c:null,
+// Takt dává Worker, takže přeposílá i záložka v pozadí.
+const RELAY={on:false,busy:0,v:null,c:null,sent:0,
   start(){if(this.on||!/^https?:/.test(location.protocol))return;this.on=true;
     this.v=document.createElement('video');this.v.muted=true;this.v.playsInline=true;this.c=document.createElement('canvas');
-    setInterval(()=>this.tick(),100)},
-  tick(){if(!stream||this.busy||!MOST.local)return;const v=this.v;if(v.srcObject!==stream){v.srcObject=stream;v.play().catch(()=>{})}
+    // takt z Workeru: časovače skryté záložky Firefox brzdí na 1/s, zprávy z Workeru ne
+    try{const w=new Worker(URL.createObjectURL(new Blob(['setInterval(()=>postMessage(0),100)'],{type:'text/javascript'})));w.onmessage=()=>this.tick()}
+    catch(e){setInterval(()=>this.tick(),100)}
+    setInterval(()=>{$('#relay-st').textContent=stream?(MOST.local?`Do sítě posláno ${this.sent} snímků (prezentace na http://IP:8000 ukáže telefon).`:'Do sítě se posílá jen ze záložky na localhostu.'):''},1000)},
+  tick(){if(!stream||this.busy>1||!MOST.local)return;const v=this.v;if(v.srcObject!==stream){v.srcObject=stream;v.play().catch(()=>{})}
     if(!v.videoWidth)return;const k=Math.min(1,1280/v.videoHeight),c=this.c;c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);
-    c.getContext('2d').drawImage(v,0,0,c.width,c.height);this.busy=true;
-    c.toBlob(b=>{if(!b){this.busy=false;return}fetch('/demo/frame',{method:'POST',body:b}).catch(()=>{}).finally(()=>this.busy=false)},'image/jpeg',.72)}};
+    c.getContext('2d').drawImage(v,0,0,c.width,c.height);this.busy++;
+    c.toBlob(b=>{if(!b){this.busy--;return}fetch('/demo/frame',{method:'POST',body:b}).then(r=>{if(r.ok)this.sent++}).catch(()=>{}).finally(()=>this.busy--)},'image/jpeg',.72)}};
 function stop(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}applyLive();go(cur,step);st('Přenos neběží – prezentace použije záložní slidy s maketami.')}
 $('#lvWin').onclick=async()=>{if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){st(remoteLive?'Obraz telefonu sem posílá most – sdílet tady není potřeba.':'Tady sdílení okna nejde – sdílej na notebooku s telefonem v http://localhost:8000, obraz se sem pošle sám.',remoteLive?'ok':'err');return}
   try{const s=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:30}},audio:false});if(stream)stream.getTracks().forEach(t=>t.stop());stream=s;

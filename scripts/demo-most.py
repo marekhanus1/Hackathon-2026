@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Demo most (161): telefon ↔ prezentace. Jen standardní knihovna Pythonu.
 
-  python3 scripts/demo-most.py            # prezentace + události z telefonu
-  python3 scripts/demo-most.py --scrcpy   # navíc zrcadlení telefonu ve smyčce (po výpadku USB znovu)
+  python3 scripts/demo-most.py --scrcpy             # prezentace + události + okno Narsil-live ve smyčce
+  python3 scripts/demo-most.py --scrcpy --adb-video # záloha: obraz telefonu i přes adb screencap (~5 snímků/s)
+
+Obraz pro prezentace v síti posílá záložka na localhostu, která sdílí okno Narsil-live. Záloha --adb-video
+bere obraz přes adb bez sdílení (trhanější, zatěžuje telefon – při dřepech může zpomalit kameru).
 
 Pak ve Firefoxu http://localhost:8000/narsil-pitch.html → S → „Sdílet okno telefonu“ (Narsil-live).
 Prezentace jde otevřít i z jiného počítače v síti (http://<IP notebooku>:8000/): obraz telefonu sem přeposílá
@@ -104,7 +107,7 @@ HUB = Hub()
 
 
 class Frames:
-    """Poslední snímek telefonu (JPEG) ze záložky, která sdílí okno; čekající MJPEG klienti se probudí."""
+    """Poslední snímek telefonu (JPEG) – z adb nebo ze záložky, která sdílí okno; MJPEG klienti se probudí."""
 
     TIMEOUT = 3.0
 
@@ -113,8 +116,13 @@ class Frames:
         self.jpeg = None
         self.seq = 0
         self.at = 0.0
+        self.browser_at = 0.0
 
-    def put(self, data: bytes):
+    def put(self, data: bytes, browser: bool = False):
+        if browser:
+            self.browser_at = time.time()
+        elif time.time() - self.browser_at < 2:
+            return  # sdílené okno z prohlížeče je plynulejší, má přednost
         with self.cond:
             self.jpeg, self.seq, self.at = data, self.seq + 1, time.time()
             self.cond.notify_all()
@@ -213,6 +221,66 @@ def send_cmd(cmd: str) -> bool:
     return ok
 
 
+def read_png(stream):
+    """Jeden PNG z proudu zřetězených PNG (screencap -p ve smyčce). None = konec proudu."""
+    sig = stream.read(8)
+    if len(sig) < 8:
+        return None
+    if sig != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("není PNG")
+    parts = [sig]
+    while True:
+        head = stream.read(8)
+        if len(head) < 8:
+            return None
+        n = int.from_bytes(head[:4], "big")
+        body = stream.read(n + 4)
+        if len(body) < n + 4:
+            return None
+        parts += [head, body]
+        if head[4:8] == b"IEND":
+            return b"".join(parts)
+
+
+def capture_loop(fps: float, height: int):
+    """Obraz telefonu pro prezentaci: screencap v jedné stálé adb relaci, PNG → JPEG (PIL) → MJPEG."""
+    try:
+        from io import BytesIO
+        from PIL import Image
+    except ImportError:
+        log("obraz telefonu: chybí PIL (python3-pil) – zbývá sdílení okna ve Firefoxu")
+        return
+    pause = max(0.0, 1.0 / fps - 0.15)
+    while True:
+        if device_name() is None:
+            time.sleep(2)
+            continue
+        log(f"obraz telefonu: snímám přes adb (~{fps:g} snímků/s)")
+        proc = subprocess.Popen(
+            [ADB, "exec-out", "sh", "-c", f"while true; do screencap -p; sleep {pause:.2f}; done"],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=0,
+        )
+        CHILDREN.append(proc)
+        try:
+            while True:
+                png = read_png(proc.stdout)
+                if png is None:
+                    break
+                im = Image.open(BytesIO(png)).convert("RGB")
+                if im.height > height:
+                    im = im.resize((round(im.width * height / im.height), height), Image.BILINEAR)
+                out = BytesIO()
+                im.save(out, "JPEG", quality=72)
+                FRAMES.put(out.getvalue())
+        except (ValueError, OSError) as e:
+            log(f"obraz telefonu: {e}")
+        finally:
+            proc.kill()
+            CHILDREN.remove(proc)
+        log("obraz telefonu: přerušeno (USB?), za 2 s znovu")
+        time.sleep(2)
+
+
 def scrcpy_loop(binary: str, extra: list[str]):
     """Zrcadlení telefonu pro sdílení okna v prezentaci; po výpadku USB ho nahodí znovu."""
     env = dict(os.environ, ADB=ADB)  # stejné adb → scrcpy nerestartuje adb server
@@ -237,6 +305,11 @@ def scrcpy_loop(binary: str, extra: list[str]):
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=str(PITCH), **kw)
+
+    def end_headers(self):
+        if not self.path.startswith("/demo/"):
+            self.send_header("Cache-Control", "no-store")
+        super().end_headers()
 
     def log_message(self, fmt, *args):
         pass  # do konzole jen události dema
@@ -266,7 +339,7 @@ class Handler(SimpleHTTPRequestHandler):
             n = int(self.headers.get("Content-Length") or 0)
             if not local or not 0 < n <= MAX_FRAME:
                 return self._json(403 if not local else 400, {"ok": False})
-            FRAMES.put(self.rfile.read(n))
+            FRAMES.put(self.rfile.read(n), browser=True)
             return self._json(200, {"ok": True})
         if self.path.startswith("/demo/cmd/") and not (local or ALLOW_REMOTE_CMD):
             return self._json(403, {"ok": False, "error": "příkazy jen z localhostu (--allow-remote-cmd)"})
@@ -329,7 +402,10 @@ def main():
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--host", default="0.0.0.0", help="127.0.0.1 = jen tento počítač")
     ap.add_argument("--allow-remote-cmd", action="store_true", help="příkazy do telefonu i z jiných počítačů v síti")
-    ap.add_argument("--scrcpy", action="store_true", help="spustit zrcadlení telefonu ve smyčce")
+    ap.add_argument("--scrcpy", action="store_true", help="spustit i okno scrcpy (pro sdílení okna ve Firefoxu)")
+    ap.add_argument("--fps", type=float, default=5, help="obraz telefonu přes adb: snímků za sekundu")
+    ap.add_argument("--height", type=int, default=1280, help="obraz telefonu přes adb: výška v px")
+    ap.add_argument("--adb-video", action="store_true", help="záloha: obraz telefonu přes adb screencap")
     ap.add_argument("--scrcpy-bin", default=str(Path.home() / ".local/opt/scrcpy/scrcpy"))
     ap.add_argument("--scrcpy-arg", action="append", default=[], help="další argument pro scrcpy")
     a = ap.parse_args()
@@ -340,6 +416,8 @@ def main():
     ALLOW_REMOTE_CMD = a.allow_remote_cmd
     threading.Thread(target=logcat_loop, daemon=True).start()
     threading.Thread(target=FRAMES.watchdog, daemon=True).start()
+    if a.adb_video:
+        threading.Thread(target=capture_loop, args=(a.fps, a.height), daemon=True).start()
     if a.scrcpy:
         binary = a.scrcpy_bin if Path(a.scrcpy_bin).exists() else (shutil.which("scrcpy") or a.scrcpy_bin)
         threading.Thread(target=scrcpy_loop, args=(binary, a.scrcpy_arg), daemon=True).start()
@@ -349,7 +427,7 @@ def main():
     log(f"prezentace: http://localhost:{a.port}/narsil-pitch.html  (adb: {ADB})")
     if a.host != "127.0.0.1":
         for ip in lan_ips():
-            log(f"v síti:     http://{ip}:{a.port}/narsil-pitch.html  (obraz telefonu přes záložku na localhostu)")
+            log(f"v síti:     http://{ip}:{a.port}/narsil-pitch.html")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

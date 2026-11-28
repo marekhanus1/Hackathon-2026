@@ -55,6 +55,7 @@ a propojí slide Demo s aplikací v telefonu:
 - Bez mostu (soubor nebo `http.server`) se prezentace chová jako dřív.
 - **Prezentace z jiného počítače v síti:** most poslouchá i na IP notebooku (`http://<IP>:8000/`, vypíše ji při startu).
   Okno telefonu se sdílí jen v záložce na `http://localhost:8000` na notebooku s telefonem (Firefox na `http://IP` sdílení
-  nepovolí). Ta záložka pak posílá snímky mostu a prezentace na IP ukáže telefon jako MJPEG (zpoždění ~0,2 s).
-  Sdílející záložka musí zůstat viditelná – skrytou Firefox zpomalí. Příkazy do telefonu jdou jen z localhostu
+  nepovolí). Ta záložka pak posílá snímky mostu (~10 za sekundu, i když je v pozadí) a prezentace na IP ukáže
+  telefon jako MJPEG (zpoždění ~0,2 s). V panelu `S` je vidět „Do sítě posláno N snímků“. Záloha bez sdílení okna:
+  `--adb-video` (obraz přes adb screencap, ~5 snímků/s, zatěžuje telefon). Příkazy do telefonu jdou jen z localhostu
   (`--allow-remote-cmd` je povolí i z LAN), `--host 127.0.0.1` vypne přístup ze sítě.
