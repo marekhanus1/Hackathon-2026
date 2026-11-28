@@ -228,4 +228,59 @@ class SettingsViewModelTest {
         runCurrent()
         assertNull(vm.uiState.value.pendingChange)
     }
+
+    /** 160: „Doma“ → „Automaticky“ mimo domácí Wi-Fi vypne Ozvěnu jako „Venku“, proto potvrzení. */
+    @Test
+    fun manualHomeToAutoAwayFromHomeWifiNeedsConfirmation() = runTest(dispatcher) {
+        settings = FakeSettingsRepository(Settings(homeSsid = "Doma"))
+        context.setWifi("Kavarna")
+        val vm = vm(); collect(vm)
+        vm.setManualZone(ManualZoneChoice.HOME)
+        runCurrent()
+        vm.setManualZone(ManualZoneChoice.AUTO)
+        runCurrent()
+        assertEquals(ComfortContext.HOME, context.manualOverride.value)
+        assertNotNull(vm.uiState.value.pendingChange)
+        advanceTimeBy(SettingsGuard.CONFIRM_DELAY_SECONDS * 1_000L + 1)
+        vm.confirmPendingChange()
+        runCurrent()
+        assertNull(context.manualOverride.value)
+    }
+
+    /** 160: na domácí Wi-Fi automatika vyjde doma, nic se neuvolňuje. */
+    @Test
+    fun manualHomeToAutoOnHomeWifiIsImmediate() = runTest(dispatcher) {
+        settings = FakeSettingsRepository(Settings(homeSsid = "\"Doma\""))
+        context.setWifi("Doma")
+        val vm = vm(); collect(vm)
+        vm.setManualZone(ManualZoneChoice.HOME)
+        runCurrent()
+        vm.setManualZone(ManualZoneChoice.AUTO)
+        runCurrent()
+        assertNull(context.manualOverride.value)
+        assertNull(vm.uiState.value.pendingChange)
+    }
+
+    /** 160: jiná síť místo uloženého domova = potvrzení; první uložení a stejná síť hned. */
+    @Test
+    fun replacingHomeWifiNeedsConfirmation() = runTest(dispatcher) {
+        context.setWifi("Doma")
+        val first = vm(); collect(first)
+        first.saveCurrentWifiAsHome() // domov ještě není uložený
+        runCurrent()
+        assertEquals("Doma", context.savedHome)
+        assertNull(first.uiState.value.pendingChange)
+
+        settings = FakeSettingsRepository(Settings(homeSsid = "Doma"))
+        context = cz.narsil.core.fake.FakeContextRepository(wifiSsid = "Kavarna")
+        val vm = vm(); collect(vm)
+        vm.saveCurrentWifiAsHome()
+        runCurrent()
+        assertNull(context.savedHome)
+        assertNotNull(vm.uiState.value.pendingChange)
+        advanceTimeBy(SettingsGuard.CONFIRM_DELAY_SECONDS * 1_000L + 1)
+        vm.confirmPendingChange()
+        runCurrent()
+        assertEquals("Kavarna", context.savedHome)
+    }
 }

@@ -9,6 +9,8 @@ import cz.narsil.core.InterventionTriggerSource
 import cz.narsil.core.SettingsRepository
 import cz.narsil.core.Surface
 import cz.narsil.detection.youtube.EndScreenFilter
+import cz.narsil.detection.youtube.ChainPersistence
+import cz.narsil.detection.youtube.ChainState
 import cz.narsil.detection.youtube.VideoChainTracker
 import cz.narsil.detection.youtube.VideoWatchTracker
 import cz.narsil.detection.youtube.YouTubePlayback
@@ -56,6 +58,8 @@ class AccessibilityTriggerSource(
     private val foreground: () -> String? = { null },
     /** Uložení relace přes smrt procesu (MIUI); null = jen v paměti (testy). */
     private val persistence: SessionPersistence? = null,
+    /** Uložení řetězu videí přes smrt procesu (160); null = jen v paměti (testy). */
+    private val chainPersistence: ChainPersistence? = null,
 ) : InterventionTriggerSource {
     private val tracker = ScrollSessionTracker()
     private val chain = VideoChainTracker()
@@ -108,6 +112,7 @@ class AccessibilityTriggerSource(
     init {
         // Po restartu procesu (systém Narsil vypnul) pokračovat v rozpracované relaci a odemčeném čase.
         runCatching { persistence?.load() }.getOrNull()?.let { tracker.restore(it, clock()) }
+        runCatching { chainPersistence?.load() }.getOrNull()?.let { chain.restore(it, clock()) }
         scope.launch { snapshots.collect { handle(it, scrolled = it.kind == SnapshotKind.SCROLLED) } }
         // Tik: video může běžet bez událostí (autoplay), čas relace musí běžet dál.
         scope.launch {
@@ -169,6 +174,7 @@ class AccessibilityTriggerSource(
         watch.observe(onVideoHome, snapshot.packageName, video, now)?.let { _videoFinished.tryEmit(it) }
         _watchingVideo.value = onVideoHome
         val newVideo = chain.observe(onVideoHome, video, now)
+        persistChain()
         if (newVideo != null) scope.launch { evaluate(newVideo, snapshot) }
     }
 
@@ -182,7 +188,9 @@ class AccessibilityTriggerSource(
         } ?: false
         lock.withLock {
             val now = clock()
-            if (!chain.resolve(video, planned, settings.settings.value.videoChainLimit, now)) return@withLock
+            val fire = chain.resolve(video, planned, settings.settings.value.videoChainLimit, now)
+            persistChain()
+            if (!fire) return@withLock
             val start = chain.chainStartedAtMillis ?: video.startedAtMillis
             val snap = last ?: seen
             val event = ConsumptionEvent(
@@ -205,6 +213,20 @@ class AccessibilityTriggerSource(
         url = snapshot.url,
     )
 
+    private var lastSavedChain: ChainState? = null
+
+    /** Uloží řetěz (160), když se změnil; čas posledního videa nejvýš jednou za minutu (pauza 10 min ho nuluje). */
+    private fun persistChain(force: Boolean = false) {
+        val p = chainPersistence ?: return
+        val current = chain.snapshot()
+        val prev = lastSavedChain
+        val changed = force || current?.copy(lastVideoAtMillis = 0) != prev?.copy(lastVideoAtMillis = 0) ||
+            (current != null && prev != null && current.lastVideoAtMillis - prev.lastVideoAtMillis >= 60_000)
+        if (!changed) return
+        lastSavedChain = current
+        runCatching { p.save(current) }
+    }
+
     private fun isVideoSite(s: ForegroundSnapshot): Boolean =
         s.app == WatchedApp.YOUTUBE || (s.app == WatchedApp.FIREFOX && YouTubePlayback.isYouTubeUrl(s.url))
 
@@ -225,6 +247,7 @@ class AccessibilityTriggerSource(
                 chain.onDismissed()
             }
         }
+        persistChain(force = true)
         _progressPercent.value = null // do dalšího pozorování (snímek nebo tik) skrytý
         persist(clock(), force = true)
     }

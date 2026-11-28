@@ -99,14 +99,29 @@ class SettingsViewModel(
         initialValue = SettingsUiState(settings = settingsRepository.settings.value, llmKeys = llmKeys)
     )
 
+    /**
+     * „Tohle je můj domov“. Nahradit už uložený domov jinou sítí je uvolnění (160): na skutečném domově
+     * by Ozvěna přestala zasahovat, proto přes potvrzení s odpočtem. První uložení a stejná síť hned.
+     */
     fun saveCurrentWifiAsHome() {
-        viewModelScope.launch {
+        val action: suspend () -> Unit = {
             val saved = contextRepository.saveCurrentWifiAsHome()
             feedbackState.value = if (saved) {
                 "Domácí Wi-Fi uložena."
             } else {
                 "Připoj se nejdřív k domácí Wi-Fi a povol polohu."
             }
+        }
+        val oldHome = settingsRepository.settings.value.homeSsid
+        val current = contextRepository.currentWifiSsid.value
+        if (oldHome != null && current != null && !sameSsid(oldHome, current)) {
+            ask(
+                "Změnit domácí Wi-Fi?",
+                listOf("Domov bude „$current“ místo „$oldHome“. Na „$oldHome“ Ozvěna přestane zasahovat."),
+                action,
+            )
+        } else {
+            viewModelScope.launch { action() }
         }
     }
 
@@ -118,12 +133,31 @@ class SettingsViewModel(
             ManualZoneChoice.AWAY -> ComfortContext.AWAY
         }
         val action: suspend () -> Unit = { contextRepository.setManualOverride(target) }
-        if (choice == ManualZoneChoice.AWAY && contextRepository.manualOverride.value != ComfortContext.AWAY) {
-            ask("Přepnout na „Venku“?", listOf("Ozvěna do 4:00 nezasáhne, ani když budeš doma."), action)
-        } else {
-            viewModelScope.launch { action() }
+        val current = contextRepository.manualOverride.value
+        when {
+            choice == ManualZoneChoice.AWAY && current != ComfortContext.AWAY ->
+                ask("Přepnout na „Venku“?", listOf("Ozvěna do 4:00 nezasáhne, ani když budeš doma."), action)
+            // 160: z „Doma“ na automatiku mimo domácí Wi-Fi = Ozvěna vypnutá stejně jako „Venku“.
+            choice == ManualZoneChoice.AUTO && current == ComfortContext.HOME && !autoWouldBeHome() ->
+                ask(
+                    "Přepnout na automatiku?",
+                    listOf("Teď nejsi na domácí Wi-Fi, automatika tě vezme jako venku a Ozvěna nezasáhne."),
+                    action,
+                )
+            else -> viewModelScope.launch { action() }
         }
     }
+
+    /** Vyjde automatika teď „doma“? Jen podle domácí Wi-Fi (stejně jako `ContextResolver`). */
+    private fun autoWouldBeHome(): Boolean {
+        val home = settingsRepository.settings.value.homeSsid ?: return false
+        val current = contextRepository.currentWifiSsid.value ?: return false
+        return sameSsid(home, current)
+    }
+
+    /** Android vrací SSID někdy v uvozovkách. */
+    private fun sameSsid(a: String, b: String): Boolean =
+        a.trim().removeSurrounding("\"").trim() == b.trim().removeSurrounding("\"").trim()
 
     fun selectLlmProvider(provider: LlmProvider) = change("Změnit ověření úkolů") { it.copy(llmProvider = provider) }
 

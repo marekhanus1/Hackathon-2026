@@ -150,6 +150,7 @@ object ServiceLocator {
                 foreground = { cz.narsil.detection.accessibility.NarsilAccessibilityService.instance?.foregroundPackage() },
                 // MIUI proces vypíná: relace a zaplacený čas přežijí restart.
                 persistence = cz.narsil.detection.accessibility.PrefsSessionPersistence(appContext),
+                chainPersistence = cz.narsil.detection.youtube.PrefsChainPersistence(appContext),
             )
         }
 

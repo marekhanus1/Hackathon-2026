@@ -97,6 +97,28 @@ class VideoChainTracker(private val resetAfterMillis: Long = RESET_AFTER_MILLIS)
         awaitingOutcome = false
     }
 
+    /**
+     * Stav k uložení přes smrt procesu (160); null = není co ukládat (prázdný řetěz, nic odemčeno).
+     * Rozdělaný zásah ([awaitingOutcome]) se neukládá: po restartu smí řetěz zasáhnout znovu.
+     */
+    fun snapshot(): ChainState? =
+        if (count == 0 && unlockedUntil <= 0) null
+        else ChainState(count, chainStartedAtMillis, lastVideoAt, lastKey, unlockedUntil)
+
+    /**
+     * Obnoví řetěz po restartu (160). Odemčený čas platí, dokud nevyprší; řetěz pokračuje, jen když od
+     * posledního videa neuběhla pauza [resetAfterMillis]. V aplikaci YouTube (bez ID) se video rozkoukané
+     * při restartu započte znovu jako nové, ve Firefoxu ho pozná [ChainState.lastKey].
+     */
+    fun restore(saved: ChainState, now: Long) {
+        if (saved.unlockedUntilMillis > now) unlockedUntil = saved.unlockedUntilMillis
+        if (saved.count <= 0 || now - saved.lastVideoAtMillis > resetAfterMillis) return
+        count = saved.count
+        chainStartedAtMillis = saved.chainStartedAtMillis
+        lastVideoAt = saved.lastVideoAtMillis
+        lastKey = saved.lastKey
+    }
+
     private fun reset() {
         count = 0
         chainStartedAtMillis = null

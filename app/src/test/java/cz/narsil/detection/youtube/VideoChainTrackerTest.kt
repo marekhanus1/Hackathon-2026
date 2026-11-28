@@ -114,4 +114,48 @@ class VideoChainTrackerTest {
         assertEquals(0, t.count)
         assertFalse(t.watch("I", 17 * min))
     }
+
+    /** 160: MIUI zabije proces mezi 2. a 3. videem; řetěz pokračuje a 3. video zasáhne. */
+    @Test
+    fun chainSurvivesProcessDeath() {
+        val t = VideoChainTracker()
+        assertFalse(t.watch("A", 0))
+        assertFalse(t.watch("B", 4 * min))
+        val saved = t.snapshot()
+        assertNotNull(saved)
+
+        val restarted = VideoChainTracker()
+        restarted.restore(saved!!, 5 * min)
+        assertEquals(2, restarted.count)
+        assertEquals(0L, restarted.chainStartedAtMillis)
+        assertNull(restarted.observe(true, ff("B"), 5 * min)) // stejné video po restartu není nové
+        assertTrue(restarted.watch("C", 8 * min))
+    }
+
+    /** 160: po pauze delší než 10 min se starý řetěz neobnoví, zaplacený čas ano. */
+    @Test
+    fun oldChainNotRestoredButPaidTimeIs() {
+        val t = VideoChainTracker()
+        assertFalse(t.watch("A", 0))
+        assertFalse(t.watch("B", min))
+        t.onUnlocked(30 * min)
+        assertFalse(t.watch("C", 2 * min))
+        assertFalse(t.watch("D", 3 * min))
+        val saved = t.snapshot()!!
+        assertEquals(2, saved.count)
+
+        val late = VideoChainTracker()
+        late.restore(saved, 20 * min)
+        assertEquals(0, late.count)
+        // Odemčeno do 30. minuty i po restartu: 3. video v řadě nezasáhne.
+        assertFalse(late.watch("E", 21 * min))
+        assertFalse(late.watch("F", 22 * min))
+        assertFalse(late.watch("G", 23 * min))
+        assertTrue(late.watch("H", 31 * min))
+    }
+
+    @Test
+    fun emptyChainHasNothingToSave() {
+        assertNull(VideoChainTracker().snapshot())
+    }
 }
