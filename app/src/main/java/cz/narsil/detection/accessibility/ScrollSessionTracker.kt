@@ -49,6 +49,7 @@ class ScrollSessionTracker(
         scrolled: Boolean = false,
         video: VideoPlayback? = null,
         onVideoSite: Boolean = false,
+        startedAtHint: Long? = null,
     ): Session? {
         val prevSurface = lastSurface
         lastSurface = surface
@@ -79,7 +80,9 @@ class ScrollSessionTracker(
         }
         val current = session
         if (current == null || now - lastEndlessAt > pauseMillis) {
-            session = Session(now, packageName, surface)
+            // 149: obecná detekce pozná feed až po chvíli scrollování; relace od jeho začátku (nejvýš o pauzu zpět).
+            val start = startedAtHint?.coerceIn(now - pauseMillis, now) ?: now
+            session = Session(start, packageName, surface)
             awaitingOutcome = false
             videoGate.reset()
         } else if (current.packageName != packageName || current.surface != surface) {

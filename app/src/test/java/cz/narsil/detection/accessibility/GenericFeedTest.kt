@@ -78,6 +78,33 @@ class GenericFeedTest {
     }
 
     @Test
+    fun composeListWithoutDeltaOrIndexes() {
+        // X (Compose, Nothing 3a): scroll události jen se scrollY, nebo úplně bez údajů.
+        val f = FeedBehavior()
+        f.scroll(x, 0, 20 * sec) { i -> ScrollSample("android.view.View", scrollY = 1_000 + i * 800) }
+        assertEquals(Surface.FEED, f.surface(x, 20 * sec))
+        val bare = FeedBehavior()
+        bare.scroll(x, 0, 20 * sec) { ScrollSample("android.view.View") }
+        assertEquals(Surface.FEED, bare.surface(x, 20 * sec))
+        // Posun nahoru podle scrollY se nepočítá.
+        val up = FeedBehavior()
+        up.scroll(x, 0, 20 * sec) { i -> ScrollSample("android.view.View", scrollY = 100_000 - i * 800) }
+        assertNull(up.surface(x, 20 * sec))
+    }
+
+    @Test
+    fun sessionCountsFromFirstScroll() {
+        val f = FeedBehavior()
+        f.scroll(x, 10 * sec, 26 * sec)
+        assertEquals(10 * sec, f.streakStart(x, 26 * sec))
+        // Tracker: relace od prvního scrollu, ne od rozpoznání (Ozvěna po 20 s scrollování, ne po 35 s).
+        val t = ScrollSessionTracker()
+        t.observe(x, Surface.FEED, cz.narsil.core.ComfortContext.HOME, 26 * sec, 20 * sec, scrolled = true, startedAtHint = f.streakStart(x, 26 * sec))
+        assertEquals(10 * sec, t.session?.startedAtMillis)
+        assertNull(f.streakStart(x, 200 * sec))
+    }
+
+    @Test
     fun verticalPagerOfShortVideosIsReels() {
         val f = FeedBehavior()
         f.scroll(x, 0, 13 * sec, every = 6 * sec) { i -> ScrollSample("androidx.viewpager2.widget.ViewPager2", deltaY = 2000, fromIndex = i, toIndex = i, itemCount = 100) }
@@ -149,8 +176,8 @@ class GenericFeedTest {
     @Test
     fun xTimelineTriggersEcho() = runTest {
         val r = start(Settings(demoThresholdSec = 20))
-        scrollApp(r, x, WatchedApp.X, 60_000)
-        assertEquals(1, r.got.size)
+        scrollApp(r, x, WatchedApp.X, 27_000)
+        assertEquals(1, r.got.size) // relace od prvního scrollu: 20 s práh za ~21 s scrollování
         assertEquals(x, r.got[0].event.packageName)
         assertEquals(Surface.FEED, r.got[0].event.surface)
     }

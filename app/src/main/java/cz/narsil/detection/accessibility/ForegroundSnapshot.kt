@@ -40,7 +40,8 @@ data class ForegroundSnapshot(
 
 /**
  * Jedna scroll událost bez obsahu (149): třída posouvaného prvku, posun a indexy položek.
- * [deltaX]/[deltaY] v px (0 = neznámé), indexy −1 = neznámé.
+ * [deltaX]/[deltaY] v px (0 = neznámé), indexy −1 = neznámé. Jetpack Compose (X) často neposílá posun ani indexy,
+ * jen [scrollY], nebo vůbec nic – pak se posun bere jako „dopředu“ (ve feedu se posouvá skoro jen dolů).
  */
 data class ScrollSample(
     val className: String?,
@@ -49,4 +50,6 @@ data class ScrollSample(
     val fromIndex: Int = -1,
     val toIndex: Int = -1,
     val itemCount: Int = -1,
+    /** Svislá pozice posouvaného prvku (Compose ji hlásí místo posunu), −1 = neznámá. */
+    val scrollY: Int = -1,
 )

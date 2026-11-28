@@ -45,10 +45,13 @@ class AccessibilityTriggerSource(
     private val planCheck: (suspend (title: String) -> Boolean)? = null,
     /** Čekání na titulek nového videu před dotazem (Firefox ho mění se zpožděním po změně URL). */
     private val planDelayMillis: Long = 2_000,
+    /** Ladicí výpis (149): změny obecné detekce feedu. ServiceLocator → Log.d. */
+    private val onDebug: (String) -> Unit = {},
 ) : InterventionTriggerSource {
     private val tracker = ScrollSessionTracker()
     private val chain = VideoChainTracker()
     private val feedBehavior = FeedBehavior()
+    private val lastGeneric = HashMap<String, Surface?>()
     private val lock = Mutex()
     private var last: ForegroundSnapshot? = null
 
@@ -92,12 +95,16 @@ class AccessibilityTriggerSource(
             generic -> SurfaceClassifier.classify(snapshot) ?: feedBehavior.surface(snapshot.packageName, now)
             else -> SurfaceClassifier.classify(snapshot)
         }
+        if (active && generic && lastGeneric.put(snapshot.packageName, surface) != surface) {
+            onDebug("obecná detekce ${snapshot.packageName}: $surface (${feedBehavior.describe(snapshot.packageName)})")
+        }
         val context = contextRepository.context.value
         val threshold = prefs.toleranceMillis()
         val hit = tracker.observe(
             snapshot.packageName, surface, context, now, threshold, scrolled,
             video = snapshot.video,
             onVideoSite = active && isVideoSite(snapshot),
+            startedAtHint = if (generic) feedBehavior.streakStart(snapshot.packageName, now) else null,
         )
         _progressPercent.value = tracker.progress(now, threshold, context)?.let(::toPercent)
         val session = tracker.session

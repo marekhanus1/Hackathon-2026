@@ -144,6 +144,8 @@ object ServiceLocator {
                     val plan = contractRepository.today.value?.plannedContent.orEmpty()
                     plan.isNotEmpty() && contentMatcher.isPlanned(title, plan).planned
                 },
+                // 149: obecná detekce feedu do logu (`adb logcat -s NarsilA11y`).
+                onDebug = { android.util.Log.d("NarsilA11y", it) },
             )
         }
 

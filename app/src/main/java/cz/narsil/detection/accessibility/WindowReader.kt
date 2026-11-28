@@ -83,6 +83,11 @@ internal object WindowReader {
                 editFields += "${id?.substringAfter(":id/").orEmpty()}|${node.hintText?.toString().orEmpty()}".lowercase().take(MAX_TEXT_LEN)
             }
             if (generic) {
+                // Výpis jen tříd a ID, bez textů (ladění obecné detekce, 149).
+                if (dumpToLog) {
+                    Log.d(TAG, "${"  ".repeat(depth.coerceAtMost(20))}${node.className?.toString()?.substringAfterLast('.')} id=$id" +
+                        (if (node.isScrollable) " [scroll]" else "") + (if (node.isEditable) " [edit]" else ""))
+                }
                 for (i in node.childCount - 1 downTo 0) node.getChild(i)?.let { stack.addLast(it to depth + 1) }
                 continue
             }

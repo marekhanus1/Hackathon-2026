@@ -57,6 +57,12 @@ class NarsilAccessibilityService : AccessibilityService() {
 
         if (app == null) {
             // Chat, plocha, jiná aplikace: jen balíček a jen při změně okna, obsah se nečte.
+            // 149: překryvné okno jiné služby přístupnosti (Minimalist launcher), systému nebo klávesnice
+            // nad sledovanou aplikací není změna popředí – jinak by přerušilo relaci.
+            if (kind == SnapshotKind.WINDOW_CHANGED && !isAppWindow(event)) {
+                Log.d(TAG, "okno $pkg není aplikace (typ ${windowType(event)}), popředí se nemění")
+                return
+            }
             if (kind == SnapshotKind.WINDOW_CHANGED && throttle.shouldSnapshot(pkg, kind, now)) {
                 AccessibilityEvents.emit(ForegroundSnapshot(pkg, null, kind, now))
                 Log.d(TAG, "popředí: ${if (WatchedApp.isIgnored(pkg)) "chat (ignorováno)" else pkg}")
@@ -64,6 +70,7 @@ class NarsilAccessibilityService : AccessibilityService() {
             return
         }
 
+        if (scroll != null && app.generic) logScroll(pkg, scroll, now)
         // Scroll se hlásí vždy (heuristika 111 počítá aktivitu), strom se čte omezeně.
         val readTree = throttle.shouldSnapshot(pkg, kind, now)
         if (!readTree) {
@@ -118,7 +125,7 @@ class NarsilAccessibilityService : AccessibilityService() {
         else -> null
     }
 
-    /** Scroll bez obsahu (149): třída prvku, posun, indexy položek. */
+    /** Scroll bez obsahu (149): třída prvku, posun, indexy položek, pozice. */
     private fun scrollSample(e: AccessibilityEvent) = ScrollSample(
         className = e.className?.toString(),
         deltaX = e.scrollDeltaX,
@@ -126,7 +133,31 @@ class NarsilAccessibilityService : AccessibilityService() {
         fromIndex = e.fromIndex,
         toIndex = e.toIndex,
         itemCount = e.itemCount,
+        scrollY = e.scrollY.takeIf { e.maxScrollY > 0 || it > 0 } ?: -1,
     )
+
+    private var lastScrollLogAt = 0L
+
+    /** Scroll v obecné aplikaci do logu, nejvýš 1× za s (ladění 149). */
+    private fun logScroll(pkg: String, s: ScrollSample, now: Long) {
+        if (now - lastScrollLogAt < 1_000) return
+        lastScrollLogAt = now
+        Log.d(TAG, "scroll: $pkg ${s.className?.substringAfterLast('.')} dY=${s.deltaY} dX=${s.deltaX} y=${s.scrollY} " +
+            "položky=${s.fromIndex}–${s.toIndex}/${s.itemCount}")
+    }
+
+    /** Typ okna události (getWindows, flagRetrieveInteractiveWindows), null = nezjištěno. */
+    private fun windowType(e: AccessibilityEvent): Int? =
+        runCatching { windows.firstOrNull { it.id == e.windowId }?.type }.getOrNull()
+
+    /** Okno aplikace (nebo nezjištěno). Překryv služby přístupnosti, systém, klávesnice → false. */
+    private fun isAppWindow(e: AccessibilityEvent): Boolean {
+        val type = windowType(e)
+        if (type != null) return type == android.view.accessibility.AccessibilityWindowInfo.TYPE_APPLICATION
+        // Okno v seznamu není: když má fokus pořád sledovaná aplikace, je tohle překryv nad ní.
+        val active = runCatching { rootInActiveWindow?.packageName?.toString() }.getOrNull()
+        return active == null || active == e.packageName?.toString() || WatchedApp.of(active) == null
+    }
 
     override fun onInterrupt() = Unit
 

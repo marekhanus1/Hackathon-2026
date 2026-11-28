@@ -25,8 +25,10 @@ class FeedBehavior(
     private class State {
         val beats = ArrayDeque<Beat>()
         val lastToIndex = HashMap<String, Int>()
+        val lastScrollY = HashMap<String, Int>()
         var feedUntil = Long.MIN_VALUE
         var pager = false
+        var streakStart: Long? = null
     }
 
     private val states = HashMap<String, State>()
@@ -40,11 +42,17 @@ class FeedBehavior(
         if (kotlin.math.abs(dx) > 1 && kotlin.math.abs(dx) > kotlin.math.abs(dy)) return // vodorovně
         val state = states.getOrPut(packageName) { State() }
         val prevTo = state.lastToIndex[cls]
+        val prevY = state.lastScrollY[cls]
         if (sample.toIndex >= 0) state.lastToIndex[cls] = sample.toIndex
+        if (sample.scrollY >= 0) state.lastScrollY[cls] = sample.scrollY
         val forward = when {
             dy > 1 -> true
             dy < -1 -> false
-            else -> prevTo != null && sample.toIndex > prevTo // posun neznámý: podle indexů položek
+            sample.scrollY >= 0 && prevY != null && sample.scrollY != prevY -> sample.scrollY > prevY
+            sample.toIndex >= 0 && prevTo != null && sample.toIndex != prevTo -> sample.toIndex > prevTo
+            // Směr neznámý (Compose bez údajů, nebo první událost): ve feedu se posouvá skoro jen dolů.
+            sample.scrollY < 0 && sample.toIndex < 0 -> true
+            else -> false
         }
         if (!forward) return
         val pager = cls.contains("ViewPager") ||
@@ -60,9 +68,24 @@ class FeedBehavior(
         val qualifies = if (isPager) pagerBeats >= pagerMinBeats && span >= pagerMinSpanMillis
         else beats.size >= minBeats && span >= minSpanMillis
         if (qualifies) {
+            if (now > state.feedUntil) state.streakStart = beats.first().second * 1_000
             state.feedUntil = now + holdMillis
             state.pager = isPager
         }
+    }
+
+    /**
+     * Kdy začalo scrollování, které feed prozradilo (první takt v okně). Relace se počítá od něj,
+     * ne až od rozpoznání (jinak by prvních ~15 s chybělo). null = teď žádný feed.
+     */
+    fun streakStart(packageName: String, now: Long): Long? =
+        states[packageName]?.takeIf { now <= it.feedUntil }?.streakStart
+
+    /** Stav pro log: takty v okně, rozpětí, feed do. */
+    fun describe(packageName: String): String {
+        val s = states[packageName] ?: return "bez scrollu"
+        val span = if (s.beats.isEmpty()) 0 else s.beats.last().second - s.beats.first().second
+        return "takty=${s.beats.size} rozpětí=${span}s pager=${s.beats.count { it.pager }}"
     }
 
     /** Nekonečný feed v [now]: FEED (seznam), REELS (pager krátkých videí), null = nic / už ne. */
