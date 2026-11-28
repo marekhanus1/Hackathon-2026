@@ -9,6 +9,8 @@ import cz.narsil.core.data.InterventionEntity
 import cz.narsil.gamification.GamificationRules
 import cz.narsil.core.History
 import cz.narsil.core.HistoryRating
+import cz.narsil.overlay.VideoFeedback
+import cz.narsil.ui.screens.rating.VideoValue
 import cz.narsil.ui.screens.mirror.ContentValueEntry
 import cz.narsil.ui.screens.mirror.DailyTrendPoint
 import cz.narsil.ui.screens.mirror.MirrorUiState
@@ -68,8 +70,6 @@ object MirrorStats {
         )
     }
 
-    private val TRAILING_NUMBER = Regex("""\s*#?\d+\s*$""")
-
     /**
      * Boss a mapa hodnoty z historie (143). Prázdná historie (žádný den s daty, zásah ani hodnocení)
      * = [base] beze změny, jako u [apply]. Boss má pevné okno 21:00–22:00 (SPEC 8), počítají se dny,
@@ -92,16 +92,24 @@ object MirrorStats {
      */
     fun valueEntries(ratings: List<HistoryRating>, limit: Int = 6): List<ContentValueEntry> {
         if (ratings.isEmpty()) return emptyList()
-        val byStem = ratings.groupBy { it.title.replace(TRAILING_NUMBER, "").trim().ifEmpty { it.title } }
+        val byStem = ratings.groupBy { VideoFeedback.stem(it.title) }
         val groups = linkedMapOf<String, List<HistoryRating>>()
         byStem.forEach { (stem, list) ->
-            val key = when {
-                list.size > 1 -> stem
-                list.single().intent != null -> "Se záměrem: ${list.single().intent}"
-                list.single().rating <= 2 -> "Bez záměru · hodnoceno nízko"
-                else -> "Bez záměru · ostatní"
+            if (list.size > 1 && stem != VideoFeedback.UNKNOWN_VIDEO) {
+                groups[stem] = list
+                return@forEach
             }
-            groups[key] = groups[key].orEmpty() + list
+            // Osamocená videa (a videa z aplikace YouTube bez názvu) po jednom podle odpovědi / záměru.
+            list.forEach { r ->
+                val answer = VideoValue.ofLabel(r.intent)
+                val key = when {
+                    answer != null -> "Videa: ${answer.label.replaceFirstChar { it.lowercase() }}" // 156
+                    r.intent != null -> "Se záměrem: ${r.intent}"
+                    r.rating <= 2 -> "Bez záměru · hodnoceno nízko"
+                    else -> "Bez záměru · ostatní"
+                }
+                groups[key] = groups[key].orEmpty() + r
+            }
         }
         return groups.map { (name, list) ->
             val avg = list.map { it.rating }.average().toFloat()

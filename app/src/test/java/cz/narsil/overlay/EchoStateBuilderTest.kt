@@ -36,4 +36,12 @@ class EchoStateBuilderTest {
         assertNull(c.fallbackText)
         assertEquals("Scrolluješ už 6 min.", c.ui.videoCaption)
     }
+
+    @Test
+    fun valueNoteWinsCaption() {
+        val contract = FakeContractRepository.demoContract(LocalDate.of(2026, 11, 28))
+        val c = EchoStateBuilder.build(trigger, MovementState(), contract, null, valueNote = "Minule ti feed na TikTok nedal nic.")
+        assertEquals("Minule ti feed na TikTok nedal nic.", c.ui.videoCaption)
+        assertEquals("Dnes jsi chtěl: Běh", c.fallbackText) // text místo videa zůstává z plánu
+    }
 }

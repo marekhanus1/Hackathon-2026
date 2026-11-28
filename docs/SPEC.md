@@ -124,6 +124,22 @@ Výstup nejvýš 96 tokenů. Chyba sítě nebo modelu se v UI ukazuje česky sro
 2. Jinak video z onboardingu (nahrává se při prvním spuštění).
 3. Jinak text: „Dnes jsi chtěl: {první úkol dnešního plánu}“. `EchoVideoRepository` vrací `null` a text složí UI ze smlouvy.
 
+Popisek pod videem: věta z odpovědí „Co ti to video dalo?“ (9a), jinak „Dnes jsi chtěl: …“, jinak délka relace.
+
+## 9a. Co ti to video dalo? (156)
+
+- **Kdy:** doma, po dosledovaném videu na YouTube (aplikace i Firefox): konec videa po ≥ 1 min sledování,
+  nebo odchod z videa po ≥ 2 min. A po vypršení zaplaceného času feedu („Co ti daly ty minuty?“), když
+  zrovna neběží další Ozvěna. Nejvýš 10× denně a s odstupem ≥ 3 min; přes Ozvěnu nikdy (Ozvěna panel zavře).
+- **Forma:** spodní panel přes aplikaci, nebere fokus, sám zmizí po 10 s, „Teď ne“ ho zavře.
+- **Odpovědi** (jedno ťuknutí) → `video_ratings.rating`: Naučil jsem se něco 5, Inspirace, nápad 4,
+  Odpočinul jsem si 3, Nic, jen čas 2, Je mi hůř 1. Text odpovědi jde do `intent`, název videa do `title`
+  (nečitelný název z aplikace YouTube = „Video na YouTube“, zaplacený feed = „Feed · {aplikace}“). +5 XP (SPEC 8).
+- **Ozvěna:** stejný pořad (název bez pořadového čísla) nebo feed stejné aplikace naposledy dostal ≤ 2 →
+  „Minule ti „…“ nedalo nic.“ (2× a víc za sebou: „Už 2× za sebou…“). Jinak dnešní odpovědi ≤ 2 stejného
+  druhu (videa / feed) → „Dnes ti už 2 videa nedala nic.“ / „Dnes ti feed už 2× nedal nic.“
+- **Zrcadlo:** mapa hodnoty seskupí opakované pořady podle názvu, ostatní videa podle odpovědi.
+
 ## 10. Demo režim (demo panel, 123)
 
 Přepínače a akce: vynutit `HOME`/`AWAY`, práh 20 s, smlouva platí hned, reset dne, nahrát `mockdata/`, +1 000 kroků, +500 XP, stav postavy, ověření „vždy ANO“. Poslední je viditelně označené a jen v demo panelu.

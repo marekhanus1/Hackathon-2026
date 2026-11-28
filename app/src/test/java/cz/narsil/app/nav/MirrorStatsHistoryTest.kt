@@ -60,6 +60,22 @@ class MirrorStatsHistoryTest {
     }
 
     @Test
+    fun valueMapGroupsAnswers() {
+        val ratings = listOf(
+            HistoryRating(1, "Video na YouTube", "Nic, jen čas", 2),
+            HistoryRating(2, "Video na YouTube", "Nic, jen čas", 2),
+            HistoryRating(3, "Video na YouTube", "Naučil jsem se něco", 5),
+            HistoryRating(4, "Feed · TikTok", "Je mi hůř", 1),
+            HistoryRating(5, "Feed · TikTok", "Nic, jen čas", 2),
+        )
+        val e = MirrorStats.valueEntries(ratings).associateBy { it.channelOrFormat }
+        assertEquals(2, e.getValue("Videa: nic, jen čas").videoCount)
+        assertTrue(e.getValue("Videa: nic, jen čas").isLowValueTrap)
+        assertEquals(1, e.getValue("Videa: naučil jsem se něco").videoCount)
+        assertEquals(1.5f, e.getValue("Feed · TikTok").averageRating)
+    }
+
+    @Test
     fun valueMapLimit() {
         val many = ("abcdefghijklmnopqrst").map { HistoryRating(it.code.toLong(), "Video $it", "záměr $it", 4) }
         assertEquals(6, MirrorStats.valueEntries(many).size)

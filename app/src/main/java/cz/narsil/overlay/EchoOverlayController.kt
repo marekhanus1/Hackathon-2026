@@ -62,7 +62,14 @@ class EchoOverlayController(
     private val isInForeground: (InterventionTrigger) -> Boolean = { true },
     /** Zásah zahozen, protože uživatel už je jinde: detekce ho zopakuje po návratu do feedu. */
     private val onSkipped: suspend (InterventionTrigger) -> Unit = {},
+    /** Věta z minulých odpovědí „Co ti to video dalo?“ (156), null = žádná. Nesmí házet. */
+    private val valueNote: suspend (InterventionTrigger) -> String? = { null },
+    /** Ozvěna se právě ukazuje (156: zavřít panel otázky pod ní). */
+    private val onEchoShown: () -> Unit = {},
 ) {
+    /** Je teď vidět Ozvěna, cvik nebo odměna? */
+    val isShowing: Boolean get() = window.isShowing
+
     private var job: Job? = null
 
     fun start() {
@@ -118,9 +125,11 @@ class EchoOverlayController(
         session.setPhase(EchoSessionStore.Phase.ECHO)
         session.setFeeling(feeling)
         val video = runCatching { videos.pickEchoVideo() }.getOrNull()
+        val note = runCatching { valueNote(trigger) }.getOrNull()
         val content = exercise().let { ex ->
-            EchoStateBuilder.build(trigger, movement.state.value, contracts.today.value, video, ex, repsPerUnlock(ex))
+            EchoStateBuilder.build(trigger, movement.state.value, contracts.today.value, video, ex, repsPerUnlock(ex), note)
         }
+        runCatching { onEchoShown() }
         val ui = MutableStateFlow(content.ui.copy(selectedFeeling = feeling))
         val shown = window.show {
             val state by ui.collectAsState()

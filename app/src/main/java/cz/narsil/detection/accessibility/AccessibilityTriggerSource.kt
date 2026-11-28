@@ -10,6 +10,7 @@ import cz.narsil.core.SettingsRepository
 import cz.narsil.core.Surface
 import cz.narsil.detection.youtube.EndScreenFilter
 import cz.narsil.detection.youtube.VideoChainTracker
+import cz.narsil.detection.youtube.VideoWatchTracker
 import cz.narsil.detection.youtube.YouTubePlayback
 import kotlinx.coroutines.withTimeoutOrNull
 import cz.narsil.core.TriggerReason
@@ -58,6 +59,7 @@ class AccessibilityTriggerSource(
     private val chain = VideoChainTracker()
     private val feedBehavior = FeedBehavior()
     private val endScreen = EndScreenFilter()
+    private val watch = VideoWatchTracker()
     private val lastGeneric = HashMap<String, Surface?>()
     private val lock = Mutex()
     private var last: ForegroundSnapshot? = null
@@ -69,6 +71,11 @@ class AccessibilityTriggerSource(
 
     /** Probíhající úsek nekonečného obsahu (pro ukládání v 121 a UI); null = žádná relace. */
     val current: StateFlow<ConsumptionEvent?> = _current.asStateFlow()
+
+    private val _videoFinished = MutableSharedFlow<VideoWatchTracker.Finished>(extraBufferCapacity = 4)
+
+    /** Dosledované video doma (156): podnět pro otázku „Co ti to video dalo?“. Hot stream bez replay. */
+    val videoFinished: Flow<VideoWatchTracker.Finished> = _videoFinished.asSharedFlow()
 
     private val _progressPercent = MutableStateFlow<Int?>(null)
 
@@ -143,7 +150,9 @@ class AccessibilityTriggerSource(
             _triggers.tryEmit(InterventionTrigger(event, TriggerReason.ENDLESS_SCROLL, now))
         }
         // Řetězení (137): přehrávač jednoho videa doma ve sledované aplikaci (surface je null mimo sledované).
-        val newVideo = chain.observe(surface == Surface.VIDEO && context == ComfortContext.HOME, video, now)
+        val onVideoHome = surface == Surface.VIDEO && context == ComfortContext.HOME
+        watch.observe(onVideoHome, snapshot.packageName, video, now)?.let { _videoFinished.tryEmit(it) }
+        val newVideo = chain.observe(onVideoHome, video, now)
         if (newVideo != null) scope.launch { evaluate(newVideo, snapshot) }
     }
 
