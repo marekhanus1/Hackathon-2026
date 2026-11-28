@@ -175,9 +175,9 @@ private fun ChoiceCardLightPreview() {
                     onClick = {}
                 )
                 ChoiceCard(
-                    title = "Půjčit si 10 min",
-                    subtitle = "Přičte se k zítřejšímu pohybovému cíli",
-                    badgeText = "Dluh",
+                    title = "Poprosit Parťáka o 10 min",
+                    subtitle = "Kamarád ti pošle pár minut navíc",
+                    badgeText = "0 XP",
                     tone = ChoiceCardTone.DEBT,
                     onClick = {}
                 )
@@ -211,9 +211,9 @@ private fun ChoiceCardDarkPreview() {
                     onClick = {}
                 )
                 ChoiceCard(
-                    title = "Půjčit si 10 min",
-                    subtitle = "Přičte se k zítřejšímu pohybovému cíli",
-                    badgeText = "Dluh",
+                    title = "Poprosit Parťáka o 10 min",
+                    subtitle = "Kamarád ti pošle pár minut navíc",
+                    badgeText = "0 XP",
                     tone = ChoiceCardTone.DEBT,
                     onClick = {}
                 )

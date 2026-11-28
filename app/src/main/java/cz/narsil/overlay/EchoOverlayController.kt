@@ -12,10 +12,13 @@ import cz.narsil.core.MovementRepository
 import cz.narsil.core.SquatCounter
 import cz.narsil.ui.screens.echo.EchoFeeling
 import cz.narsil.ui.screens.echo.EchoScreen
+import cz.narsil.ui.screens.echo.EchoUiState
+import cz.narsil.ui.screens.echo.FriendRequest
 import cz.narsil.ui.screens.reward.RewardOverlay
 import cz.narsil.ui.theme.NarsilTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
@@ -155,7 +158,7 @@ class EchoOverlayController(
                     onCloseFeed = { choose(trigger, InterventionOutcome.CLOSED, ui.value.selectedFeeling) },
                     onStartSquats = { startSquats(trigger, ui.value.selectedFeeling) },
                     onPayWithSteps = { choose(trigger, InterventionOutcome.PAID_STEPS, ui.value.selectedFeeling) },
-                    onBorrow = { choose(trigger, InterventionOutcome.BORROWED, ui.value.selectedFeeling) },
+                    onBorrow = { askFriend(trigger, ui) },
                     videoSlot = { EchoVideoPlayer(content.videoUri, content.fallbackText) },
                 )
             }
@@ -166,6 +169,23 @@ class EchoOverlayController(
             // Zásah se zahodí jako u aplikace mimo popředí; detekce ho zopakuje (po udělení oprávnění se ukáže).
             session.clear()
             runCatching { onSkipped(trigger) }
+        }
+    }
+
+    /**
+     * 163: prosba Parťákovi místo půjčky do zítřka. Bez serveru je odpověď simulovaná:
+     * „Píšu Parťákovi…“ → „Jasně, máš 10 min“ → odemknutí (notifikaci s odpovědí pošle pohyb).
+     */
+    private fun askFriend(trigger: InterventionTrigger, ui: MutableStateFlow<EchoUiState>) {
+        if (ui.value.friendRequest != FriendRequest.IDLE) return
+        ui.value = ui.value.copy(friendRequest = FriendRequest.ASKING)
+        scope.launch {
+            delay(FRIEND_REPLY_MILLIS)
+            if (!window.isShowing) return@launch
+            ui.value = ui.value.copy(friendRequest = FriendRequest.GRANTED)
+            delay(FRIEND_GRANTED_MILLIS)
+            if (!window.isShowing) return@launch
+            choose(trigger, InterventionOutcome.BORROWED, ui.value.selectedFeeling)
         }
     }
 
@@ -239,5 +259,7 @@ class EchoOverlayController(
     private companion object {
         const val TAG = "NarsilOverlay"
         const val CAMERA_WAIT_MILLIS = 60_000L
+        const val FRIEND_REPLY_MILLIS = 1_800L
+        const val FRIEND_GRANTED_MILLIS = 1_200L
     }
 }

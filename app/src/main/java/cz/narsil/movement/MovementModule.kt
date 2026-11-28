@@ -20,7 +20,7 @@ import java.time.Clock
  */
 object MovementModule {
     /**
-     * @param settings nastavení (133): limit dluhu a zprávy Parťákovi; null = výchozí hodnoty SPEC
+     * @param settings nastavení (133): denní minuty od Parťáka a zprávy Parťákovi; null = výchozí hodnoty SPEC
      */
     fun create(
         context: Context,
@@ -35,8 +35,12 @@ object MovementModule {
             debtLimitProvider = settings?.let { s -> { s.settings.value.debtLimitMinutes } },
         )
         val partner = PartnerNotifier(app)
-        return StepsMovementRepository(steps, book, clock, onPartnerAlert = { debt ->
-            if (settings?.settings?.value?.partnerAlerts != false) partner.notifyDebtOverLimit(debt)
-        })
+        return StepsMovementRepository(
+            steps, book, clock,
+            onPartnerAlert = { debt ->
+                if (settings?.settings?.value?.partnerAlerts != false) partner.notifyDebtOverLimit(debt)
+            },
+            onFriendGift = { minutes -> partner.notifyFriendGift(minutes) },
+        )
     }
 }

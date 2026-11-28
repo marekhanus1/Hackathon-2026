@@ -42,7 +42,7 @@ import cz.narsil.ui.theme.neuInset
 
 /**
  * Ozvěna ve stylu E (334, dříve 310): video ze včerejší smlouvy, pojmenování pocitu a volby
- * (pohyb, kroky, půjčka) ve vnořené vaně; hlavní akce „Zavřít feed“. Okno se neposouvá,
+ * (pohyb, kroky, Parťák) ve vnořené vaně; hlavní akce „Zavřít feed“. Okno se neposouvá,
  * při malé výšce se posouvá jen vana s volbami.
  */
 @Composable
@@ -58,16 +58,7 @@ fun EchoScreen(
 ) {
     val canPayWithSteps = state.availableSteps >= state.stepCostForTenMin
     NeuScreen(modifier.systemBarsPadding(), gap = 14.dp) {
-        NeuHeader(
-            title = "Ozvěna · ${state.sourceAppName}",
-            trailing = if (state.currentDebtMinutes > 0) {
-                {
-                    Box(Modifier.neuInset(NeuDepth.Deep, RoundedCornerShape(10.dp)).padding(horizontal = 10.dp, vertical = 6.dp)) {
-                        NeuText("Dluh ${state.currentDebtMinutes} min", size = 12.sp, weight = FontWeight.ExtraBold, color = NeuColors.Error)
-                    }
-                }
-            } else null,
-        )
+        NeuHeader(title = "Ozvěna · ${state.sourceAppName}")
 
         Column(
             Modifier.fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp)).padding(10.dp),
@@ -124,13 +115,24 @@ fun EchoScreen(
                 onClick = onPayWithSteps,
             )
             NeuDivider()
+            // 163: místo půjčky do zítřka prosba kamarádovi; odpověď je v MVP simulovaná.
+            val left = (state.debtLimitMinutes - state.currentDebtMinutes).coerceAtLeast(0)
             EchoOption(
-                short = "PŮ",
-                title = "Půjčit si 10 min",
-                subtitle = if (state.canBorrow) "Přičte se k zítřejšímu pohybovému cíli · dluh ${state.currentDebtMinutes} / ${state.debtLimitMinutes} min"
-                else "Limit dluhu ${state.debtLimitMinutes} min · dlužíš ${state.currentDebtMinutes} min",
+                short = "PA",
+                title = when (state.friendRequest) {
+                    FriendRequest.IDLE -> "Poprosit Parťáka o 10 min"
+                    FriendRequest.ASKING -> "Píšu Parťákovi…"
+                    FriendRequest.GRANTED -> "Parťák: „Jasně, máš 10 min“"
+                },
+                subtitle = when {
+                    state.friendRequest == FriendRequest.ASKING -> "Čekám na odpověď"
+                    state.friendRequest == FriendRequest.GRANTED -> "Odemykám 10 min"
+                    state.debtLimitMinutes == 0 -> "Parťák je v Nastavení vypnutý"
+                    state.canBorrow -> "Kamarád ti pošle pár minut navíc · dnes ještě $left min"
+                    else -> "Dnes už ti dal ${state.currentDebtMinutes} min, víc nejde"
+                },
                 xp = "0 XP",
-                enabled = state.canBorrow,
+                enabled = state.canBorrow && state.friendRequest == FriendRequest.IDLE,
                 onClick = onBorrow,
             )
         }

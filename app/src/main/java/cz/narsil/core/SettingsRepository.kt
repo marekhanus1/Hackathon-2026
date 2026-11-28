@@ -34,7 +34,7 @@ data class Settings(
     val squatsPerUnlock: Int = MovementRates.SQUATS_PER_UNLOCK,
     /** Kliků na odemčení [MovementRates.MINUTES_PER_UNLOCK] minut. */
     val pushupsPerUnlock: Int = MovementRates.PUSHUPS_PER_UNLOCK,
-    /** Limit dluhu v minutách (SPEC 5). */
+    /** Kolik minut ti Parťák dá za den (SPEC 5, 163; dřív limit dluhu). 0 = Parťák vypnutý. */
     val debtLimitMinutes: Int = MovementRates.DEFAULT_DEBT_LIMIT_MINUTES,
     /** Sledované aplikace; co tu není, Narsil nesleduje. */
     val trackedApps: Set<TrackedApp> = TrackedApp.entries.toSet(),
