@@ -66,8 +66,7 @@ fun NarsilNavHost(
             VerifyRoute(onBack = back)
         }
         composable(NarsilRoute.Settings.route) {
-            // 325: SettingsScreen (Jan)
-            PlaceholderScreen(NarsilRoute.Settings, onNavigate = navigate, onBack = back)
+            SettingsRoute(onNavigate = navigate, onBack = back)
         }
         composable(NarsilRoute.Demo.route) {
             DemoPanelScreen(onBack = back)
