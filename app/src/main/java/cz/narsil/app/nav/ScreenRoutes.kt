@@ -35,8 +35,6 @@ import cz.narsil.ui.screens.home.HomeUiState
 import cz.narsil.ui.screens.home.ZoneStatus
 import cz.narsil.ui.screens.mirror.MirrorScreen
 import cz.narsil.ui.screens.mirror.MirrorViewModel
-import cz.narsil.ui.screens.verify.VerifyTaskScreen
-import cz.narsil.ui.screens.verify.VerifyTaskViewModel
 import cz.narsil.ui.components.AvatarState as UiAvatar
 
 // Janovy obrazovky (312, 313, 322, 323, 324) v navigaci (124). Domov a odznaky ze skutečného
@@ -150,21 +148,5 @@ fun BadgesRoute() {
             currentAvatarState = game.avatar.toUi(),
             avatarSummary7Days = "Série ${game.streakDays} dní · úroveň ${game.level} · ${game.xp} XP",
         ),
-    )
-}
-
-@Composable
-fun VerifyRoute(onBack: () -> Unit) {
-    val vm: VerifyTaskViewModel = viewModel()
-    val state by vm.uiState.collectAsState()
-    VerifyTaskScreen(
-        state = state,
-        onSelectProofMode = vm::selectProofMode,
-        onTextProofChange = vm::updateTextProof,
-        onCapturePhoto = vm::capturePhoto,
-        onRetakePhoto = vm::retakePhoto,
-        onSubmitProof = vm::submitProof,
-        onRetry = vm::retry,
-        onBack = onBack,
     )
 }
