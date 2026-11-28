@@ -62,7 +62,9 @@ fun VerifyTaskScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     cameraPreviewSlot: @Composable () -> Unit = { DefaultVerifyCameraPlaceholder(state) },
-    animateRewardOnVerified: Boolean = true
+    animateRewardOnVerified: Boolean = true,
+    /** „Pokračovat“ / „Další úkol“ na kartě ověřeného úkolu; výchozí = zpět. */
+    onContinue: () -> Unit = onBack
 ) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
@@ -128,7 +130,7 @@ fun VerifyTaskScreen(
                 VerificationStatus.VERIFIED -> VerifiedRewardCard(
                     state = state,
                     animateOnStart = animateRewardOnVerified,
-                    onBack = onBack
+                    onBack = onContinue
                 )
 
                 VerificationStatus.VERIFYING -> VerifyingCard()
@@ -393,7 +395,7 @@ private fun VerifiedRewardCard(
                 contentColor = colors.onPositive
             ) {
                 Text(
-                    text = "+${state.rewardMinutes} min",
+                    text = if (state.rewardXp > 0) "+${state.rewardMinutes} min · +${state.rewardXp} XP" else "+${state.rewardMinutes} min",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm)
@@ -420,7 +422,7 @@ private fun VerifiedRewardCard(
                     contentColor = colors.onPositive
                 )
             ) {
-                Text("Pokračovat")
+                Text(if (state.nextTaskTitle != null) "Další úkol: ${state.nextTaskTitle}" else "Pokračovat")
             }
         }
     }

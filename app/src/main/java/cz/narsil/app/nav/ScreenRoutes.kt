@@ -87,6 +87,7 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
         stepGoal = contract?.stepGoal ?: 6_000,
         availableStepMinutes = movement.balanceMinutes,
         debtMinutes = movement.debtMinutes,
+        carriedDebtMinutes = movement.carriedDebtMinutes,
         contractCompletedToday = contract?.isFulfilled(movement.stepsToday) == true,
         contractSigned = signed != null,
         contractSignedForToday = signed?.date == DayKey.today(),

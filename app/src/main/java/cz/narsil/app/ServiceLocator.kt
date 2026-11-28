@@ -216,7 +216,10 @@ object ServiceLocator {
     /** Ověření + stav pro UI + odměna (520/521). Při návratu sítě zkusí VERIFY_LATER znovu. */
     val verification: TaskVerificationService
         get() = cached("verification") {
-            VerificationModule.service(contractRepository, taskVerifier, rewardService).also {
+            VerificationModule.service(
+                contractRepository, taskVerifier, rewardService,
+                reasons = if (useFakes) null else cz.narsil.verify.SharedPrefsReasonStore(appContext),
+            ).also {
                 if (!useFakes) VerificationModule.networkTrigger(appContext, it, appScope).start()
             }
         }

@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/145-overeni-vysledek-dluh
@@ -19,3 +19,6 @@ důvod zamítnutí po restartu, správná délka uloženého videa ve smlouvě, 
 - testy
 
 ## Poznámky
+- Ověření: zobrazený úkol se drží (`pickVerifyTask`), karta „Ověřeno“ ukáže „+N min · +30 XP“ a tlačítko „Další úkol: …“.
+- Důvod ověření po restartu: `VerificationReasonStore` (SharedPreferences `verify_reasons`), bez změny schématu.
+- Dluh: `MovementState.carriedDebtMinutes` (nový nepovinný parametr, výchozí 0) = přenesený dluh nepokrytý kroky/odměnami.

@@ -27,6 +27,8 @@ data class HomeUiState(
     val stepGoal: Int = 6000,
     val availableStepMinutes: Int = 40,
     val debtMinutes: Int = 0,
+    /** Dluh ze včerejška, který dnes ještě nepokryly kroky ani odměny. */
+    val carriedDebtMinutes: Int = 0,
     val contractCompletedToday: Boolean = false,
     /** Smlouva pro den, na který by se teď podepisovala (ráno dnešek, večer zítřek), už existuje. */
     val contractSigned: Boolean = false,
@@ -53,6 +55,16 @@ data class HomeUiState(
         }
 
     val contractDone: Boolean get() = contractCompletedToday || contractSigned
+
+    /** Řádek dluhu na kartě pohybu; null = bez dluhu. */
+    val debtLabel: String?
+        get() = when {
+            carriedDebtMinutes > 0 && debtMinutes > 0 ->
+                "Dluh ze včerejška: $carriedDebtMinutes min · dnes půjčeno $debtMinutes min"
+            carriedDebtMinutes > 0 -> "Dluh ze včerejška: $carriedDebtMinutes min"
+            debtMinutes > 0 -> "Dluh do zítřka: $debtMinutes min"
+            else -> null
+        }
 }
 
 private fun taskWord(n: Int): String = when {

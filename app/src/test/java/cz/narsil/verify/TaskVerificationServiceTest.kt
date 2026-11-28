@@ -95,4 +95,22 @@ class TaskVerificationServiceTest {
         assertEquals(Proof.Photo("content://x"), ProofCodec.decode(ProofCodec.encode(Proof.Photo("content://x"))))
         assertEquals(null, ProofCodec.decode(null))
     }
+
+    @Test
+    fun reasonSurvivesRestart() = runTest {
+        val (repo, task) = setup()
+        val store = object : VerificationReasonStore {
+            val map = mutableMapOf<Long, Pair<String, String>>()
+            override fun load(taskId: Long) = map[taskId]
+            override fun save(taskId: Long, reason: String, feedback: String) { map[taskId] = reason to feedback }
+        }
+        val first = TaskVerificationService(repo, FakeTaskVerifier(nextResult = VerificationResult.NO), reasons = store)
+        val rejected = first.submit(task, Proof.Text("Hotovo. Spočítal jsem všechny příklady."))
+        assertEquals(TaskStatus.REJECTED, rejected.status)
+        val reason = first.events.value[task.id]!!.reason
+
+        val restarted = TaskVerificationService(repo, FakeTaskVerifier(), reasons = store)
+        assertEquals(reason, restarted.eventFor(rejected)?.reason)
+        assertEquals(null, restarted.eventFor(rejected.copy(status = TaskStatus.PENDING)))
+    }
 }

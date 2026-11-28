@@ -554,7 +554,7 @@ private fun EchoVideoStep(
                             text = if (state.isRecordingVideo) {
                                 "Nahrávám ${state.recordedSeconds}/${state.maxVideoSeconds} s"
                             } else {
-                                "Uloženo (${state.recordedSeconds} s)"
+                                if (state.recordedSeconds > 0) "Uloženo (${state.recordedSeconds} s)" else "Uloženo"
                             },
                             style = MaterialTheme.typography.labelMedium,
                             color = colors.onPositive,

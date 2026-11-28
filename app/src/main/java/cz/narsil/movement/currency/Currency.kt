@@ -50,6 +50,12 @@ object Currency {
     fun balance(stepsToday: Int, day: DayMinutes): Int =
         (stepMinutes(stepsToday) + day.taskRewards - day.paid - day.carriedDebt).coerceAtLeast(0)
 
+    /** Přenesený dluh, který dnešní kroky a odměny (po platbách) ještě nepokryly. */
+    fun unpaidCarriedDebt(stepsToday: Int, day: DayMinutes): Int {
+        val earned = (stepMinutes(stepsToday) + day.taskRewards - day.paid).coerceAtLeast(0)
+        return (day.carriedDebt - earned).coerceAtLeast(0)
+    }
+
     /** Platba projde, jen když zůstatek stačí (nikdy pod 0). */
     fun canPay(stepsToday: Int, day: DayMinutes, minutes: Int): Boolean =
         minutes > 0 && balance(stepsToday, day) >= minutes

@@ -186,9 +186,10 @@ private fun MovementBalanceCard(state: HomeUiState) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                if (state.debtMinutes > 0) {
+                val debtLabel = state.debtLabel
+                if (debtLabel != null) {
                     Text(
-                        text = "Dluh do zítřka: ${state.debtMinutes} min",
+                        text = debtLabel,
                         style = MaterialTheme.typography.labelMedium,
                         color = colors.debt
                     )

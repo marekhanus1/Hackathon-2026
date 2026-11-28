@@ -56,7 +56,7 @@ fun ContractRoute(onBack: () -> Unit) {
         val existing = runCatching { sl.contractRepository.forDate(signer.targetDate()) }.getOrNull()
         if (existing != null) {
             existingVideo.value = existing.videoUri
-            vm.prefill(existing)
+            vm.prefill(existing, videoSeconds = videoDurationSeconds(existing.videoUri))
         }
     }
     // Ke kroku s videem požádat o kameru (mikrofon je nepovinný – video jde i bez zvuku).
@@ -124,3 +124,20 @@ fun ContractRoute(onBack: () -> Unit) {
  */
 internal fun mergeTasks(previous: List<cz.narsil.core.PlanTask>, drafted: List<cz.narsil.core.PlanTask>): List<cz.narsil.core.PlanTask> =
     drafted.map { d -> previous.firstOrNull { it.title.equals(d.title, ignoreCase = true) && it.type == d.type } ?: d }
+
+/** Délka uloženého videa v sekundách (0 = nejde zjistit). */
+internal suspend fun videoDurationSeconds(uri: String?): Int {
+    val path = uri?.let { android.net.Uri.parse(it).path } ?: return 0
+    return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        runCatching {
+            val retriever = android.media.MediaMetadataRetriever()
+            try {
+                retriever.setDataSource(path)
+                val ms = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                ((ms + 500) / 1000).toInt()
+            } finally {
+                retriever.release()
+            }
+        }.getOrDefault(0)
+    }
+}

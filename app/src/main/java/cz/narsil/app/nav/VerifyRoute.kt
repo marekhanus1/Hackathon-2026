@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.PhotoKind
+import cz.narsil.gamification.GamificationRules
 import cz.narsil.core.PlanRules
 import cz.narsil.core.PlanTask
 import cz.narsil.core.Proof
@@ -55,12 +56,16 @@ fun VerifyRoute(onBack: () -> Unit) {
     val events by sl.verification.events.collectAsState()
     val stravaConnected by sl.stravaRepository.isConnected.collectAsState()
 
-    val task: PlanTask? = contract?.tasks?.firstOrNull { it.status != TaskStatus.VERIFIED }
-        ?: contract?.tasks?.lastOrNull()
+    // Zobrazený úkol se drží, dokud uživatel neklepne na „Další úkol“ – po ověření uvidí výsledek a odměnu.
+    var shownTaskId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val tasks = contract?.tasks.orEmpty()
+    val task: PlanTask? = pickVerifyTask(tasks, shownTaskId)
     if (task == null) {
         NoTask(onBack)
         return
     }
+    LaunchedEffect(task.id) { shownTaskId = task.id }
+    val nextTask = tasks.firstOrNull { it.id != task.id && it.status != TaskStatus.VERIFIED }
 
     var proofMode by rememberSaveable(task.id) {
         mutableStateOf(if (task.method == VerificationMethod.TEXT) ProofMode.TEXT else ProofMode.PHOTO)
@@ -83,7 +88,8 @@ fun VerifyRoute(onBack: () -> Unit) {
         }
     }
 
-    val event = events[task.id]
+    // Po restartu aplikace vezme důvod (pochvalu / zamítnutí od AI) uložený u úkolu.
+    val event = events[task.id] ?: remember(task.id, task.status) { sl.verification.eventFor(task) }
     val state = VerifyTaskUiState(
         taskTitle = task.title,
         taskGoal = task.target.ifBlank {
@@ -100,6 +106,8 @@ fun VerifyRoute(onBack: () -> Unit) {
         attemptsUsed = task.attempts,
         maxAttempts = PlanRules.MAX_ATTEMPTS,
         statusMessage = if (retrying) "" else event?.reason.orEmpty(),
+        rewardXp = GamificationRules.XP_TASK,
+        nextTaskTitle = nextTask?.title,
     )
 
     VerifyTaskScreen(
@@ -134,8 +142,15 @@ fun VerifyRoute(onBack: () -> Unit) {
             }
         },
         onBack = onBack,
+        onContinue = { if (nextTask != null) shownTaskId = nextTask.id else onBack() },
     )
 }
+
+/** Úkol k ověření: ten, který je právě zobrazený, jinak první neověřený, jinak poslední. */
+internal fun pickVerifyTask(tasks: List<PlanTask>, shownTaskId: Long?): PlanTask? =
+    tasks.firstOrNull { it.id == shownTaskId }
+        ?: tasks.firstOrNull { it.status != TaskStatus.VERIFIED }
+        ?: tasks.lastOrNull()
 
 /**
  * Stav obrazovky ověření. Po „Zkusit znovu“ ([retrying]) se u zamítnutého úkolu znovu ukáže formulář

@@ -23,4 +23,15 @@ class VerifyStatusTest {
         val spent = rejected.copy(attempts = 3)
         assertEquals(VerificationStatus.REJECTED, verifyStatus(spent, running = false, retrying = true))
     }
+
+    @Test
+    fun verifiedTaskStaysShownUntilContinue() {
+        val done = rejected.copy(id = 1, status = TaskStatus.VERIFIED)
+        val next = rejected.copy(id = 2, status = TaskStatus.PENDING, attempts = 0)
+        val tasks = listOf(done, next)
+        assertEquals(1L, pickVerifyTask(tasks, shownTaskId = 1)?.id) // výsledek zůstane vidět
+        assertEquals(2L, pickVerifyTask(tasks, shownTaskId = null)?.id) // první vstup: první neověřený
+        assertEquals(2L, pickVerifyTask(tasks, shownTaskId = 99)?.id) // smazaný úkol
+        assertEquals(null, pickVerifyTask(emptyList(), null))
+    }
 }

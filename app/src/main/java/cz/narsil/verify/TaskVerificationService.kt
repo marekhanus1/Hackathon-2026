@@ -52,6 +52,29 @@ object ProofCodec {
 }
 
 /**
+ * Poslední důvod a zpětná vazba ověření podle id úkolu, ať je UI ukáže i po restartu aplikace
+ * (bez změny schématu Room – v aplikaci SharedPreferences, [SharedPrefsReasonStore]).
+ */
+interface VerificationReasonStore {
+    fun load(taskId: Long): Pair<String, String>?
+    fun save(taskId: Long, reason: String, feedback: String)
+}
+
+/** Důvody ověření v SharedPreferences (`verify_reasons`). */
+class SharedPrefsReasonStore(context: android.content.Context) : VerificationReasonStore {
+    private val prefs = context.applicationContext.getSharedPreferences("verify_reasons", android.content.Context.MODE_PRIVATE)
+
+    override fun load(taskId: Long): Pair<String, String>? {
+        val reason = prefs.getString("r_$taskId", null) ?: return null
+        return reason to prefs.getString("f_$taskId", "").orEmpty()
+    }
+
+    override fun save(taskId: Long, reason: String, feedback: String) {
+        prefs.edit().putString("r_$taskId", reason).putString("f_$taskId", feedback).apply()
+    }
+}
+
+/**
  * Co UI ukáže u úkolu během a po ověření. [reason] = hotová česká věta stavu,
  * [feedback] = samotná zpětná vazba LLM / místní kontroly (541), prázdná když není.
  */
@@ -82,6 +105,7 @@ class TaskVerificationService(
     private val pendingTasks: suspend () -> List<PlanTask> = {
         contracts.today.value?.tasks.orEmpty().filter { it.status == TaskStatus.VERIFY_LATER }
     },
+    private val reasons: VerificationReasonStore? = null,
 ) {
     private val verifier = DetailedVerifier.of(verifier)
     private val mutex = Mutex()
@@ -91,6 +115,17 @@ class TaskVerificationService(
 
     /** Poslední stav ověření podle id úkolu (pro UI: „ověřuji…“, důvod zamítnutí). */
     val events: StateFlow<Map<Long, VerificationUiEvent>> = _events.asStateFlow()
+
+    /**
+     * Poslední stav ověření úkolu: z běhu aplikace, jinak uložený důvod (po restartu).
+     * Uložený důvod platí jen pro stav, ve kterém úkol je (VERIFIED / REJECTED / VERIFY_LATER).
+     */
+    fun eventFor(task: PlanTask): VerificationUiEvent? {
+        _events.value[task.id]?.let { return it }
+        if (task.status == TaskStatus.PENDING) return null
+        val (reason, feedback) = runCatching { reasons?.load(task.id) }.getOrNull() ?: return null
+        return VerificationUiEvent(task.id, task.status, reason, running = false, feedback = feedback)
+    }
 
     /** Jde úkol ověřit? (není VERIFIED a nevyčerpal pokusy). */
     fun canSubmit(task: PlanTask): Boolean = task.canRetry
@@ -136,7 +171,9 @@ class TaskVerificationService(
             autoRetries.remove(task.id)
             runCatchingCancellable { onVerified(updated) }
         }
-        emit(updated.id, updated.status, reasonFor(updated, outcome), feedback = outcome.feedback)
+        val reason = reasonFor(updated, outcome)
+        emit(updated.id, updated.status, reason, feedback = outcome.feedback)
+        runCatching { reasons?.save(updated.id, reason, outcome.feedback) }
         return updated
     }
 

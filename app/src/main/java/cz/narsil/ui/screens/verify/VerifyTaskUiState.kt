@@ -49,7 +49,11 @@ data class VerifyTaskUiState(
     val status: VerificationStatus = VerificationStatus.PENDING,
     val attemptsUsed: Int = 0,
     val maxAttempts: Int = 3,
-    val statusMessage: String = ""
+    val statusMessage: String = "",
+    /** XP za ověřený úkol (ukáže karta „Ověřeno“), 0 = neukazovat. */
+    val rewardXp: Int = 0,
+    /** Další neověřený úkol smlouvy (tlačítko „Další úkol“), null = žádný. */
+    val nextTaskTitle: String? = null
 ) {
     val remainingAttempts: Int
         get() = (maxAttempts - attemptsUsed).coerceAtLeast(0)
