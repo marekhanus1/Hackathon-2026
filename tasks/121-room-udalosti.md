@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/121-room-udalosti
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/99
 ---
 
 # 121 – Room: události spotřeby a denní souhrny

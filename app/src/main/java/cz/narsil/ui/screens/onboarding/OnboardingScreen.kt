@@ -131,30 +131,21 @@ fun OnboardingScreen(
                     }
 
                     Text(
-                        text = if (state.homeWifiSsid != null) {
-                            "Aktivní zóna: ${state.homeWifiSsid}"
-                        } else {
-                            "Aktuálně připojená síť: ${state.detectedWifiSsid}"
-                        },
+                        text = state.homeWifiStatusText,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Button(
                         onClick = onConfirmHomeWifi,
+                        enabled = !state.isOnHomeWifi,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (state.homeWifiSsid != null) colors.positive else colors.ember,
                             contentColor = if (state.homeWifiSsid != null) colors.onPositive else colors.onEmber
                         )
                     ) {
-                        Text(
-                            text = if (state.homeWifiSsid != null) {
-                                "Aktualizovat na ${state.detectedWifiSsid}"
-                            } else {
-                                "Tohle je můj domov"
-                            }
-                        )
+                        Text(text = state.homeWifiButtonLabel)
                     }
                 }
             }
