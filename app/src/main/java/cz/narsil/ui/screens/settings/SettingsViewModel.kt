@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.ContextRepository
+import cz.narsil.core.Exercise
 import cz.narsil.core.LlmProvider
 import cz.narsil.core.SettingsRepository
 import cz.narsil.core.StravaRepository
@@ -55,6 +56,7 @@ class SettingsViewModel(
             comfortContext = context,
             manualZone = manualChoice,
             llmProvider = settings.llmProvider,
+            exercise = settings.exercise,
             stravaConnected = stravaConnected,
             permissions = permissions,
             homeSaveFeedback = feedback
@@ -90,6 +92,12 @@ class SettingsViewModel(
     fun selectLlmProvider(provider: LlmProvider) {
         viewModelScope.launch {
             settingsRepository.update { it.copy(llmProvider = provider) }
+        }
+    }
+
+    fun selectExercise(exercise: Exercise) {
+        viewModelScope.launch {
+            settingsRepository.update { it.copy(exercise = exercise) }
         }
     }
 

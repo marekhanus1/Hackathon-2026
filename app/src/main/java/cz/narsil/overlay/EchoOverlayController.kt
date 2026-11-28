@@ -52,6 +52,8 @@ class EchoOverlayController(
     private val gamification: GamificationEngine? = null,
     /** Dřepy nad 20 (SPEC 8: žolík za každých 50 navíc). */
     private val onExtraSquats: suspend (Int) -> Unit = {},
+    /** Uložení přepnutého cviku (dřepy / kliky) přímo z Ozvěny nebo obrazovky cviku. */
+    private val onSelectExercise: (Exercise) -> Unit = {},
 ) {
     private var job: Job? = null
 
@@ -85,9 +87,18 @@ class EchoOverlayController(
                         ui.value = state.copy(selectedFeeling = if (state.selectedFeeling == f) null else f)
                     },
                     onCloseFeed = { choose(trigger, InterventionOutcome.CLOSED, ui.value.selectedFeeling) },
-                    onStartSquats = { startSquats(trigger, ui.value.selectedFeeling) },
+                    onStartSquats = { startSquats(trigger, ui.value.selectedFeeling, ui.value.selectedExercise) },
                     onPayWithSteps = { choose(trigger, InterventionOutcome.PAID_STEPS, ui.value.selectedFeeling) },
                     onBorrow = { choose(trigger, InterventionOutcome.BORROWED, ui.value.selectedFeeling) },
+                    onSelectExercise = { newEx ->
+                        if (newEx != state.selectedExercise) {
+                            onSelectExercise(newEx)
+                            ui.value = state.copy(
+                                selectedExercise = newEx,
+                                exerciseOptionTitle = ExerciseText.echoOption(newEx),
+                            )
+                        }
+                    },
                     videoSlot = { EchoVideoPlayer(content.videoUri, content.fallbackText) },
                 )
             }
@@ -95,32 +106,55 @@ class EchoOverlayController(
         Log.i(TAG, "Ozvěna ${if (shown) "ukázána" else "neukázána (oprávnění)"}: ${trigger.reason} ${trigger.event.packageName}")
     }
 
-    private fun startSquats(trigger: InterventionTrigger, feeling: EchoFeeling?) {
-        val ex = exercise()
-        val counter = (if (ex == Exercise.PUSHUPS) pushupCounter else squatCounter)
-            ?: return choose(trigger, InterventionOutcome.SQUATS, feeling)
+    private fun counterFor(ex: Exercise): SquatCounter? =
+        if (ex == Exercise.PUSHUPS) pushupCounter else squatCounter
+
+    private fun startSquats(
+        trigger: InterventionTrigger,
+        feeling: EchoFeeling?,
+        initialExercise: Exercise = exercise(),
+    ) {
+        if (counterFor(initialExercise) == null) {
+            return choose(trigger, InterventionOutcome.SQUATS, feeling, initialExercise)
+        }
+        val activeExercise = MutableStateFlow(initialExercise)
         window.show {
+            val ex by activeExercise.collectAsState()
+            val counter = counterFor(ex) ?: return@show
             NarsilTheme {
                 SquatOverlayContent(
                     counter = counter,
                     onCancel = {
+                        counter.stop()
                         window.dismiss()
                         scope.launch { showEcho(trigger) } // zpět na Ozvěnu
                     },
                     onDone = { count ->
-                        choose(trigger, InterventionOutcome.SQUATS, feeling)
+                        choose(trigger, InterventionOutcome.SQUATS, feeling, ex)
                         // Pohyb a gamifikace počítají v dřepech: kliky se převedou (10 kliků = 20 dřepů).
                         val extra = ExerciseText.squatEquivalent(ex, count) - MovementRates.SQUATS_PER_UNLOCK
                         if (extra > 0) scope.launch { runCatching { onExtraSquats(extra) } }
                     },
                     demoMode = demoMode(),
                     exercise = ex,
+                    onSelectExercise = { newEx ->
+                        if (newEx != ex && counterFor(newEx) != null) {
+                            counter.stop()
+                            onSelectExercise(newEx)
+                            activeExercise.value = newEx
+                        }
+                    },
                 )
             }
         }
     }
 
-    private fun choose(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?) {
+    private fun choose(
+        trigger: InterventionTrigger,
+        outcome: InterventionOutcome,
+        feeling: EchoFeeling?,
+        chosenExercise: Exercise = exercise(),
+    ) {
         val before = gamification?.state?.value
         // Okno se schová hned (Zavřít → plocha, odemknutí → zpět do aplikace); odměna se ukáže zvlášť.
         window.dismiss()
@@ -129,7 +163,7 @@ class EchoOverlayController(
                 .onFailure { Log.e(TAG, "volba $outcome selhala", it) }
             Log.i(TAG, "volba: $outcome, pocit: $feeling")
             val after = gamification?.state?.value
-            val reward = RewardBuilder.build(outcome, before, after, exercise()) ?: return@launch
+            val reward = RewardBuilder.build(outcome, before, after, chosenExercise) ?: return@launch
             Log.i(TAG, "odměna: +${reward.gainedXp} XP, úroveň ${reward.previousLevel} → ${reward.newLevel}")
             window.show {
                 NarsilTheme {

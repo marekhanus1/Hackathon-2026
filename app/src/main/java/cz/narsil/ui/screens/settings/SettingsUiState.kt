@@ -1,6 +1,7 @@
 package cz.narsil.ui.screens.settings
 
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.Exercise
 import cz.narsil.core.LlmProvider
 
 enum class ManualZoneChoice(val label: String) {
@@ -28,6 +29,7 @@ data class SettingsUiState(
     val comfortContext: ComfortContext = ComfortContext.HOME,
     val manualZone: ManualZoneChoice = ManualZoneChoice.AUTO,
     val llmProvider: LlmProvider = LlmProvider.CLAUDE,
+    val exercise: Exercise = Exercise.SQUATS,
     val stravaConnected: Boolean = false,
     val permissions: List<SettingsPermissionItem> = defaultSettingsPermissions(),
     val homeSaveFeedback: String? = null,

@@ -68,5 +68,6 @@ fun SettingsRoute(onNavigate: (NarsilRoute) -> Unit, onBack: () -> Unit) {
         onOpenOnboarding = { onNavigate(NarsilRoute.Onboarding) },
         onOpenDemoPanel = { onNavigate(NarsilRoute.Demo) },
         onBack = onBack,
+        onSelectExercise = vm::selectExercise,
     )
 }

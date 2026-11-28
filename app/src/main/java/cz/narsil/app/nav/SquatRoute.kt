@@ -7,7 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.MovementRates
@@ -31,9 +34,10 @@ fun SquatRoute(onBack: () -> Unit) {
     LaunchedEffect(Unit) {
         if (!hasCamera(context)) permission.launch(Manifest.permission.CAMERA)
     }
-    val exercise = settings.exercise
+    var exercise by remember(settings.exercise) { mutableStateOf(settings.exercise) }
+    val counter = sl.exerciseCounter(exercise)
     SquatOverlayContent(
-        counter = sl.exerciseCounter(exercise),
+        counter = counter,
         onCancel = onBack,
         onDone = { count ->
             scope.launch {
@@ -48,5 +52,12 @@ fun SquatRoute(onBack: () -> Unit) {
         demoMode = settings.demoMode,
         onRequestPermission = { permission.launch(Manifest.permission.CAMERA) },
         exercise = exercise,
+        onSelectExercise = { newExercise ->
+            if (newExercise != exercise) {
+                counter.stop()
+                exercise = newExercise
+                scope.launch { sl.settingsRepository.update { it.copy(exercise = newExercise) } }
+            }
+        },
     )
 }

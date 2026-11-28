@@ -1,6 +1,7 @@
 package cz.narsil.overlay
 
 import cz.narsil.core.EchoVideo
+import cz.narsil.core.Exercise
 import cz.narsil.core.MovementState
 import cz.narsil.core.fake.FakeContractRepository
 import cz.narsil.core.fake.FakeInterventionTriggerSource
@@ -35,5 +36,14 @@ class EchoStateBuilderTest {
         assertNull(c.videoUri)
         assertNull(c.fallbackText)
         assertEquals("Scrolluješ už 6 min.", c.ui.videoCaption)
+        assertEquals(Exercise.SQUATS, c.ui.selectedExercise)
+        assertEquals("Udělat 20 dřepů hned", c.ui.exerciseOptionTitle)
+    }
+
+    @Test
+    fun setsPushupsOptionWhenPushupsSelected() {
+        val c = EchoStateBuilder.build(trigger, MovementState(), null, null, Exercise.PUSHUPS)
+        assertEquals(Exercise.PUSHUPS, c.ui.selectedExercise)
+        assertEquals("Udělat 10 kliků hned", c.ui.exerciseOptionTitle)
     }
 }

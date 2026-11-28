@@ -17,8 +17,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cz.narsil.core.Exercise
+import cz.narsil.core.MovementRates
 import cz.narsil.ui.components.NarsilProgressBar
 import cz.narsil.ui.components.StatusPill
 import cz.narsil.ui.theme.NarsilTheme
@@ -36,12 +42,14 @@ import cz.narsil.ui.theme.NarsilTheme
 /**
  * High-contrast floor-readable pushup screen with live anti-cheat placement status.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PushupScreen(
     state: PushupUiState,
     onCancel: () -> Unit,
     onFinishContinue: () -> Unit,
     modifier: Modifier = Modifier,
+    onSelectExercise: (Exercise) -> Unit = {},
     cameraPreviewSlot: @Composable () -> Unit = { DefaultPushupCameraPlaceholder() }
 ) {
     val colors = NarsilTheme.colors
@@ -63,7 +71,7 @@ fun PushupScreen(
                 .fillMaxSize()
                 .systemBarsPadding()
                 .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.md)
+            verticalArrangement = Arrangement.spacedBy(spacing.sm)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -79,6 +87,23 @@ fun PushupScreen(
                     containerColor = colors.emberContainer,
                     contentColor = colors.onEmberContainer
                 )
+            }
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                SegmentedButton(
+                    selected = false,
+                    onClick = { onSelectExercise(Exercise.SQUATS) },
+                    shape = SegmentedButtonDefaults.itemShape(0, 2)
+                ) {
+                    Text(text = "Dřepy (${MovementRates.SQUATS_PER_UNLOCK})")
+                }
+                SegmentedButton(
+                    selected = true,
+                    onClick = { onSelectExercise(Exercise.PUSHUPS) },
+                    shape = SegmentedButtonDefaults.itemShape(1, 2)
+                ) {
+                    Text(text = "Kliky (${state.targetPushups})")
+                }
             }
 
             // Anti-cheat placement banner clearly readable from plank height

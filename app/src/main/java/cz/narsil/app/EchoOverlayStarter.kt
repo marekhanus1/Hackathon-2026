@@ -69,6 +69,7 @@ object EchoOverlayStarter {
                     demoMode = { sl.settingsRepository.settings.value.demoMode },
                     gamification = sl.gamificationEngine,
                     onExtraSquats = { n -> (sl.gamificationEngine as? RulesGamificationEngine)?.onExtraSquats(n) },
+                    onSelectExercise = { ex -> sl.appScope.launch { sl.settingsRepository.update { it.copy(exercise = ex) } } },
                 ).also { it.start() }
                 _ready.value = true
                 Log.i(TAG, "Ozvěna připravena (fakes=${sl.useFakes})")

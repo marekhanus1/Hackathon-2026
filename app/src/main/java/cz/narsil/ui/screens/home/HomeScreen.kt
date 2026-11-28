@@ -16,7 +16,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cz.narsil.core.Exercise
+import cz.narsil.core.MovementRates
 import cz.narsil.ui.components.AlgorithmDuelCard
 import cz.narsil.ui.components.AvatarCard
 import cz.narsil.ui.components.LevelBadge
@@ -43,6 +51,8 @@ fun HomeScreen(
     onOpenContract: () -> Unit,
     onOpenMirror: () -> Unit = {},
     onOpenBadges: () -> Unit = {},
+    onSelectExercise: (Exercise) -> Unit = {},
+    onStartExercise: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val colors = NarsilTheme.colors
@@ -107,7 +117,11 @@ fun HomeScreen(
             )
 
             // Movement & gentle debt summary card
-            MovementBalanceCard(state = state)
+            MovementBalanceCard(
+                state = state,
+                onSelectExercise = onSelectExercise,
+                onStartExercise = onStartExercise
+            )
 
             // Evening contract card
             ContractStatusCard(
@@ -141,8 +155,13 @@ private fun ZoneStatusPill(status: ZoneStatus) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MovementBalanceCard(state: HomeUiState) {
+private fun MovementBalanceCard(
+    state: HomeUiState,
+    onSelectExercise: (Exercise) -> Unit,
+    onStartExercise: () -> Unit
+) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
     val safeGoal = state.stepGoal.coerceAtLeast(1)
@@ -206,6 +225,44 @@ private fun MovementBalanceCard(state: HomeUiState) {
                 fillColor = colors.ember,
                 height = 10.dp
             )
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+            Text(
+                text = "Cvik pro odemčení (10 min):",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                SegmentedButton(
+                    selected = state.selectedExercise == Exercise.SQUATS,
+                    onClick = { onSelectExercise(Exercise.SQUATS) },
+                    shape = SegmentedButtonDefaults.itemShape(0, 2)
+                ) {
+                    Text(text = "Dřepy (${MovementRates.SQUATS_PER_UNLOCK})")
+                }
+                SegmentedButton(
+                    selected = state.selectedExercise == Exercise.PUSHUPS,
+                    onClick = { onSelectExercise(Exercise.PUSHUPS) },
+                    shape = SegmentedButtonDefaults.itemShape(1, 2)
+                ) {
+                    Text(text = "Kliky (${MovementRates.PUSHUPS_PER_UNLOCK})")
+                }
+            }
+
+            OutlinedButton(
+                onClick = onStartExercise,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = if (state.selectedExercise == Exercise.PUSHUPS) {
+                        "Spustit kliky"
+                    } else {
+                        "Spustit dřepy"
+                    }
+                )
+            }
         }
     }
 }
