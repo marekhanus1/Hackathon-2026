@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/156-co-ti-video-dalo
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/121
 ---
 
 # 156 – „Co ti to video dalo?“ (zpětná vazba k videím)
