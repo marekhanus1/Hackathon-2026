@@ -1,9 +1,12 @@
 package cz.narsil.app.nav
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -13,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -22,6 +24,7 @@ import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.DailyContract
 import cz.narsil.core.data.DayKey
+import cz.narsil.overlay.RewardBuilder
 import cz.narsil.ui.screens.badges.BadgesScreen
 import cz.narsil.ui.screens.badges.BadgesUiState
 import cz.narsil.ui.screens.contract.ContractScreen
@@ -57,7 +60,7 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
     val comfort by sl.contextRepository.context.collectAsState()
     val state = HomeUiState(
         level = game.level,
-        levelTitle = "Úroveň ${game.level}",
+        levelTitle = RewardBuilder.levelTitle(game.level),
         currentXp = game.xp,
         avatarState = game.avatar.toUi(),
         avatarSummary7Days = "Série ${game.streakDays} dní · vyhraných dnů ${game.wonDays}",
@@ -78,20 +81,21 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
             ComfortContext.UNKNOWN -> ZoneStatus.UNKNOWN
         },
     )
-    Box(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        // Vstup do nastavení (a odtud dřepy, ověření, demo panel), dokud Jan nedodá 325.
+        // Vlastní lišta nad Janovou obrazovkou, ať se nepřekrývá se štítkem zóny v jejím záhlaví.
+        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.End) {
+            IconButton(onClick = { onNavigate(NarsilRoute.Settings) }) {
+                Icon(Icons.Filled.Settings, contentDescription = "Nastavení", tint = MaterialTheme.colorScheme.onBackground)
+            }
+        }
         HomeScreen(
             state = state,
             onOpenContract = { onNavigate(NarsilRoute.Contract) },
             onOpenMirror = { onNavigate(NarsilRoute.Mirror) },
             onOpenBadges = { onNavigate(NarsilRoute.Badges) },
+            modifier = Modifier.weight(1f),
         )
-        // Vstup do nastavení (a odtud dřepy, ověření, demo panel), dokud Jan nedodá 325.
-        IconButton(
-            onClick = { onNavigate(NarsilRoute.Settings) },
-            modifier = Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(4.dp),
-        ) {
-            Icon(Icons.Filled.Settings, contentDescription = "Nastavení", tint = MaterialTheme.colorScheme.onBackground)
-        }
     }
 }
 
