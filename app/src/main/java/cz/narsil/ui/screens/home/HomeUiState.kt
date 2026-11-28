@@ -37,7 +37,7 @@ data class HomeUiState(
     /** Podepsaná smlouva platí dnes (jinak zítra). */
     val contractSignedForToday: Boolean = true,
     val contractTaskCount: Int = 0,
-    val plannedContentSummary: String = "Přednáška o Rustu, 1 díl seriálu",
+    val plannedContentSummary: String = "Dokument o přírodě, 1 díl seriálu",
     val zoneStatus: ZoneStatus = ZoneStatus.HOME,
     /** Úkoly dnešní smlouvy (todo list na domově, 334); prázdné = dnes bez úkolů. */
     val tasks: List<TaskItem> = emptyList(),

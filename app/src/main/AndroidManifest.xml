@@ -137,6 +137,16 @@
             </intent-filter>
         </receiver>
 
+        <!-- 161: příkazy dema z mostu na notebooku (scripts/demo-most.py), příkazy v DemoCommandReceiver -->
+        <receiver
+            android:name=".app.demo.DemoCommandReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="cz.narsil.DEMO" />
+            </intent-filter>
+        </receiver>
+
         <!-- 124: fotka důkazu ze systémového fotoaparátu (ověření úkolů) -->
         <provider
             android:name="androidx.core.content.FileProvider"

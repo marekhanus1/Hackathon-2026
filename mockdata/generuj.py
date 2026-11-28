@@ -60,6 +60,7 @@ TASK_REWARDS = [0, 0, 20, 0, 10, 30, 0, 40, 20, 40, 50, 20, 40, 30, 60, 50, 10, 
 CHANNELS = {
     "Rust za kafe": ("LONG", 22),
     "Fyzika v kostce": ("LONG", 15),
+    "Příroda zblízka": ("LONG", 50),
     "Kuchyně za minutu": ("SHORT", 1),
     "Drama Recap CZ": ("SHORT", 1),
     "Memes denně": ("SHORT", 1),
@@ -102,7 +103,7 @@ RATINGS = [
     (20, "Rust za kafe", "Unsafe Rust", "unsafe", True, 86, 4),
     (20, "Kuchyně za minutu", "Palačinky za 60 s", "", False, 72, 4),
     (20, "Drama Recap CZ", "Usmíření?", "", False, 75, 2),
-    (21, "Rust za kafe", "Přednáška: Rust v embedded", "přednáška o Rustu", True, 97, 5),
+    (21, "Příroda zblízka", "Divoká příroda Šumavy – dokument", "dokument o přírodě", True, 97, 5),
     (21, "Fyzika v kostce", "Teplota a pohyb molekul", "", True, 90, 5),
     (21, "Memes denně", "Když je pondělí #340", "", False, 60, 2),
 ]

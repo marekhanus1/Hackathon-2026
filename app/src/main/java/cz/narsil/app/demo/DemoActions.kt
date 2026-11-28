@@ -5,7 +5,6 @@ import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.Exercise
-import cz.narsil.core.InterventionOutcome
 import cz.narsil.core.LlmProvider
 import cz.narsil.core.data.DayKey
 import cz.narsil.llm.client.BuildConfigLlmKeys
@@ -18,6 +17,12 @@ import cz.narsil.detection.accessibility.AccessibilityTriggerSource
 /** Akce demo panelu (123, SPEC 10) nad [ServiceLocator]. */
 object DemoActions {
     const val DEMO_THRESHOLD_SEC = 20
+
+    /**
+     * Připravené demo (161): 0 minut zůstatku → feed doma zablokuje skoro hned. 5 s místo 0, aby byl
+     * na plátně vidět ukazatel limitu (při prahu 0 se nekreslí).
+     */
+    const val DEMO_INSTANT_SEC = 5
 
     private val sl get() = ServiceLocator
 
@@ -59,11 +64,12 @@ object DemoActions {
      * Reset dne: ruční přepínač pryč, odemknutí zrušeno, relace v detekci od nuly,
      * pohyb a gamifikace přes ladicí funkce (222), fake smlouva na demo.
      */
-    suspend fun resetDay() {
+    suspend fun resetDay(steps: Int = MovementDebug.DEMO_STEPS) {
         sl.contextRepository.setManualOverride(null)
         sl.unlockTimer.clear()
-        (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.onOutcome(InterventionOutcome.CLOSED)
-        MovementDebug.resetDay(sl.movementRepository)
+        // Čistý start bez okna po Zavřít (155) – jinak by Ozvěna 10 min naskakovala hned, bez ukazatele.
+        (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.reset()
+        MovementDebug.resetDay(sl.movementRepository, steps)
         GamificationDebug.resetDay(sl.gamificationEngine)
         (sl.contractRepository as? FakeContractRepository)?.save(FakeContractRepository.demoContract(DayKey.today()))
     }
@@ -80,14 +86,29 @@ object DemoActions {
         runCatching { sl.contractRepository.save(demo.copy(videoUri = current?.videoUri ?: demo.videoUri)) }
     }
 
-    /** Připraví celé demo jedním klepnutím: doma, práh 20 s, smlouva platí dnes s úkoly, čistý den. */
+    /**
+     * Dnešní smlouva přesně pro demo (161): 4 úkoly, žádný odevzdaný. Přepíše i skutečnou smlouvu,
+     * natočené video z ní zůstane.
+     */
+    suspend fun resetDemoContract() {
+        val today = DayKey.today()
+        val current = runCatching { sl.contractRepository.forDate(today) }.getOrNull()
+        val demo = FakeContractRepository.demoContract(today)
+        runCatching { sl.contractRepository.save(demo.copy(videoUri = current?.videoUri ?: demo.videoUri)) }
+    }
+
+    /**
+     * Připraví celé demo jedním klepnutím (161): doma, 0 kroků = 0 minut, feed zablokuje po 5 s s ukazatelem,
+     * úkoly smlouvy neodevzdané, cvik dřepy, XP těsně pod úrovní.
+     */
     suspend fun prepareDemo() {
-        resetDay()
-        // XP těsně pod úrovní: 20 dřepů v demu spustí novou úroveň (230).
+        resetDay(steps = 0)
+        // XP těsně pod úrovní: cvik v demu spustí novou úroveň (230).
         GamificationDebug.prepareDemo(sl.gamificationEngine)
-        ensureDemoContract()
+        resetDemoContract()
         setContext(ComfortContext.HOME)
-        setShortThreshold(true)
+        setExercise(Exercise.SQUATS)
+        sl.settingsRepository.update { it.copy(demoMode = true, demoThresholdSec = DEMO_INSTANT_SEC) }
         setContractToday(true)
     }
 }

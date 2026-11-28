@@ -70,6 +70,9 @@ object EchoOverlayStarter {
         return true
     }
 
+    /** Ukazuje se teď okno Ozvěny? Pro hlášení dema (161). */
+    fun isEchoShowing(): Boolean = controller?.isShowing == true
+
     /** Panel po konci videa počká, jestli ve stejné chvíli nepřijde Ozvěna. */
     private const val FEEDBACK_DELAY_MILLIS = 2_000L
 
@@ -126,7 +129,7 @@ object EchoOverlayStarter {
                     // Štítek „Ozvěna za 0:15“ (148): zbývající čas z procenta a prahu relace (Settings.toleranceMillis).
                     combine(percent, sl.settingsRepository.settings) { p, s -> p?.takeIf { s.showScrollProgress }?.let { it to s.toleranceMillis() } }
                         .distinctUntilChanged()
-                        .collect { v -> bar.update(v?.first, v?.let { ScrollProgressStyle.remainingMillis(it.first, it.second) }) }
+                        .collect { v -> android.util.Log.d("NarsilProgress", "ukazatel: $v"); bar.update(v?.first, v?.let { ScrollProgressStyle.remainingMillis(it.first, it.second) }) }
                 }
                 val handler = EchoOutcomeHandler(
                     movement = sl.movementRepository,

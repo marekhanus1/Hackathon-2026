@@ -109,7 +109,7 @@ object MockDataGenerator {
         Rating(20, "Rust za kafe", "Unsafe Rust", "unsafe", true, 86, 4),
         Rating(20, "Kuchyně za minutu", "Palačinky za 60 s", "", false, 72, 4),
         Rating(20, "Drama Recap CZ", "Usmíření?", "", false, 75, 2),
-        Rating(21, "Rust za kafe", "Přednáška: Rust v embedded", "přednáška o Rustu", true, 97, 5),
+        Rating(21, "Příroda zblízka", "Divoká příroda Šumavy – dokument", "dokument o přírodě", true, 97, 5),
         Rating(21, "Fyzika v kostce", "Teplota a pohyb molekul", "", true, 90, 5),
         Rating(21, "Memes denně", "Když je pondělí #340", "", false, 60, 2),
     )

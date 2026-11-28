@@ -15,3 +15,47 @@ Vektorové SVG makety odpovídající reálným Jetpack Compose obrazovkám apli
 4. `04-drepy.svg` – Obrazovka dřepů (`SquatScreen`, 311)
 5. `05-zrcadlo-hodnota.svg` – Zrcadlo a mapa hodnoty (`MirrorScreen`, 322)
 6. `06-partak-notifikace.svg` – Ukázková notifikace na telefonu Parťáka (MVP simulace)
+
+## Pitch prezentace – `pitch/narsil-pitch.html` (úkol 151)
+Jednoduchý světlý styl podle barev aplikace, motiv meče Narsil (zlomený a znovu ukovaný). 11 slidů hlavní linky + 6 záložních slidů s maketami aplikace.
+
+- **Spuštění:** `cd pitch && python3 -m http.server 8000` → Firefox `http://localhost:8000/narsil-pitch.html`, `F` celá obrazovka.
+- **Během pitche jen šipky / prezentér:** `→` `↓` `PageDown` mezerník nebo klik myší = dál, `←` `↑` `PageUp` = zpět.
+  Kroky na slidu se odkrývají postupně, makety (Ozvěna, dřepy…) běží samy. Na slidech nejsou žádná tlačítka.
+- **Pro řečníka:** `N` poznámky, `O` přehled, `T` časomíra, `B` nebo `.` černá obrazovka, `F5` celá obrazovka (nepřenačte stránku).
+- Tým, datum a délka pitche jsou v `CONFIG` na začátku skriptu.
+
+### Živý přenos z telefonu (připravit před pitchem)
+1. scrcpy je v `~/.local/opt/scrcpy` (oficiální balík z GitHubu Genymobile/scrcpy). Telefon na USB a spustit:
+   `ADB=~/Android/Sdk/platform-tools/adb ~/.local/opt/scrcpy/scrcpy --window-title=Narsil-live --no-audio --no-control --max-size=1600`
+2. V prezentaci klávesa `S` → **Sdílet okno telefonu** → okno *Narsil-live* → `S` panel zavře.
+3. Když přenos běží, slide Demo ukazuje živý telefon a klikem se odkrývají scény dema; 6 záložních slidů se přeskočí.
+   Když neběží (nebo spadne), prezentace jimi normálně projde.
+
+Pozor: USB spojení s Nothingem občas samo spadne a scrcpy pak zavře okno – pak spustit znovu a znovu nasdílet (`S`).
+
+### Demo most: telefon ↔ prezentace (úkol 161)
+Místo `http.server` spusť z kořene repa:
+
+    python3 scripts/demo-most.py --scrcpy
+
+Servíruje `pitch/` na http://localhost:8000, drží scrcpy ve smyčce (po výpadku USB ho nahodí – okno pak ve Firefoxu nasdílet znovu)
+a propojí slide Demo s aplikací v telefonu:
+
+- **Telefon → prezentace:** aplikace hlásí momenty do logcatu (`NarsilDemo`, JSON na řádek), most je čte živě a posílá
+  prezentaci. Ozvěna posune scény na *Doma ve feedu*, dřepy na *20 dřepů* (velké počítadlo místo seznamu scén),
+  odemčení a nová úroveň se oslaví, ohodnocené video posune na *Přednáška z plánu*. Scény jdou jen dopředu, klik má přednost.
+  Nahoře na slidu čipy *z telefonu · Doma/Venku · Úroveň · Ozvěna*.
+- **Prezentace → telefon:** scéna 2 pošle `away`, scéna 3 `home` (`CONFIG.sceneCmds`). Panel `S` má tlačítka
+  *Připravit demo v telefonu*, *Venku*, *Doma*, *Ozvěna hned*, *+500 XP*, *Stav*. Na slidu Demo záloha z klávesnice
+  notebooku: `E` Ozvěna hned, `X` +500 XP, `H` doma, `V` venku.
+- Ručně: `adb shell am broadcast -a cz.narsil.DEMO -p cz.narsil --es cmd prepare|home|away|auto|echo|xp|steps|reset|state`,
+  události `adb logcat -v raw -s NarsilDemo:I`.
+- Zkouška bez telefonu: v konzoli prohlížeče `MOST.sim({e:'squats',n:12})`, `MOST.sim({e:'level',level:5})`.
+- Bez mostu (soubor nebo `http.server`) se prezentace chová jako dřív.
+- **Prezentace z jiného počítače v síti:** most poslouchá i na IP notebooku (`http://<IP>:8000/`, vypíše ji při startu).
+  Okno telefonu se sdílí jen v záložce na `http://localhost:8000` na notebooku s telefonem (Firefox na `http://IP` sdílení
+  nepovolí). Ta záložka pak posílá snímky mostu (~10 za sekundu, i když je v pozadí) a prezentace na IP ukáže
+  telefon jako MJPEG (zpoždění ~0,2 s). V panelu `S` je vidět „Do sítě posláno N snímků“. Záloha bez sdílení okna:
+  `--adb-video` (obraz přes adb screencap, ~5 snímků/s, zatěžuje telefon). Příkazy do telefonu jdou jen z localhostu
+  (`--allow-remote-cmd` je povolí i z LAN), `--host 127.0.0.1` vypne přístup ze sítě.

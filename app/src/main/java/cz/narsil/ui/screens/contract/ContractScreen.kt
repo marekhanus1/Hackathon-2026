@@ -441,7 +441,7 @@ private fun AddContentDialog(
     onAdd: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val suggestions = listOf("Přednáška o Rustu", "Jeden díl seriálu", "Dokument o přírodě").filter { it !in state.plannedItems }
+    val suggestions = listOf("Dokument o přírodě", "Jeden díl seriálu", "Online přednáška").filter { it !in state.plannedItems }
     NeuDialog(title = "Plánovaný obsah", onDismiss = onDismiss) {
         NeuText(
             "Co si ${state.dayWord} pustíš zdarma – Ozvěna u toho nezasáhne.",
@@ -531,7 +531,7 @@ private fun ContractPreview() {
     NarsilTheme {
         ContractScreen(
             state = ContractUiState(
-                plannedItems = listOf("Přednáška o Rustu", "Jeden díl seriálu"),
+                plannedItems = listOf("Dokument o přírodě", "Jeden díl seriálu"),
                 hasRecordedVideo = true,
                 recordedSeconds = 12,
                 tasks = listOf(

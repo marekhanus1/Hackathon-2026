@@ -24,19 +24,19 @@ Doporučení: **A** pro otevření, z **C** si vzít video jako první obraz dem
 
 ## Persona
 
-**Tereza, 21 let, studentka informatiky, bydlí na koleji / u rodičů.**
-- Večer přijde domů unavená, „na chvilku“ otevře TikTok – a v půl jedné zjistí, že úkol z lineární algebry neudělala.
-- Zkoušela limity obrazovky (vypnula je), blokovací aplikace (smazala je), „digitální detox“ (tři dny).
-- Venku sociální sítě používá normálně a nechce, aby jí do toho cokoli mluvilo – ukáže kamarádce video, odpoví na zprávu.
-- Chce: aby jí telefon připomněl, **kým chce být**, ve chvíli, kdy na to sama zapomene. Ne aby ji trestal.
+**Šimon Sketa, 18 let, student (maturitní ročník), bydlí u rodičů.**
+- Večer přijde domů unavený, „na chvilku“ otevře TikTok – a v půl jedné zjistí, že úkol z matiky neudělal.
+- Zkoušel limity obrazovky (vypnul je), blokovací aplikace (smazal je), „digitální detox“ (tři dny).
+- Venku sociální sítě používá normálně a nechce, aby mu do toho cokoli mluvilo – ukáže kamarádovi video, odpoví na zprávu.
+- Chce: aby mu telefon připomněl, **kým chce být**, ve chvíli, kdy na to sám zapomene. Ne aby ho trestal.
 
-**Její příběh v pitchi (jeden den):**
-1. Večer (2 min): podepíše smlouvu se sebou – 6 000 kroků, „přednáška o Rustu“ je v plánu, krátké video.
-2. Odpoledne venku ukazuje kamarádce Reels – Narsil mlčí.
-3. Doma ve 21:40 se zasekne na TikToku. Po 5 minutách naskočí její včerejší video: „Čemu se teď vyhýbáš?“
-4. Vybere „20 dřepů hned“ – kamera je počítá, odemkne si 10 minut. Nebo odejde sama a dostane nejvíc XP.
-5. Přednáška o Rustu na YouTube projde zdarma – je v plánu.
-6. Kdyby aplikaci smazala, nedozví se to server, ale její kamarád.
+**Jeho příběh v pitchi (jeden den):**
+1. Večer (2 min): podepíše smlouvu se sebou – 6 000 kroků, „dokument o přírodě“ je v plánu, krátké video.
+2. Odpoledne venku ukazuje kamarádovi Reels – Narsil mlčí.
+3. Doma ve 21:40 se zasekne na TikToku. Po 5 minutách naskočí jeho včerejší video: „Čemu se teď vyhýbáš?“
+4. Vybere „20 dřepů hned“ – kamera je počítá, odemkne si 10 minut. Nebo odejde sám a dostane nejvíc XP.
+5. Dokument o přírodě na YouTube projde zdarma – je v plánu.
+6. Kdyby aplikaci smazal, nedozví se to server, ale jeho kamarád.
 
 ## Osnova (8 slidů, demo uprostřed)
 
