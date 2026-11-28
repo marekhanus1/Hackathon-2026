@@ -1379,7 +1379,7 @@ $('#lvCam').onclick=async()=>{if(needSecure())return;try{
     const tmp=await navigator.mediaDevices.getUserMedia({video:true});tmp.getTracks().forEach(t=>t.stop());
     const devs=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
     const sel=$('#lvSel');sel.innerHTML=devs.map(d=>`<option value="${d.deviceId}">${d.label||'kamera'}</option>`).join('');sel.style.display='inline-flex';
-    const pref=devs.find(d=>/scrcpy|loopback|dummy|narsil/i.test(d.label));if(pref)sel.value=pref.deviceId;
+    const pref=devs.find(d=>/scrcpy|loopback|dummy|narsil/i.test(d.label));if(!pref){sel.style.display='none';liveStatus('Virtuální kamera telefonu nenalezena (chybí v4l2loopback) – jsou tu jen kamery notebooku. Použij „Sdílet okno telefonu“.','err');return}sel.value=pref.deviceId;
     const open=async()=>{const s=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:sel.value},frameRate:{ideal:30}}});useStream(s,sel.options[sel.selectedIndex].text)};
     sel.onchange=()=>open().catch(e=>liveStatus('Kameru nejde otevřít ('+e.name+').','err'));await open()}
   catch(e){liveStatus('Kamera nedostupná ('+e.name+').','err')}};
