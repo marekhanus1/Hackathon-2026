@@ -92,14 +92,14 @@ class ContractVideoRecorder(context: Context) {
         }.onFailure { _state.update { it.copy(isReady = false, error = "Kamera není k dispozici") } }
     }
 
-    /** Začne nahrávat video ke smlouvě na den [date]. */
+    /** Začne nahrávat video ke smlouvě na den [date]; [prefix] = „smlouva“, nebo „onboarding“ (139). */
     @SuppressLint("MissingPermission")
-    fun start(date: LocalDate) {
+    fun start(date: LocalDate, prefix: String = "smlouva") {
         val capture = videoCapture
         if (capture == null || recording != null) return
         runCatching {
             val dir = File(context.filesDir, VIDEO_DIR).apply { mkdirs() }
-            val file = File(dir, "smlouva-$date-${System.currentTimeMillis()}.mp4")
+            val file = File(dir, "$prefix-$date-${System.currentTimeMillis()}.mp4")
             val options = FileOutputOptions.Builder(file)
                 .setDurationLimitMillis(PlanRules.MAX_VIDEO_SECONDS * 1_000L)
                 .build()

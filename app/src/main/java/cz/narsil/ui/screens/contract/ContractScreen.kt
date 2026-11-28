@@ -37,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import cz.narsil.core.PlanRules
+import cz.narsil.core.TaskType
 import cz.narsil.ui.theme.NarsilTheme
 
 /**
@@ -58,7 +60,11 @@ fun ContractScreen(
     onSubmitContract: () -> Unit,
     onBackToHome: () -> Unit,
     modifier: Modifier = Modifier,
-    cameraPreviewSlot: @Composable () -> Unit = { DefaultContractCameraPlaceholder(state) }
+    cameraPreviewSlot: @Composable () -> Unit = { DefaultContractCameraPlaceholder(state) },
+    onSelectTaskType: (TaskType) -> Unit = {},
+    onTaskDraftChange: (String) -> Unit = {},
+    onAddTask: (TaskType, String) -> Unit = { _, _ -> },
+    onRemoveTask: (TaskDraft) -> Unit = {},
 ) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
@@ -92,7 +98,7 @@ fun ContractScreen(
                     contentColor = colors.onEchoContainer
                 ) {
                     Text(
-                        text = "Krok ${state.currentStep.index} ze 3",
+                        text = "Krok ${state.currentStep.index} ze ${ContractStep.entries.size}",
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
                     )
@@ -135,6 +141,14 @@ fun ContractScreen(
                     onDraftChange = onDraftChange,
                     onAddPlannedItem = onAddPlannedItem,
                     onRemovePlannedItem = onRemovePlannedItem
+                )
+
+                ContractStep.TASKS -> TasksStep(
+                    state = state,
+                    onSelectTaskType = onSelectTaskType,
+                    onTaskDraftChange = onTaskDraftChange,
+                    onAddTask = onAddTask,
+                    onRemoveTask = onRemoveTask
                 )
 
                 ContractStep.ECHO_VIDEO -> EchoVideoStep(
@@ -377,6 +391,115 @@ private fun PlannedContentStep(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TasksStep(
+    state: ContractUiState,
+    onSelectTaskType: (TaskType) -> Unit,
+    onTaskDraftChange: (String) -> Unit,
+    onAddTask: (TaskType, String) -> Unit,
+    onRemoveTask: (TaskDraft) -> Unit
+) {
+    val colors = NarsilTheme.colors
+    val spacing = NarsilTheme.spacing
+    val suggestions = listOf(
+        TaskType.MOVEMENT to "Běh nebo procházka 20 min",
+        TaskType.SCHOOL to "Úkol do školy",
+        TaskType.WORK to "Hodina soustředěné práce",
+        TaskType.OTHER to "Uklidit pokoj",
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+        Text(
+            text = "Co chceš zítra stihnout? Splněný úkol doložíš fotkou, textem nebo Stravou a dostaneš minuty navíc.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+            TaskType.entries.forEach { type ->
+                FilterChip(
+                    selected = state.taskDraftType == type,
+                    onClick = { onSelectTaskType(type) },
+                    label = { Text("${type.label} · ${type.defaultRewardMinutes} min") }
+                )
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing.xs),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = state.taskDraftText,
+                onValueChange = onTaskDraftChange,
+                placeholder = { Text("Např. kapitola 3 z fyziky") },
+                singleLine = true,
+                modifier = Modifier.weight(1f)
+            )
+            Button(
+                onClick = { onAddTask(state.taskDraftType, state.taskDraftText) },
+                enabled = state.taskDraftText.isNotBlank() && state.canAddTask
+            ) {
+                Text("Přidat")
+            }
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+            suggestions.forEach { (type, title) ->
+                FilterChip(
+                    selected = state.tasks.any { it.title == title },
+                    onClick = { onAddTask(type, title) },
+                    enabled = state.canAddTask,
+                    label = { Text("+ $title") }
+                )
+            }
+        }
+        if (state.tasks.isEmpty()) {
+            Text(
+                text = "Zatím žádný úkol. Smlouva jde podepsat i bez úkolů.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+            state.tasks.forEach { task ->
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    color = colors.echoContainer,
+                    contentColor = colors.onEchoContainer
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = spacing.md, vertical = spacing.xs),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = task.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                            Text(
+                                text = "${task.type.label} · +${task.rewardMinutes} min" +
+                                    if (task.type == TaskType.MOVEMENT) " · ověří Strava nebo fotka" else " · fotka nebo text",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        TextButton(onClick = { onRemoveTask(task) }) {
+                            Text("Odebrat")
+                        }
+                    }
+                }
+            }
+        }
+        if (!state.canAddTask) {
+            Text(
+                text = "Víc než ${PlanRules.MAX_TASKS} úkolů se do jednoho dne nevejde.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
 @Composable
 private fun EchoVideoStep(
     state: ContractUiState,
@@ -430,6 +553,9 @@ private fun EchoVideoStep(
             }
         }
 
+        state.videoError?.let { error ->
+            Text(text = error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+        }
         OutlinedButton(
             onClick = onToggleRecording,
             modifier = Modifier.fillMaxWidth()
