@@ -53,3 +53,8 @@ a propojí slide Demo s aplikací v telefonu:
   události `adb logcat -v raw -s NarsilDemo:I`.
 - Zkouška bez telefonu: v konzoli prohlížeče `MOST.sim({e:'squats',n:12})`, `MOST.sim({e:'level',level:5})`.
 - Bez mostu (soubor nebo `http.server`) se prezentace chová jako dřív.
+- **Prezentace z jiného počítače v síti:** most poslouchá i na IP notebooku (`http://<IP>:8000/`, vypíše ji při startu).
+  Okno telefonu se sdílí jen v záložce na `http://localhost:8000` na notebooku s telefonem (Firefox na `http://IP` sdílení
+  nepovolí). Ta záložka pak posílá snímky mostu a prezentace na IP ukáže telefon jako MJPEG (zpoždění ~0,2 s).
+  Sdílející záložka musí zůstat viditelná – skrytou Firefox zpomalí. Příkazy do telefonu jdou jen z localhostu
+  (`--allow-remote-cmd` je povolí i z LAN), `--host 127.0.0.1` vypne přístup ze sítě.

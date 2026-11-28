@@ -840,7 +840,7 @@ const HOOK={
   s12:{step(k){pt(k)}},
   s13:{enter(){$$('#s13 .xpr i').forEach(i=>i.style.width='0');later(250,()=>$$('#s13 .xpr i').forEach(i=>i.style.width=i.dataset.w+'%'))}},
 };
-const skip=i=>stream&&slides[i]&&slides[i].dataset.backup;   // živý přenos běží → záložní slidy přeskočit
+const skip=i=>(stream||remoteLive)&&slides[i]&&slides[i].dataset.backup;   // živý přenos běží → záložní slidy přeskočit
 function go(i,st){i=Math.max(0,Math.min(slides.length-1,i));const changed=i!==cur||!slides[i].classList.contains('on');
   if(changed)slides[cur].classList.remove('on');
   const s=slides[i],nst=+(s.dataset.steps||0);cur=i;step=st<0?nst:Math.min(st,nst);
@@ -879,17 +879,30 @@ stage.addEventListener('click',e=>{if(e.target.closest('#setup,#ov,#notes,button
 let mt;addEventListener('mousemove',()=>{document.body.classList.remove('hidecur');clearTimeout(mt);mt=setTimeout(()=>document.body.classList.add('hidecur'),2000)});
 
 /* ===================== ŽIVÝ PŘENOS ===================== */
-let stream=null;
+let stream=null,remoteLive=false;   // remoteLive: obraz telefonu přeposílá most (jiná záložka / jiný počítač sdílí okno)
 function st(t,c){const e=$('#live-st');e.textContent=t;e.className=c||''}
-function applyLive(){$$('.phone[data-live]').forEach(p=>{const on=!!stream;let v=$('video.livev',p);
-  if(on&&!v){v=document.createElement('video');v.className='livev';v.muted=true;v.autoplay=true;v.playsInline=true;$('.scr',p).appendChild(v)}
-  if(v){if(on&&v.srcObject!==stream){v.srcObject=stream;v.play().catch(()=>{})}if(!on)v.srcObject=null}p.classList.toggle('live',on)});
+function applyLive(){$$('.phone[data-live]').forEach(p=>{const own=!!stream,rem=!own&&remoteLive;let v=$('video.livev',p),im=$('img.livev',p);
+  if(own&&!v){v=document.createElement('video');v.className='livev';v.muted=true;v.autoplay=true;v.playsInline=true;$('.scr',p).appendChild(v)}
+  if(v){if(own&&v.srcObject!==stream){v.srcObject=stream;v.play().catch(()=>{})}if(!own){v.remove()}}
+  if(rem&&!im){im=document.createElement('img');im.className='livev';im.alt='';im.src='/demo/live.mjpg?'+Date.now();$('.scr',p).appendChild(im)}
+  if(!rem&&im)im.remove();
+  p.classList.toggle('live',own||rem)});
   $('#liveDot').classList.toggle('on',!!stream&&$('#setup').classList.contains('on'))}
+// Sdílí-li tahle záložka okno a běží most, posílá snímky telefonu ostatním prezentacím (http://IP:8000).
+// Záložka musí zůstat viditelná (skrytou Firefox zpomalí na 1 snímek za sekundu).
+const RELAY={on:false,busy:false,v:null,c:null,
+  start(){if(this.on||!/^https?:/.test(location.protocol))return;this.on=true;
+    this.v=document.createElement('video');this.v.muted=true;this.v.playsInline=true;this.c=document.createElement('canvas');
+    setInterval(()=>this.tick(),100)},
+  tick(){if(!stream||this.busy||!MOST.local)return;const v=this.v;if(v.srcObject!==stream){v.srcObject=stream;v.play().catch(()=>{})}
+    if(!v.videoWidth)return;const k=Math.min(1,1280/v.videoHeight),c=this.c;c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);
+    c.getContext('2d').drawImage(v,0,0,c.width,c.height);this.busy=true;
+    c.toBlob(b=>{if(!b){this.busy=false;return}fetch('/demo/frame',{method:'POST',body:b}).catch(()=>{}).finally(()=>this.busy=false)},'image/jpeg',.72)}};
 function stop(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}applyLive();go(cur,step);st('Přenos neběží – prezentace použije záložní slidy s maketami.')}
-$('#lvWin').onclick=async()=>{if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){st('Tady sdílení okna nejde – otevři prezentaci ve Firefoxu přes http://localhost.','err');return}
+$('#lvWin').onclick=async()=>{if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){st(remoteLive?'Obraz telefonu sem posílá most – sdílet tady není potřeba.':'Tady sdílení okna nejde – sdílej na notebooku s telefonem v http://localhost:8000, obraz se sem pošle sám.',remoteLive?'ok':'err');return}
   try{const s=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:30}},audio:false});if(stream)stream.getTracks().forEach(t=>t.stop());stream=s;
     s.getVideoTracks().forEach(t=>t.addEventListener('ended',()=>{if(stream===s){stream=null;applyLive();go(cur,step);st('Přenos skončil (výpadek USB?) – spusť zrcadlení a sdílej znovu.','err')}}));
-    applyLive();go(cur,step);st('Přenos běží. Slide Demo ukáže živý telefon, záložní slidy se přeskočí.','ok')}
+    applyLive();go(cur,step);RELAY.start();st('Přenos běží. Slide Demo ukáže živý telefon, záložní slidy se přeskočí.'+(MOST.local?' Obraz jde i na http://IP:8000.':''),'ok')}
   catch(e){st('Sdílení zrušeno ('+e.name+').','err')}};
 $('#lvStop').onclick=stop;$('#lvClose').onclick=()=>$('#setup').classList.remove('on');
 
@@ -897,7 +910,7 @@ $('#lvStop').onclick=stop;$('#lvClose').onclick=()=>$('#setup').classList.remove
 // Události z telefonu přes scripts/demo-most.py (SSE /demo/events), příkazy POST /demo/cmd/<c>.
 // Bez mostu (soubor, http.server) se nic nemění: scény se posouvají jen klikem.
 const MOST=window.MOST=(()=>{
-  let up=false,phone=false,lastScene=0,hudT=null,mode=null,lvl=null,xp=null,where=null;
+  let up=false,phone=false,local=false,lastScene=0,hudT=null,mode=null,lvl=null,xp=null,where=null;
   const ms=(t,c)=>{const e=$('#most-st');e.textContent=t;e.className=c||''};
   const onDemo=()=>slides[cur]&&slides[cur].id==='s06';
   const restart=(el,cls)=>{el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)};
@@ -921,6 +934,7 @@ const MOST=window.MOST=(()=>{
       num.innerHTML=`${o.level}<small>. úroveň</small>`;restart(num,'lvlin');later(6000)}}
   function onEvent(d){
     switch(d.e){
+      case 'live':setRemote(d.on);break;
       case 'bridge':phone=!!d.adb;ms(phone?`Most běží, telefon ${d.device} připojený.`:'Most běží, telefon není připojený (USB?).',phone?'ok':'err');break;
       case 'state':where=d.where;lvl=d.level;xp=d.xp;$('#dlEcho').style.display=d.echo?'':'none';break;
       case 'context':where=d.where;flash('#dlWhere');break;
@@ -934,8 +948,9 @@ const MOST=window.MOST=(()=>{
       case 'ack':ms(`Telefon: ${d.cmd} ${d.ok?'✓':'– nepovedlo se'}`,d.ok?'ok':'err');break;
     }
     chips()}
+  function setRemote(on){if(remoteLive===!!on)return;remoteLive=!!on;applyLive();go(cur,step)}
   function connect(){if(!/^https?:/.test(location.protocol)||!window.EventSource)return;
-    fetch('/demo/status').then(r=>r.ok?r.json():null).then(j=>{if(!j||j.e!=='bridge')return;
+    fetch('/demo/status').then(r=>r.ok?r.json():null).then(j=>{if(!j||j.e!=='bridge')return;local=!!j.local;setRemote(j.live);
       const es=new EventSource('/demo/events');
       es.onopen=()=>{up=true;chips()};
       es.onmessage=m=>{try{onEvent(JSON.parse(m.data))}catch(e){}};
@@ -946,7 +961,7 @@ const MOST=window.MOST=(()=>{
     if($('#setup').classList.contains('on')||$('#ov').classList.contains('on'))return;
     const c={e:'echo',x:'xp',h:'home',v:'away'}[e.key.toLowerCase()];if(c){e.preventDefault();cmd(c)}});
   connect();
-  return{cmd,hud,sim:onEvent,
+  return{cmd,hud,sim:onEvent,get local(){return local},
     scene(k){if(k===lastScene)return;lastScene=k;const c=(CONFIG.sceneCmds||{})[k];if(c)cmd(c)}};
 })();
 
