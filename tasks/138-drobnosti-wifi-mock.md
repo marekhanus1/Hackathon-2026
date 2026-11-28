@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/138-drobnosti-wifi-mock
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/98
 ---
 
 # 138 – Drobnosti: tlačítko Wi-Fi v onboardingu, mock data bez souborů
