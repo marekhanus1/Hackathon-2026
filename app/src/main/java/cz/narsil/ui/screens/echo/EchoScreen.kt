@@ -186,9 +186,14 @@ fun EchoScreen(
 
                 ChoiceCard(
                     title = "Půjčit si 10 min",
-                    subtitle = "Přičte se k zítřejšímu pohybovému cíli",
+                    subtitle = if (state.canBorrow) {
+                        "Přičte se k zítřejšímu pohybovému cíli"
+                    } else {
+                        "Limit dluhu ${state.debtLimitMinutes} min · dlužíš ${state.currentDebtMinutes} min"
+                    },
                     badgeText = "0 XP",
                     tone = ChoiceCardTone.DEBT,
+                    enabled = state.canBorrow,
                     onClick = onBorrow
                 )
             }

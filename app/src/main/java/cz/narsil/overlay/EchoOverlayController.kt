@@ -65,7 +65,7 @@ class EchoOverlayController(
     private val clock: () -> Long = System::currentTimeMillis,
     /** Je aplikace zásahu pořád v popředí? (153) Ozvěna z detekce se nikdy neukáže nad jinou aplikací. */
     private val isInForeground: (InterventionTrigger) -> Boolean = { true },
-    /** Zásah zahozen, protože uživatel už je jinde: detekce ho zopakuje po návratu do feedu. */
+    /** Zásah zahozen (uživatel už je jinde, nebo okno nejde ukázat, 159): detekce ho zopakuje. */
     private val onSkipped: suspend (InterventionTrigger) -> Unit = {},
     /**
      * Systémový dialog kamery (157): spustí `CameraPermissionActivity`, false = nešlo. Okno Ozvěny leží nad
@@ -161,6 +161,12 @@ class EchoOverlayController(
             }
         }
         Log.i(TAG, "Ozvěna ${if (shown) "ukázána" else "neukázána (oprávnění)"}: ${trigger.reason} ${trigger.event.packageName}")
+        if (!shown) {
+            // 159: bez okna by detekce čekala na volbu, která nepřijde, a v relaci už nezasáhla.
+            // Zásah se zahodí jako u aplikace mimo popředí; detekce ho zopakuje (po udělení oprávnění se ukáže).
+            session.clear()
+            runCatching { onSkipped(trigger) }
+        }
     }
 
     private fun startSquats(trigger: InterventionTrigger, feeling: EchoFeeling?) {
