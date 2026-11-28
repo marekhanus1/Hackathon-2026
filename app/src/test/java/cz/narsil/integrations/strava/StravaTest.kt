@@ -54,7 +54,7 @@ class StravaTest {
         assertFalse(repo.isConnected.value)
         assertTrue(repo.todayActivities().isEmpty())
 
-        assertTrue(repo.handleRedirect("narsil://strava?code=kod"))
+        assertEquals(StravaRedirectResult.CONNECTED, repo.handleRedirect("narsil://strava?code=kod"))
         assertEquals("authorization_code", http.posts.single()["grant_type"])
         assertTrue(repo.isConnected.value)
 
@@ -87,7 +87,8 @@ class StravaTest {
         assertTrue(repo.todayActivities().isEmpty())
         assertTrue(StravaApi.parseActivities("není json").isEmpty())
         http.tokenReply = null
-        assertFalse(repo.handleRedirect("narsil://strava?code=x"))
+        assertEquals(StravaRedirectResult.EXCHANGE_FAILED, repo.handleRedirect("narsil://strava?code=x"))
+        assertEquals(StravaMessages.EXCHANGE_FAILED, repo.status.value.message)
     }
 
     @Test
@@ -98,5 +99,84 @@ class StravaTest {
         repo.disconnect()
         assertFalse(repo.isConnected.value)
         assertNull(store.load())
+    }
+
+    // 132: bez klíčů (prázdné STRAVA_CLIENT_ID/SECRET) se nic externího nespouští a nic nepadá.
+    @Test
+    fun withoutKeysConnectDoesNotLaunchAndOffersDemo() = runTest {
+        val unconfigured = StravaConfig("", "")
+        val http = FakeHttp()
+        val repo = HttpStravaRepository(unconfigured, InMemoryStravaTokenStore(), http, clock)
+        var launched: String? = null
+        assertEquals(StravaConnectResult.NOT_CONFIGURED, repo.connect { launched = it })
+        assertNull(launched)
+        assertFalse(repo.status.value.configured)
+        assertEquals(StravaMessages.NOT_CONFIGURED, repo.status.value.message)
+        assertTrue(repo.todayActivities().isEmpty())
+        assertTrue(http.gets.isEmpty())
+        // i kdyby se kód odněkud vrátil, bez klíčů se nevyměňuje
+        assertEquals(StravaRedirectResult.NOT_CONFIGURED, repo.handleRedirect("narsil://strava?code=x&scope=activity:read"))
+        assertTrue(http.posts.isEmpty())
+    }
+
+    @Test
+    fun staleTokenWithoutKeysIsNotConnected() {
+        val repo = HttpStravaRepository(StravaConfig("", ""), InMemoryStravaTokenStore(StravaToken("A", "R", 1)), FakeHttp(), clock)
+        assertFalse(repo.isConnected.value)
+    }
+
+    @Test
+    fun demoModeGivesLabelledMockActivity() = runTest {
+        val store = InMemoryStravaTokenStore()
+        val repo = HttpStravaRepository(StravaConfig("", ""), store, FakeHttp(), clock)
+        repo.startDemo()
+        assertTrue(repo.isConnected.value)
+        assertTrue(repo.status.value.demo)
+        assertNull(repo.status.value.message)
+        val acts = repo.todayActivities()
+        assertEquals(HttpStravaRepository.DEMO_ACTIVITY_ID, acts.single().id)
+        assertTrue(acts.any { it.type in StravaRepository.MOVEMENT_TYPES && it.movingTimeSec >= StravaRepository.MIN_MOVING_TIME_SEC })
+        // přežije restart
+        assertTrue(HttpStravaRepository(StravaConfig("", ""), store, FakeHttp(), clock).status.value.demo)
+        repo.disconnect()
+        assertFalse(repo.isConnected.value)
+        assertFalse(store.loadDemo())
+        assertTrue(repo.todayActivities().isEmpty())
+    }
+
+    @Test
+    fun missingBrowserIsMessageNotCrash() {
+        val repo = HttpStravaRepository(config, InMemoryStravaTokenStore(), FakeHttp(), clock)
+        val result = repo.connect { throw android.content.ActivityNotFoundException("žádný prohlížeč") }
+        assertEquals(StravaConnectResult.NO_BROWSER, result)
+        assertEquals(StravaMessages.NO_BROWSER, repo.status.value.message)
+        assertFalse(repo.isConnected.value)
+    }
+
+    @Test
+    fun connectWithKeysLaunchesAuthorizeUrl() {
+        val repo = HttpStravaRepository(config, InMemoryStravaTokenStore(), FakeHttp(), clock)
+        var launched: String? = null
+        assertEquals(StravaConnectResult.LAUNCHED, repo.connect { launched = it })
+        assertTrue(launched!!.startsWith(StravaApi.AUTHORIZE_URL))
+        assertNull(repo.status.value.message)
+    }
+
+    @Test
+    fun redirectErrorsGiveCzechMessages() = runTest {
+        val http = FakeHttp()
+        val repo = HttpStravaRepository(config, InMemoryStravaTokenStore(), http, clock)
+        assertEquals(StravaRedirectResult.DENIED, repo.handleRedirect("narsil://strava?error=access_denied"))
+        assertEquals(StravaMessages.DENIED, repo.status.value.message)
+        assertEquals(StravaRedirectResult.MISSING_SCOPE, repo.handleRedirect("narsil://strava?code=abc&scope=read"))
+        assertEquals(StravaMessages.MISSING_SCOPE, repo.status.value.message)
+        assertEquals(StravaRedirectResult.INVALID, repo.handleRedirect("narsil://strava"))
+        assertEquals(StravaRedirectResult.INVALID, repo.handleRedirect("narsil://strava?code=&scope=activity:read"))
+        assertFalse(repo.isConnected.value)
+        assertTrue(http.posts.isEmpty())
+        // úspěšný návrat hlášku smaže
+        assertEquals(StravaRedirectResult.CONNECTED, repo.handleRedirect("narsil://strava?code=abc&scope=read,activity:read"))
+        assertNull(repo.status.value.message)
+        assertTrue(repo.isConnected.value)
     }
 }

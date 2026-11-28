@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
  * @param demoThresholdSec práh zásahu v demo režimu (20 s), null = výchozí 5 min
  * @param demoContractToday smlouva platí hned (pro dnešek)
  * @param demoAlwaysYes ověření úkolů vždy ANO (jen demo panel)
+ *
+ * Pole od [toleranceMinutes] dál jsou z obrazovky Nastavení (133), výchozí hodnoty = SPEC.
+ * Čtenáři: detekce [toleranceMillis], [videoChainLimit], [isTracked], [isProtectionActive];
+ * Ozvěna [repsPerUnlock]; pohyb [debtLimitMinutes], [partnerAlerts].
  */
 data class Settings(
     val homeSsid: String? = null,
@@ -21,7 +25,53 @@ data class Settings(
     val exercise: Exercise = Exercise.SQUATS,
     /** Tenký ukazatel blížícího se limitu při scrollování (135). */
     val showScrollProgress: Boolean = true,
-)
+    // --- 133: parametry chování v obrazovce Nastavení. Výchozí = SPEC, uvolnění chrání potvrzení. ---
+    /** Tolerance: Ozvěna po tolika minutách nekonečného feedu doma (SPEC 3). Demo práh má přednost. */
+    val toleranceMinutes: Int = SettingsDefaults.TOLERANCE_MINUTES,
+    /** Řetězení: Ozvěna u tolikátého neplánovaného videa po sobě (SPEC 3). */
+    val videoChainLimit: Int = SettingsDefaults.VIDEO_CHAIN_LIMIT,
+    /** Dřepů na odemčení [MovementRates.MINUTES_PER_UNLOCK] minut. */
+    val squatsPerUnlock: Int = MovementRates.SQUATS_PER_UNLOCK,
+    /** Kliků na odemčení [MovementRates.MINUTES_PER_UNLOCK] minut. */
+    val pushupsPerUnlock: Int = MovementRates.PUSHUPS_PER_UNLOCK,
+    /** Limit dluhu v minutách (SPEC 5). */
+    val debtLimitMinutes: Int = MovementRates.DEFAULT_DEBT_LIMIT_MINUTES,
+    /** Sledované aplikace; co tu není, Narsil nesleduje. */
+    val trackedApps: Set<TrackedApp> = TrackedApp.entries.toSet(),
+    /** Ochrana pozastavená do (epoch ms, nejdéle do 4:00); null = běží. */
+    val protectionPausedUntilMillis: Long? = null,
+    /** Zpráva Parťákovi při dluhu nad limit a při pozastavení ochrany. */
+    val partnerAlerts: Boolean = true,
+) {
+    /** Práh zásahu u nekonečného feedu: demo panel (20 s), jinak [toleranceMinutes]. */
+    fun toleranceMillis(): Long = demoThresholdSec?.let { it * 1_000L } ?: toleranceMinutes * 60_000L
+
+    /** Zasahuje Narsil teď? false = uživatel ochranu pozastavil (do [protectionPausedUntilMillis]). */
+    fun isProtectionActive(nowMillis: Long): Boolean = protectionPausedUntilMillis?.let { nowMillis >= it } ?: true
+
+    /** Sleduje se aplikace? [appName] = název `WatchedApp` z detekce (INSTAGRAM, TIKTOK, YOUTUBE, FIREFOX). */
+    fun isTracked(appName: String): Boolean = trackedApps.any { it.name == appName }
+
+    /** Opakování na odemčení pro [exercise]. */
+    fun repsPerUnlock(exercise: Exercise = this.exercise): Int = when (exercise) {
+        Exercise.SQUATS -> squatsPerUnlock
+        Exercise.PUSHUPS -> pushupsPerUnlock
+    }
+}
+
+/** Sledovatelné aplikace (133). Názvy odpovídají `cz.narsil.detection.accessibility.WatchedApp`. */
+enum class TrackedApp { INSTAGRAM, TIKTOK, YOUTUBE, FIREFOX }
+
+/** Výchozí hodnoty a povolené volby nastavení (133). Výchozí hodnota je vždy ve volbách. */
+object SettingsDefaults {
+    const val TOLERANCE_MINUTES = 5
+    const val VIDEO_CHAIN_LIMIT = 3
+    val TOLERANCE_OPTIONS = listOf(3, 5, 10, 15)
+    val VIDEO_CHAIN_OPTIONS = listOf(2, 3, 4, 5)
+    val SQUATS_OPTIONS = listOf(10, 15, 20, 30, 40)
+    val PUSHUPS_OPTIONS = listOf(5, 10, 15, 20)
+    val DEBT_LIMIT_OPTIONS = listOf(0, 15, 30, 45, 60)
+}
 
 /** Cvik, kterým se odemyká čas (232). Počet na odemčení viz [MovementRates]. */
 enum class Exercise { SQUATS, PUSHUPS }

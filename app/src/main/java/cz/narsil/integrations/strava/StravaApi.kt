@@ -21,10 +21,10 @@ data class StravaConfig(val clientId: String, val clientSecret: String, val redi
     val isConfigured: Boolean get() = clientId.isNotBlank() && clientSecret.isNotBlank()
 
     companion object {
-        /** Deep link (manifest: intent-filter `narsil://strava` na MainActivity – přidá Marek). */
+        /** Deep link (manifest: intent-filter `narsil://strava` na MainActivity, launchMode singleTask). */
         const val REDIRECT_URI = "narsil://strava"
 
-        /** `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` v BuildConfig (přidá Marek do build.gradle.kts). */
+        /** `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` v BuildConfig z `local.properties` (prázdné = nenastaveno). */
         fun fromBuildConfig(): StravaConfig {
             fun field(name: String) = runCatching {
                 Class.forName("cz.narsil.BuildConfig").getField(name).get(null) as? String
@@ -66,22 +66,36 @@ object StravaApi {
     /** Aktivity od [afterEpochSec] (začátek dne ve 4:00), nejvýš 30. */
     fun activitiesUrl(afterEpochSec: Long): String = "$ACTIVITIES_URL?after=$afterEpochSec&per_page=30"
 
+    /** Výsledek rozboru návratu z OAuth (`narsil://strava?…`). */
+    sealed interface Redirect {
+        data class Code(val code: String) : Redirect
+        /** Uživatel přihlášení zrušil nebo Strava vrátila `error=…`. */
+        data object Denied : Redirect
+        /** Přihlášení proběhlo, ale bez oprávnění k aktivitám (`activity:read` odškrtnuté). */
+        data object MissingScope : Redirect
+        /** Návrat bez kódu i bez chyby. */
+        data object Invalid : Redirect
+    }
+
+    fun parseRedirect(uri: String): Redirect {
+        val query = uri.substringAfter('?', "")
+        if (query.isEmpty()) return Redirect.Invalid
+        val params = query.split('&').mapNotNull {
+            val (k, v) = it.split('=', limit = 2).let { p -> p[0] to p.getOrElse(1) { "" } }
+            if (k.isEmpty()) null else k to runCatching { java.net.URLDecoder.decode(v, "UTF-8") }.getOrDefault(v)
+        }.toMap()
+        if (params.containsKey("error")) return Redirect.Denied
+        val code = params["code"]?.takeIf { it.isNotBlank() } ?: return Redirect.Invalid
+        val scope = params["scope"]
+        if (scope != null && scope.split(',').none { it.trim().startsWith("activity:read") }) return Redirect.MissingScope
+        return Redirect.Code(code)
+    }
+
     /**
      * Kód z návratu `narsil://strava?code=…&scope=…`; chyba, zamítnutí nebo chybějící oprávnění
      * k aktivitám (uživatel odškrtl „activity:read“) = null.
      */
-    fun codeFromRedirect(uri: String): String? {
-        val query = uri.substringAfter('?', "")
-        if (query.isEmpty()) return null
-        val params = query.split('&').mapNotNull {
-            val (k, v) = it.split('=', limit = 2).let { p -> p[0] to p.getOrElse(1) { "" } }
-            if (k.isEmpty()) null else k to java.net.URLDecoder.decode(v, "UTF-8")
-        }.toMap()
-        if (params.containsKey("error")) return null
-        val scope = params["scope"]
-        if (scope != null && scope.split(',').none { it.trim().startsWith("activity:read") }) return null
-        return params["code"]?.takeIf { it.isNotBlank() }
-    }
+    fun codeFromRedirect(uri: String): String? = (parseRedirect(uri) as? Redirect.Code)?.code
 
     fun parseToken(body: String): StravaToken? = runCatching {
         val o = json.parseToJsonElement(body) as JsonObject
