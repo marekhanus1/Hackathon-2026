@@ -6,7 +6,7 @@ branch: marek/claude/151-pitch-lotr
 pr: https://github.com/marekhanus1/Hackathon-2026/pull/112
 ---
 
-# 151 – Prezentace v jednom stylu (Pán prstenů) s ukázkami aplikace
+# 151 – Pitch prezentace s maketami aplikace a živým přenosem z telefonu
 
 ## Cíl
 Nová samostatná HTML prezentace pitche ve stylu „Narsil – zlomený meč znovu ukovaný“: pevná scéna 16:9,

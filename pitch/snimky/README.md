@@ -16,27 +16,20 @@ Vektorové SVG makety odpovídající reálným Jetpack Compose obrazovkám apli
 5. `05-zrcadlo-hodnota.svg` – Zrcadlo a mapa hodnoty (`MirrorScreen`, 322)
 6. `06-partak-notifikace.svg` – Ukázková notifikace na telefonu Parťáka (MVP simulace)
 
-## Prezentace ve stylu Pána prstenů – `pitch/narsil-pitch.html` (úkol 151)
-Jedna samostatná stránka (pevná scéna 1920×1080): Prolog → Kniha I Kraj → Kniha II Cesta (funkce aplikace) → Kniha III Společenstvo → Epilog.
-Vpravo nahoře se meč Narsil slide po slidu skládá, na posledním slidu je celý.
+## Pitch prezentace – `pitch/narsil-pitch.html` (úkol 151)
+Jednoduchý světlý styl podle barev aplikace, motiv meče Narsil (zlomený a znovu ukovaný). 11 slidů hlavní linky + 6 záložních slidů s maketami aplikace.
 
-- **Spuštění:** kvůli živému přenosu z telefonu otevírej přes localhost, ne jako soubor:
-  `cd pitch && python3 -m http.server 8000` → Firefox `http://localhost:8000/narsil-pitch.html`
-- **Ovládání:** `←` `→` / mezerník (kroky i slidy), `N` poznámky řečníka, `O` přehled, `F` celá obrazovka,
-  `1–5` kapitoly, `L` živý obraz telefonu i v maketách, `D` dřep na slidu 2.4, klik na časomíru ji vynuluje.
-  Tým, datum a délka pitche jsou v objektu `CONFIG` na začátku skriptu.
-- **Makety obrazovek** (smlouva, Ozvěna, dřepy, hodnocení videa, Zrcadlo, Parťák) jsou interaktivní a texty odpovídají aplikaci.
-  Slouží jako záloha, když živé demo selže.
+- **Spuštění:** `cd pitch && python3 -m http.server 8000` → Firefox `http://localhost:8000/narsil-pitch.html`, `F` celá obrazovka.
+- **Během pitche jen šipky / prezentér:** `→` `↓` `PageDown` mezerník nebo klik myší = dál, `←` `↑` `PageUp` = zpět.
+  Kroky na slidu se odkrývají postupně, makety (Ozvěna, dřepy…) běží samy. Na slidech nejsou žádná tlačítka.
+- **Pro řečníka:** `N` poznámky, `O` přehled, `T` časomíra, `B` nebo `.` černá obrazovka, `F5` celá obrazovka (nepřenačte stránku).
+- Tým, datum a délka pitche jsou v `CONFIG` na začátku skriptu.
 
-### Živý přenos z telefonu (slide 2.1)
-1. Nainstalovat scrcpy: `sudo apt install scrcpy`, případně oficiální balík z GitHubu (Genymobile/scrcpy, linux-x86_64).
-   Když chybí `adb` v PATH: `export ADB=~/Android/Sdk/platform-tools/adb`.
-2. Telefon na USB s laděním USB, spustit:
-   `scrcpy --window-title=Narsil-live --no-audio --stay-awake --max-size=1600`
-3. V prezentaci na slidu 2.1 kliknout **Sdílet okno telefonu** a vybrat okno *Narsil-live* (na Waylandu přes systémový dialog).
-   Okno scrcpy pak může zůstat schované za prezentací.
-4. Klávesa `L` přepne živý obraz i do telefonů na dalších slidech.
+### Živý přenos z telefonu (připravit před pitchem)
+1. scrcpy je v `~/.local/opt/scrcpy` (oficiální balík z GitHubu Genymobile/scrcpy). Telefon na USB a spustit:
+   `ADB=~/Android/Sdk/platform-tools/adb ~/.local/opt/scrcpy/scrcpy --window-title=Narsil-live --no-audio --no-control --max-size=1600`
+2. V prezentaci klávesa `S` → **Sdílet okno telefonu** → okno *Narsil-live* → `S` panel zavře.
+3. Když přenos běží, slide Demo ukazuje živý telefon a klikem se odkrývají scény dema; 6 záložních slidů se přeskočí.
+   Když neběží (nebo spadne), prezentace jimi normálně projde.
 
-Varianta bez výběru okna: virtuální kamera (`sudo apt install v4l2loopback-dkms` + hlavičky jádra,
-`sudo modprobe v4l2loopback video_nr=10 card_label=scrcpy`, `scrcpy --v4l2-sink=/dev/video10 --no-video-playback`)
-a v prezentaci tlačítko **Virtuální kamera**.
+Pozor: USB spojení s Nothingem občas samo spadne a scrcpy pak zavře okno – pak spustit znovu a znovu nasdílet (`S`).
