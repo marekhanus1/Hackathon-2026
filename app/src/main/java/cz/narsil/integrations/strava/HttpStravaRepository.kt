@@ -9,6 +9,7 @@ import cz.narsil.core.data.DayKey
 import java.io.IOException
 import java.time.Clock
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -120,7 +121,7 @@ class HttpStravaRepository(
     /** Zpracuje návrat z OAuth. Vrací true, když je Strava připojená. */
     suspend fun handleRedirect(uri: String): Boolean = mutex.withLock {
         val code = StravaApi.codeFromRedirect(uri) ?: return@withLock false
-        val token = runCatching { http.postForm(StravaApi.TOKEN_URL, StravaApi.exchangeForm(config, code)) }
+        val token = catching { http.postForm(StravaApi.TOKEN_URL, StravaApi.exchangeForm(config, code)) }
             .getOrNull()?.let(StravaApi::parseToken) ?: return@withLock false
         store.save(token)
         _connected.value = true
@@ -135,7 +136,7 @@ class HttpStravaRepository(
     override suspend fun todayActivities(): List<StravaActivity> = mutex.withLock {
         val token = validToken() ?: return@withLock emptyList()
         val dayStart = DayKey.startMillis(DayKey.of(clock.millis(), clock.zone), clock.zone)
-        val body = runCatching { http.get(StravaApi.activitiesUrl(dayStart / 1000), token.accessToken) }.getOrNull()
+        val body = catching { http.get(StravaApi.activitiesUrl(dayStart / 1000), token.accessToken) }.getOrNull()
             ?: return@withLock emptyList()
         StravaApi.parseActivities(body).filter { it.startMillis >= dayStart }
     }
@@ -143,11 +144,20 @@ class HttpStravaRepository(
     private suspend fun validToken(): StravaToken? {
         val token = store.load() ?: return null
         if (!token.isExpired(clock.millis())) return token
-        val refreshed = runCatching { http.postForm(StravaApi.TOKEN_URL, StravaApi.refreshForm(config, token.refreshToken)) }
+        val refreshed = catching { http.postForm(StravaApi.TOKEN_URL, StravaApi.refreshForm(config, token.refreshToken)) }
             .getOrNull()?.let(StravaApi::parseToken)
         if (refreshed == null) return null // necháme připojení – zkusí se příště (např. bez sítě)
         store.save(refreshed)
         return refreshed
+    }
+
+    /** Jako runCatching, ale zrušení korutiny propustí dál. */
+    private inline fun <T> catching(block: () -> T): Result<T> = try {
+        Result.success(block())
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        Result.failure(e)
     }
 
     companion object {

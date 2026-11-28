@@ -42,6 +42,8 @@ class StravaTest {
         assertEquals("abc", StravaApi.codeFromRedirect("narsil://strava?state=&code=abc&scope=read,activity:read"))
         assertNull(StravaApi.codeFromRedirect("narsil://strava?error=access_denied"))
         assertNull(StravaApi.codeFromRedirect("narsil://strava"))
+        assertNull(StravaApi.codeFromRedirect("narsil://strava?code=abc&scope=read")) // bez přístupu k aktivitám
+        assertEquals("abc", StravaApi.codeFromRedirect("narsil://strava?code=abc&scope=read,activity:read_all"))
     }
 
     @Test
