@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/153-ozvena-jen-v-popredi
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/114
 ---
 
 # 153 – Ozvěna nikdy nad jinou aplikací
