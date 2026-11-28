@@ -54,7 +54,9 @@ fun SettingsScreen(
     onOpenOnboarding: () -> Unit,
     onOpenDemoPanel: () -> Unit,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onStartStravaDemo: () -> Unit = {},
+    onDisconnectStrava: () -> Unit = {},
 ) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
@@ -210,60 +212,12 @@ fun SettingsScreen(
             }
 
             // 3. Strava
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(spacing.md),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = spacing.sm),
-                        verticalArrangement = Arrangement.spacedBy(spacing.xxs)
-                    ) {
-                        Text(
-                            text = "Strava (nepovinné)",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = if (state.stravaConnected) {
-                                "Připojeno · sportovní aktivity ověří pohybové úkoly automaticky."
-                            } else {
-                                "Nepřipojeno · pohybový úkol můžeš vždy doložit i fotkou."
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    if (state.stravaConnected) {
-                        Surface(
-                            shape = CircleShape,
-                            color = colors.positiveContainer,
-                            contentColor = colors.onPositiveContainer
-                        ) {
-                            Text(
-                                text = "Připojeno",
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xs)
-                            )
-                        }
-                    } else {
-                        OutlinedButton(onClick = onConnectStrava) {
-                            Text("Připojit")
-                        }
-                    }
-                }
-            }
+            StravaCard(
+                state = state.strava,
+                onConnect = onConnectStrava,
+                onStartDemo = onStartStravaDemo,
+                onDisconnect = onDisconnectStrava,
+            )
 
             // 4. Oprávnění
             Card(
@@ -399,6 +353,95 @@ fun SettingsScreen(
     }
 }
 
+/** Strava (132): nenastaveno → hláška + demo; demo vždy viditelně označené; chyby jako hláška. */
+@Composable
+private fun StravaCard(
+    state: StravaCardState,
+    onConnect: () -> Unit,
+    onStartDemo: () -> Unit,
+    onDisconnect: () -> Unit,
+) {
+    val colors = NarsilTheme.colors
+    val spacing = NarsilTheme.spacing
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(spacing.md),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Strava (nepovinné)",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f)
+                )
+                when {
+                    state.connected && state.demo -> StatusPill("Demo", colors.echoContainer, colors.onEchoContainer)
+                    state.connected -> StatusPill("Připojeno", colors.positiveContainer, colors.onPositiveContainer)
+                    !state.configured -> StatusPill(
+                        "Nenastaveno",
+                        MaterialTheme.colorScheme.surfaceVariant,
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Text(
+                text = when {
+                    state.connected && state.demo ->
+                        "Demo režim · ukázková aktivita (běh 28 min), ne skutečná data ze Stravy."
+                    state.connected -> "Připojeno · sportovní aktivity ověří pohybové úkoly automaticky."
+                    !state.configured ->
+                        "Strava není nastavená. Připojení zatím nejde, pohybový úkol můžeš doložit fotkou nebo vyzkoušet demo."
+                    else -> "Nepřipojeno · pohybový úkol můžeš vždy doložit i fotkou."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            state.message?.takeIf { !state.connected }?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.xs, Alignment.End)
+            ) {
+                when {
+                    state.connected -> TextButton(onClick = onDisconnect) {
+                        Text(if (state.demo) "Ukončit demo" else "Odpojit")
+                    }
+                    !state.configured -> OutlinedButton(onClick = onStartDemo) { Text("Vyzkoušet demo") }
+                    else -> OutlinedButton(onClick = onConnect) { Text("Připojit") }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatusPill(label: String, container: androidx.compose.ui.graphics.Color, content: androidx.compose.ui.graphics.Color) {
+    Surface(shape = CircleShape, color = container, contentColor = content) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = NarsilTheme.spacing.sm, vertical = NarsilTheme.spacing.xs)
+        )
+    }
+}
+
 @Composable
 private fun ContextStatusBadge(context: ComfortContext) {
     val colors = NarsilTheme.colors
@@ -471,7 +514,7 @@ private fun SettingsDarkPreview() {
                 comfortContext = ComfortContext.AWAY,
                 manualZone = ManualZoneChoice.AWAY,
                 llmProvider = LlmProvider.GEMINI,
-                stravaConnected = true
+                strava = StravaCardState(connected = true, demo = true)
             ),
             onSaveHomeWifi = {},
             onSelectManualZone = {},

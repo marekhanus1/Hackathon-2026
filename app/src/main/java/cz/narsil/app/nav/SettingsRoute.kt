@@ -1,6 +1,8 @@
 package cz.narsil.app.nav
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -17,7 +19,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.narsil.app.ServiceLocator
 import cz.narsil.app.onboarding.PermissionChecker
 import cz.narsil.app.onboarding.PermissionStep
+import cz.narsil.core.fake.FakeStravaRepository
 import cz.narsil.integrations.strava.HttpStravaRepository
+import cz.narsil.ui.screens.settings.StravaCardState
+import kotlinx.coroutines.flow.map
 import cz.narsil.ui.screens.settings.SettingsPermissionType
 import cz.narsil.ui.screens.settings.SettingsScreen
 import cz.narsil.ui.screens.settings.SettingsViewModel
@@ -27,11 +32,19 @@ import cz.narsil.ui.screens.settings.SettingsViewModel
 fun SettingsRoute(onNavigate: (NarsilRoute) -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
     val sl = ServiceLocator
+    val strava = sl.stravaRepository
     val vm: SettingsViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                SettingsViewModel(sl.settingsRepository, sl.contextRepository, sl.stravaRepository) as T
+                SettingsViewModel(
+                    sl.settingsRepository,
+                    sl.contextRepository,
+                    strava,
+                    stravaStatus = (strava as? HttpStravaRepository)?.status?.map {
+                        StravaCardState(configured = it.configured, connected = it.connected, demo = it.demo, message = it.message)
+                    },
+                ) as T
         },
     )
     val state by vm.uiState.collectAsState()
@@ -54,8 +67,17 @@ fun SettingsRoute(onNavigate: (NarsilRoute) -> Unit, onBack: () -> Unit) {
         onSaveHomeWifi = vm::saveCurrentWifiAsHome,
         onSelectManualZone = vm::setManualZone,
         onSelectLlmProvider = vm::selectLlmProvider,
+        // 132: bez klíčů se nic nespouští (hláška + demo), chybějící prohlížeč = hláška, ne pád.
         onConnectStrava = {
-            (sl.stravaRepository as? HttpStravaRepository)?.let { runCatching { context.startActivity(it.connectIntent()) } }
+            (strava as? HttpStravaRepository)?.connect { url ->
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+        },
+        onStartStravaDemo = {
+            (strava as? HttpStravaRepository)?.startDemo() ?: (strava as? FakeStravaRepository)?.setConnected(true)
+        },
+        onDisconnectStrava = {
+            (strava as? HttpStravaRepository)?.disconnect() ?: (strava as? FakeStravaRepository)?.setConnected(false)
         },
         onOpenSystemSettings = { type ->
             when (type) {

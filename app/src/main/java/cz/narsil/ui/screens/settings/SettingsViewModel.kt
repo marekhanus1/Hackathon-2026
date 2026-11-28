@@ -10,10 +10,12 @@ import cz.narsil.core.StravaRepository
 import cz.narsil.core.fake.FakeContextRepository
 import cz.narsil.core.fake.FakeSettingsRepository
 import cz.narsil.core.fake.FakeStravaRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -23,8 +25,13 @@ import kotlinx.coroutines.launch
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository = FakeSettingsRepository(),
     private val contextRepository: ContextRepository = FakeContextRepository(),
-    private val stravaRepository: StravaRepository = FakeStravaRepository()
+    private val stravaRepository: StravaRepository = FakeStravaRepository(),
+    /** Podrobný stav Stravy (nenastaveno, demo, hláška); null = jen připojeno/nepřipojeno z [stravaRepository]. */
+    stravaStatus: Flow<StravaCardState>? = null,
 ) : ViewModel() {
+
+    private val stravaCard: Flow<StravaCardState> =
+        stravaStatus ?: stravaRepository.isConnected.map { StravaCardState(connected = it) }
 
     private val permissionsState = MutableStateFlow(defaultSettingsPermissions())
     private val feedbackState = MutableStateFlow<String?>(null)
@@ -40,10 +47,10 @@ class SettingsViewModel(
     val uiState: StateFlow<SettingsUiState> = combine(
         settingsRepository.settings,
         contextCombined,
-        stravaRepository.isConnected,
+        stravaCard,
         permissionsState,
         feedbackState
-    ) { settings, (context, override, ssid), stravaConnected, permissions, feedback ->
+    ) { settings, (context, override, ssid), strava, permissions, feedback ->
         val manualChoice = when (override) {
             ComfortContext.HOME -> ManualZoneChoice.HOME
             ComfortContext.AWAY -> ManualZoneChoice.AWAY
@@ -55,7 +62,7 @@ class SettingsViewModel(
             comfortContext = context,
             manualZone = manualChoice,
             llmProvider = settings.llmProvider,
-            stravaConnected = stravaConnected,
+            strava = strava,
             permissions = permissions,
             homeSaveFeedback = feedback
         )
