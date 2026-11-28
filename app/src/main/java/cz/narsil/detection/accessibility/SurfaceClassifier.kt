@@ -17,7 +17,8 @@ object SurfaceClassifier {
         WatchedApp.INSTAGRAM -> classifyInstagram(s)
         // TikTok má obfuskovaná ID: hlavní obrazovka je feed, pokud nejde zjevně o zprávy/profil.
         WatchedApp.TIKTOK -> classifyByIds(s, SurfaceRules.TIKTOK, default = Surface.FEED)
-        WatchedApp.YOUTUBE -> classifyByIds(s, SurfaceRules.YOUTUBE, default = Surface.MESSAGES)
+        // Domovský feed a ostatní obrazovky YouTube: null = rozhodne chování scrollu (149), ne „zprávy“.
+        WatchedApp.YOUTUBE -> classifyByIdsOrNull(s, SurfaceRules.YOUTUBE)
         // 149: obecně jen zprávy a hledání; feed rozhodne chování scrollu (FeedBehavior v AccessibilityTriggerSource).
         WatchedApp.X, WatchedApp.REDDIT, WatchedApp.FACEBOOK, WatchedApp.THREADS, WatchedApp.PINTEREST,
         WatchedApp.NINEGAG, WatchedApp.TUMBLR, WatchedApp.LINKEDIN, WatchedApp.BLUESKY, WatchedApp.OTHER -> classifyGeneric(s)
@@ -61,6 +62,11 @@ object SurfaceClassifier {
     private fun idHaystack(s: ForegroundSnapshot): List<String> = buildList {
         s.className?.let { add(it.lowercase()) }
         s.viewIds.mapTo(this) { it.substringAfter(":id/").lowercase() }
+    }
+
+    private fun classifyByIdsOrNull(s: ForegroundSnapshot, rules: List<Rule>): Surface? {
+        val haystack = idHaystack(s)
+        return rules.firstOrNull { rule -> rule.matches(haystack) }?.surface
     }
 
     private fun classifyByIds(s: ForegroundSnapshot, rules: List<Rule>, default: Surface): Surface {

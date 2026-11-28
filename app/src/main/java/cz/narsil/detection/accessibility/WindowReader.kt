@@ -61,6 +61,7 @@ internal object WindowReader {
         val webViews = mutableListOf<AccessibilityNodeInfo>()
         var pageTitle: String? = null
         val editFields = mutableListOf<String>()
+        val appPlayerTexts = mutableListOf<String>()
         // Obecné aplikace (149): jen ID a nápovědy polí, žádné texty ani výpis stromu (soukromí).
         val generic = app?.generic == true
         val stack = ArrayDeque<Pair<AccessibilityNodeInfo, Int>>()
@@ -92,6 +93,10 @@ internal object WindowReader {
                 continue
             }
             if (!text.isNullOrEmpty() && texts.size < MAX_TEXTS) texts += text
+            // 134: aplikace YouTube – krátké texty celého okna pro přehrávač (čas, „Navrhované video“, „Přehrát znovu“).
+            if (app == WatchedApp.YOUTUBE && !text.isNullOrEmpty() && text.length <= MAX_PLAYER_TEXT_LEN && appPlayerTexts.size < MAX_PLAYER_TEXTS) {
+                appPlayerTexts += text
+            }
             if (dumpToLog) {
                 Log.d(TAG, "${"  ".repeat(depth.coerceAtMost(20))}${node.className?.toString()?.substringAfterLast('.')} id=$id" +
                     (if (!text.isNullOrEmpty()) " \"$text\"" else "") + (if (node.isScrollable) " [scroll]" else "") + (if (node.isSelected) " [selected]" else ""))
@@ -108,7 +113,7 @@ internal object WindowReader {
         }
         if (app == WatchedApp.FIREFOX && url == null) url = fallbackUrl
         // Výjimka (134): na stránce jednoho videa YouTube přečíst ovládání přehrávače (čas, „Přehrát znovu“).
-        val playerTexts = if (YouTubePlayback.videoIdFromUrl(url) != null) readPlayerTexts(webViews) else emptyList()
+        val playerTexts = if (YouTubePlayback.videoIdFromUrl(url) != null) readPlayerTexts(webViews) else appPlayerTexts
         return Result(ids, texts, url, selectedTab, playerTexts, pageTitle, editFields)
     }
 

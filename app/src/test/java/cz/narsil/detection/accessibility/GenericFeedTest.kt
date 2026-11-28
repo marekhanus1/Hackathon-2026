@@ -184,6 +184,26 @@ class GenericFeedTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
+    fun youtubeHomeFeedByScrolling() = runTest {
+        // Domovská stránka aplikace YouTube (karty videí, žádný přehrávač ani hledání) = feed podle scrollu.
+        val r = start(Settings(demoThresholdSec = 20))
+        val yt = "com.google.android.youtube"
+        val end = testScheduler.currentTime + 27_000
+        while (testScheduler.currentTime < end) {
+            r.snapshots.emit(
+                ForegroundSnapshot(yt, WatchedApp.YOUTUBE, SnapshotKind.SCROLLED, testScheduler.currentTime,
+                    viewIds = setOf("$yt:id/results", "$yt:id/pivot_bar"), scroll = down()),
+            )
+            runCurrent()
+            advanceTimeBy(3_000)
+        }
+        runCurrent()
+        assertEquals(1, r.got.size)
+        assertEquals(Surface.FEED, r.got[0].event.surface)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
     fun xDirectMessagesNeverTrigger() = runTest {
         val r = start(Settings(demoThresholdSec = 20))
         scrollApp(r, x, WatchedApp.X, 120_000, edits = listOf("dm_compose_edit_text|start a message"))

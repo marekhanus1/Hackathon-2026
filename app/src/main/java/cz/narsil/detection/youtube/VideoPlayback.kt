@@ -38,7 +38,11 @@ object YouTubePlayback {
     private val TIME_PAIR = Regex("""(?<![\d:])((?:\d{1,2}:)?\d{1,2}:\d{2})\s*/\s*((?:\d{1,2}:)?\d{1,2}:\d{2})(?![\d:])""")
 
     /** End-screen. Malými písmeny, česky i anglicky (jazyk telefonu i stránky se může lišit). */
-    private val ENDED_MARKERS = listOf("přehrát znovu", "přehrát video znovu", "spustit znovu", "replay", "watch again")
+    private val ENDED_MARKERS = listOf(
+        "přehrát znovu", "přehrát video znovu", "spustit znovu", "replay", "watch again",
+        // Aplikace YouTube na konci videa (Nothing 3a, 11/2026): „Navrhované video · Zavřít · Přehrát“.
+        "navrhované video", "suggested video",
+    )
 
     /** Odpočet autoplay: „Další video za 5“, „Up next in 8“. Samotné tlačítko „Další video“ konec neznamená. */
     private val AUTOPLAY_COUNTDOWN = Regex("""(další video|následující video|up next|next video|playing next)\D{0,8}\b(za|in)\s*\d{1,2}\b""")

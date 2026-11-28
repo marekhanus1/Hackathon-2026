@@ -28,7 +28,7 @@ class SearchSurfaceTest {
         assertEquals(Surface.SEARCH, SurfaceClassifier.classify(snap(yt, results)))
         assertEquals(Surface.SEARCH, SurfaceClassifier.classify(snap(yt, ytShell + "search_edit_text")))
         // Lupa na domovské stránce hledání není.
-        assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(yt, ytShell + "results")))
+        assertNull(SurfaceClassifier.classify(snap(yt, ytShell + "results"))) // ne zprávy: feed podle scrollu (149)
         // Polička Shorts na domovské stránce: dál Shorts (beze změny chování).
         assertEquals(Surface.SHORTS, SurfaceClassifier.classify(snap(yt, ytShell + setOf("results", "shorts_shelf_container"))))
         // Z výsledků otevřené Shorts / video: přehrávač má přednost před polem hledání pod ním.

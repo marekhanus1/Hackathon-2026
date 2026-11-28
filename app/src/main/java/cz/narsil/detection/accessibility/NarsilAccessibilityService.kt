@@ -83,7 +83,37 @@ class NarsilAccessibilityService : AccessibilityService() {
             }
             return
         }
+        lastWatchedPackage = pkg
+        readAndEmit(pkg, app, kind, now, scroll)
+    }
+
+    /** Naposledy sledovaná aplikace v popředí (pro [pollForeground]). */
+    @Volatile
+    private var lastWatchedPackage: String? = null
+
+    /**
+     * Přečte okno sledované aplikace bez události (134): YouTube během přehrávání nehlásí změny,
+     * end-screen by se jinak nepoznal. Volá `EchoOverlayStarter` každé ~2,5 s, jen když brána čeká na konec videa.
+     */
+    fun pollForeground() {
+        val pkg = lastWatchedPackage ?: return
+        val app = WatchedApp.of(pkg) ?: return
+        val now = System.currentTimeMillis()
+        val snapshot = readAndEmit(pkg, app, SnapshotKind.CONTENT_CHANGED, now, scroll = null, requireApp = true) ?: return
+        Log.d(TAG, "tik okna $pkg: povrch=${SurfaceClassifier.classify(snapshot)} video=${snapshot.video}")
+    }
+
+    private fun readAndEmit(
+        pkg: String,
+        app: WatchedApp,
+        kind: SnapshotKind,
+        now: Long,
+        scroll: ScrollSample?,
+        requireApp: Boolean = false,
+    ): ForegroundSnapshot? {
         val root = appRoot(pkg)
+        // Tik: aplikace už není v popředí (okno nenalezeno) → nic, další událost řekne, kde uživatel je.
+        if (requireApp && root?.packageName?.toString() != pkg) return null
         val dumpNow = dumpTree && kind == SnapshotKind.WINDOW_CHANGED
         var result = root?.let { runCatching { WindowReader.read(it, app, dumpToLog = dumpNow, fallbackUrl = lastFirefoxUrl) }.getOrNull() }
         // Přepnutí záložky v aplikaci nevyvolá WINDOW_CHANGED: při změně záložky vypsat strom znovu.
@@ -114,11 +144,13 @@ class NarsilAccessibilityService : AccessibilityService() {
         if (kind == SnapshotKind.WINDOW_CHANGED || snapshot.url != null) {
             Log.d(TAG, "popředí: $app ($pkg) okno=${snapshot.className} tab=${snapshot.selectedTab} url=${snapshot.url} ids=${snapshot.viewIds.size} povrch=${SurfaceClassifier.classify(snapshot)} (${SurfaceClassifier.explain(snapshot)})")
         }
+        return snapshot
     }
 
     /** Stav přehrávače YouTube (134): aplikace z textů okna, Firefox jen na stránce jednoho videa. */
     private fun videoOf(app: WatchedApp, r: WindowReader.Result, now: Long): VideoPlayback? = when (app) {
-        WatchedApp.YOUTUBE -> YouTubePlayback.parse(null, r.texts, now)
+        // Krátké texty celého okna (čas, end-screen); prvních 20 textů bývá jen lišta a název.
+        WatchedApp.YOUTUBE -> YouTubePlayback.parse(null, r.playerTexts.ifEmpty { r.texts }, now)
         WatchedApp.FIREFOX -> YouTubePlayback.videoIdFromUrl(r.url)?.let {
             YouTubePlayback.parse(it, r.playerTexts, now).copy(title = YouTubePlayback.titleFromPage(r.pageTitle))
         }

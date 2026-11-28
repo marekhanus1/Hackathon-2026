@@ -25,6 +25,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -34,6 +36,7 @@ import kotlinx.coroutines.launch
  */
 object EchoOverlayStarter {
     private const val TAG = "NarsilApp"
+    private const val VIDEO_POLL_MILLIS = 2_500L
     private var controller: EchoOverlayController? = null
 
     /** Rozdělaná Ozvěna přežije výměnu instance služby (141): nový ovladač ji obnoví. */
@@ -62,6 +65,17 @@ object EchoOverlayStarter {
         // 149: „Další aplikace s nekonečným feedem“ – služba čte neznámé aplikace jen se zapnutou volbou.
         sl.appScope.launch {
             sl.settingsRepository.settings.collect { NarsilAccessibilityService.trackOtherApps = it.trackOtherFeedApps }
+        }
+        // 134: během čekání na konec videa číst okno samo (YouTube při přehrávání nehlásí události).
+        (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.let { source ->
+            sl.appScope.launch {
+                source.waitingForVideoEnd.collectLatest { waiting ->
+                    while (waiting) {
+                        delay(VIDEO_POLL_MILLIS)
+                        runCatching { NarsilAccessibilityService.instance?.pollForeground() }
+                    }
+                }
+            }
         }
         sl.appScope.launch {
             // Sleduje instanci služby: nová instance (přeinstalace) dostane nové okno i ovladač.
