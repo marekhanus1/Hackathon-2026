@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/155-zavrit-bez-farmeni
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/120
 ---
 
 # 155 – „Zavřít“ bez farmení
