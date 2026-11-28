@@ -19,8 +19,11 @@ import cz.narsil.detection.accessibility.AccessibilityTriggerSource
 object DemoActions {
     const val DEMO_THRESHOLD_SEC = 20
 
-    /** Připravené demo (161): 0 minut zůstatku → feed doma zablokuje hned, bez úvodní tolerance. */
-    const val DEMO_INSTANT_SEC = 0
+    /**
+     * Připravené demo (161): 0 minut zůstatku → feed doma zablokuje skoro hned. 5 s místo 0, aby byl
+     * na plátně vidět ukazatel limitu (při prahu 0 se nekreslí).
+     */
+    const val DEMO_INSTANT_SEC = 5
 
     private val sl get() = ServiceLocator
 
@@ -95,7 +98,7 @@ object DemoActions {
     }
 
     /**
-     * Připraví celé demo jedním klepnutím (161): doma, 0 kroků = 0 minut, feed zablokuje hned (práh 0 s),
+     * Připraví celé demo jedním klepnutím (161): doma, 0 kroků = 0 minut, feed zablokuje po 5 s s ukazatelem,
      * úkoly smlouvy neodevzdané, cvik dřepy, XP těsně pod úrovní.
      */
     suspend fun prepareDemo() {
