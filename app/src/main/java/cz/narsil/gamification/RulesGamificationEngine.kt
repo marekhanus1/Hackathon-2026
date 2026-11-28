@@ -56,8 +56,14 @@ class RulesGamificationEngine(
         val h = history()
         val now = clock.millis()
         val today = today()
+        // 155: CLOSED se zapíše s 0 XP; XP přijde v settle() jako CLOSE_CONFIRMED, když zavření vydrží.
+        val pendingClose = if (outcome == InterventionOutcome.CLOSED) {
+            GamificationCalculator.closeXp(GamificationCalculator.effective(h.records), today, now)
+        } else {
+            0
+        }
         val xp = when (outcome) {
-            InterventionOutcome.CLOSED -> GamificationCalculator.closeXp(GamificationCalculator.effective(h.records), today, now)
+            InterventionOutcome.CLOSED -> 0
             InterventionOutcome.SQUATS -> GamificationRules.XP_SQUATS
             InterventionOutcome.PAID_STEPS -> GamificationRules.XP_PAID_STEPS
             InterventionOutcome.BORROWED -> GamificationRules.XP_BORROWED
@@ -66,7 +72,7 @@ class RulesGamificationEngine(
         append(XpRecord(today, now, outcome.name, xp))
         settle()
         publish()
-        xp
+        if (outcome == InterventionOutcome.CLOSED) pendingClose else xp
     }
 
     override suspend fun onContractFulfilled(): Int = mutex.withLock {
@@ -158,17 +164,23 @@ class RulesGamificationEngine(
         runCatching { store.append(record) }
     }
 
-    /** Boss za včerejšek i dnešek a nové odznaky. */
+    /** Potvrzená zavření (155), boss za včerejšek i dnešek a nové odznaky. */
     private suspend fun settle() {
         val now = clock.millis()
         val today = today()
+        // Po sobě podle času: strop a odstup u dalšího zavření počítá s předchozím potvrzením.
+        for (close in GamificationCalculator.closesToConfirm(effectiveRecords(), now)) {
+            if (close.date.isBefore(today.minusDays(1))) continue
+            val xp = GamificationCalculator.closeXp(effectiveRecords(), close.date, close.atMillis)
+            append(XpRecord(close.date, close.atMillis, XpSource.CLOSE_CONFIRMED, xp))
+        }
         for (day in listOf(today.minusDays(1), today)) {
             if (GamificationCalculator.bossDue(effectiveRecords(), day, now, clock.zone)) {
                 append(XpRecord(day, now, XpSource.BOSS, GamificationRules.XP_BOSS))
             }
         }
         val h = history()
-        val newBadges = GamificationCalculator.earnedBadges(GamificationCalculator.effective(h.records), today) - h.badges.keys
+        val newBadges = GamificationCalculator.earnedBadges(GamificationCalculator.effective(h.records), today, now) - h.badges.keys
         if (newBadges.isNotEmpty()) {
             history = h.copy(badges = h.badges + newBadges.associateWith { now })
             newBadges.forEach { runCatching { store.unlockBadge(it, now) } }
@@ -181,6 +193,6 @@ class RulesGamificationEngine(
         val feed = mutableMapOf<LocalDate, Int?>()
         val days = h.records.map { it.date }.toSet() + today
         for (day in days) feed[day] = runCatching { feedMinutesFor(day) }.getOrNull()
-        _state.value = GamificationCalculator.state(h, today, { feed[it] }, avatarOverride)
+        _state.value = GamificationCalculator.state(h, today, { feed[it] }, avatarOverride, clock.millis())
     }
 }

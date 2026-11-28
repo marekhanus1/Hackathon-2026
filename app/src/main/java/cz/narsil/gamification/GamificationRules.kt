@@ -16,7 +16,10 @@ object GamificationRules {
 
     const val XP_PER_LEVEL = 500
 
-    /** CLOSED dá XP nejvýš 5× denně a s odstupem ≥ 10 min od posledního odměněného zavření. */
+    /**
+     * CLOSED dá XP nejvýš 5× denně a s odstupem ≥ 10 min od posledního odměněného zavření.
+     * XP se připíše až po potvrzení (155): [cz.narsil.core.CloseRules.CONFIRM_MILLIS] bez dalšího zásahu.
+     */
     const val CLOSED_MAX_REWARDED_PER_DAY = 5
     const val CLOSED_MIN_GAP_MILLIS = 10 * 60_000L
 
@@ -58,6 +61,12 @@ object GamificationRules {
 /** Hodnoty [XpRecord.source] = `XpEventEntity.source`. Volby Ozvěny = názvy `InterventionOutcome`. */
 object XpSource {
     const val CLOSED = "CLOSED"
+
+    /**
+     * Potvrzené zavření (155): CLOSED, po kterém do 10 min nepřišel další zásah. `atMillis` = čas toho CLOSED,
+     * nese XP za zavření (50, nebo 0 nad stropem). Samotné CLOSED se zapisuje s 0 XP.
+     */
+    const val CLOSE_CONFIRMED = "CLOSE_CONFIRMED"
     const val PAID_STEPS = "PAID_STEPS"
     const val SQUATS = "SQUATS"
     const val BORROWED = "BORROWED"

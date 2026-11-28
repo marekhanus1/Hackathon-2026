@@ -194,7 +194,7 @@ class AccessibilityTriggerSource(
     suspend fun onOutcome(outcome: InterventionOutcome, unlockMinutes: Int = 10) = lock.withLock {
         when (outcome) {
             InterventionOutcome.CLOSED -> {
-                tracker.onClosed()
+                tracker.onClosed(clock())
                 chain.onClosed()
             }
             InterventionOutcome.PAID_STEPS, InterventionOutcome.SQUATS, InterventionOutcome.BORROWED -> {

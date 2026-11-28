@@ -41,12 +41,25 @@ class AccessibilityTriggerSourceTest {
         assertEquals(1, got.size)
         assertEquals(TriggerReason.ENDLESS_SCROLL, got[0].reason)
 
+        // 155: Zavřít a hned zpátky do feedu = Ozvěna hned (další tik), ne po nové toleranci.
         source.onOutcome(InterventionOutcome.CLOSED)
-        advanceTimeBy(15_000)
-        runCurrent()
-        assertEquals(1, got.size) // nová relace od nuly
-        advanceTimeBy(10_000)
+        advanceTimeBy(6_000)
         runCurrent()
         assertEquals(2, got.size)
+
+        // Zavřít a odejít na déle než 10 min: po návratu nová relace od nuly.
+        source.onOutcome(InterventionOutcome.CLOSED)
+        snapshots.emit(ForegroundSnapshot("com.nothing.launcher", null, SnapshotKind.WINDOW_CHANGED, testScheduler.currentTime, "Launcher"))
+        runCurrent()
+        advanceTimeBy(11 * 60_000)
+        runCurrent()
+        snapshots.emit(ForegroundSnapshot(pkg, WatchedApp.TIKTOK, SnapshotKind.WINDOW_CHANGED, testScheduler.currentTime, "MainActivity"))
+        runCurrent()
+        advanceTimeBy(15_000)
+        runCurrent()
+        assertEquals(2, got.size)
+        advanceTimeBy(10_000)
+        runCurrent()
+        assertEquals(3, got.size)
     }
 }
