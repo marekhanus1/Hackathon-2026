@@ -30,7 +30,9 @@ data class OnboardingUiState(
     val miuiStepsExpanded: Boolean = true,
     val miuiAutoStartDone: Boolean = false,
     val miuiBatteryDone: Boolean = false,
-    val miuiBackgroundPopupDone: Boolean = false
+    val miuiBackgroundPopupDone: Boolean = false,
+    /** Video pro Ozvěnu z onboardingu (SPEC 9, záloha než vznikne video ze smlouvy) – 139. */
+    val video: OnboardingVideoState = OnboardingVideoState(),
 ) {
     val allRequiredGranted: Boolean
         get() = homeWifiSsid != null && permissions.all { it.isGranted }
@@ -59,6 +61,30 @@ data class OnboardingUiState(
             homeWifiSsid != null -> "Domov: $homeWifiSsid"
             detectedWifiSsid == null -> "Nevidím žádnou Wi-Fi. Připoj se k domácí síti, nebo povol polohu."
             else -> "Teď jsi připojený k: $detectedWifiSsid"
+        }
+}
+
+/**
+ * Karta „Video pro Ozvěnu“ (139).
+ *
+ * @param cameraOpen náhled kamery je rozbalený (kamera se zapne až na požádání)
+ * @param hasVideo video je uložené (přehraje ho Ozvěna, dokud nevznikne video ze smlouvy)
+ */
+data class OnboardingVideoState(
+    val cameraOpen: Boolean = false,
+    val isRecording: Boolean = false,
+    val seconds: Int = 0,
+    val maxSeconds: Int = 15,
+    val hasVideo: Boolean = false,
+    val error: String? = null,
+) {
+    val buttonLabel: String
+        get() = when {
+            isRecording -> "Ukončit nahrávání ($seconds/$maxSeconds s)"
+            !cameraOpen && hasVideo -> "Natočit znovu"
+            !cameraOpen -> "Natočit video"
+            hasVideo -> "Natočit znovu"
+            else -> "Začít nahrávat"
         }
 }
 

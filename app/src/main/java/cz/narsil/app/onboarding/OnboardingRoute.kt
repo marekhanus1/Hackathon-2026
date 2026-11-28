@@ -20,6 +20,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import cz.narsil.app.ServiceLocator
+import cz.narsil.app.nav.RecorderPreview
+import cz.narsil.app.nav.hasCameraPermission
+import cz.narsil.contract.ContractVideoRecorder
+import cz.narsil.contract.PrefsOnboardingVideoStore
+import cz.narsil.core.PlanRules
+import cz.narsil.core.data.DayKey
+import cz.narsil.ui.screens.onboarding.OnboardingVideoState
 import cz.narsil.detection.context.WifiContextRepository
 import cz.narsil.movement.steps.HealthConnectStepsSource
 import cz.narsil.ui.screens.onboarding.OnboardingScreen
@@ -52,6 +59,19 @@ fun OnboardingRoute(onDone: () -> Unit) {
         (sl.contextRepository as? WifiContextRepository)?.refresh()
     }
     val healthLauncher = rememberLauncherForActivityResult(HealthConnectStepsSource.permissionContract()) { refresh++ }
+
+    // Video pro Ozvěnu (139): kamera se zapne až po „Natočit video“, hotové video jde do zálohy Ozvěny.
+    val videoStore = remember { PrefsOnboardingVideoStore(context) }
+    val recorder = remember { ContractVideoRecorder(context) }
+    val recording by recorder.state.collectAsState()
+    var cameraOpen by rememberSaveable { mutableStateOf(false) }
+    var hasVideo by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { hasVideo = runCatching { videoStore.video() }.getOrNull() != null }
+    LaunchedEffect(recording.videoUri) {
+        val uri = recording.videoUri ?: return@LaunchedEffect
+        runCatching { videoStore.save(uri, DayKey.today()) }
+        hasVideo = true
+    }
 
     val wifi by sl.contextRepository.currentWifiSsid.collectAsState()
     val settings by sl.settingsRepository.settings.collectAsState()
@@ -88,10 +108,29 @@ fun OnboardingRoute(onDone: () -> Unit) {
             miuiBatteryDone = miuiBattery || granted(PermissionStep.BATTERY),
             miuiBackgroundPopupDone = miuiPopup,
         )
-    }
+    }.copy(
+        video = OnboardingVideoState(
+            cameraOpen = cameraOpen,
+            isRecording = recording.isRecording,
+            seconds = recording.elapsedSeconds,
+            maxSeconds = PlanRules.MAX_VIDEO_SECONDS,
+            hasVideo = hasVideo,
+            error = recording.error,
+        ),
+    )
 
+    val cameraAllowed = refresh >= 0 && hasCameraPermission(context)
     OnboardingScreen(
         state = state,
+        onVideoButton = {
+            when {
+                !cameraAllowed -> runtime.launch(arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)).also { cameraOpen = true }
+                !cameraOpen -> cameraOpen = true
+                recording.isRecording -> recorder.stop()
+                else -> recorder.start(DayKey.today(), prefix = "onboarding")
+            }
+        },
+        videoCameraSlot = { RecorderPreview(recorder, cameraAllowed) },
         onConfirmHomeWifi = {
             scope.launch {
                 if (!sl.contextRepository.saveCurrentWifiAsHome()) {

@@ -15,7 +15,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -27,7 +26,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
-import cz.narsil.core.DailyContract
 import cz.narsil.core.data.DayKey
 import cz.narsil.core.data.LedgerKind
 import cz.narsil.core.data.NarsilDatabase
@@ -37,9 +35,6 @@ import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.RewardBuilder
 import cz.narsil.ui.screens.badges.BadgesScreen
 import cz.narsil.ui.screens.badges.BadgesViewModel
-import cz.narsil.ui.screens.contract.ContractScreen
-import cz.narsil.ui.screens.contract.ContractViewModel
-import cz.narsil.ui.screens.contract.MovementGoalType
 import cz.narsil.ui.screens.home.HomeScreen
 import cz.narsil.ui.screens.home.HomeUiState
 import cz.narsil.ui.screens.home.ZoneStatus
@@ -112,42 +107,6 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
             modifier = Modifier.weight(1f),
         )
     }
-}
-
-@Composable
-fun ContractRoute(onBack: () -> Unit) {
-    val sl = ServiceLocator
-    val vm: ContractViewModel = viewModel()
-    val state by vm.uiState.collectAsState()
-    val settings by sl.settingsRepository.settings.collectAsState()
-    // Odeslaná smlouva → skutečné uložení (212). Večer na zítřek, demo přepínač „platí hned“ na dnešek.
-    LaunchedEffect(state.isSubmitted) {
-        if (!state.isSubmitted) return@LaunchedEffect
-        val date = DayKey.contractDateFor(System.currentTimeMillis(), settings.demoContractToday)
-        val previous = runCatching { sl.contractRepository.forDate(date) }.getOrNull()
-        val contract = DailyContract(
-            date = date,
-            stepGoal = if (state.goalType == MovementGoalType.STEPS) state.goalAmount else previous?.stepGoal ?: 6_000,
-            plannedContent = state.plannedItems,
-            videoUri = previous?.videoUri,
-            tasks = previous?.tasks.orEmpty(),
-        )
-        runCatching { sl.contractRepository.save(contract) }
-    }
-    ContractScreen(
-        state = state,
-        onSelectGoalType = vm::selectGoalType,
-        onSetGoalAmount = vm::setGoalAmount,
-        onAdjustGoalAmount = vm::adjustGoalAmount,
-        onDraftChange = vm::updateDraftItemText,
-        onAddPlannedItem = vm::addPlannedItem,
-        onRemovePlannedItem = vm::removePlannedItem,
-        onToggleRecording = vm::toggleRecording,
-        onNextStep = vm::nextStep,
-        onPreviousStep = vm::previousStep,
-        onSubmitContract = vm::submitContract,
-        onBackToHome = onBack,
-    )
 }
 
 @Composable

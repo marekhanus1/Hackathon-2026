@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -45,7 +46,9 @@ fun OnboardingScreen(
     onToggleMiuiBattery: () -> Unit,
     onToggleMiuiBackgroundPopup: () -> Unit,
     onFinishOnboarding: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onVideoButton: () -> Unit = {},
+    videoCameraSlot: @Composable () -> Unit = {},
 ) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
@@ -225,6 +228,8 @@ fun OnboardingScreen(
                 }
             }
 
+            OnboardingVideoCard(state = state.video, onVideoButton = onVideoButton, cameraSlot = videoCameraSlot)
+
             Button(
                 onClick = onFinishOnboarding,
                 modifier = Modifier.fillMaxWidth(),
@@ -240,6 +245,70 @@ fun OnboardingScreen(
                         "Pokračovat na hlavní obrazovku"
                     }
                 )
+            }
+        }
+    }
+}
+
+/** Nepovinné video pro Ozvěnu (139): vzkaz sobě, který Ozvěna přehraje, než natočíš video ve smlouvě. */
+@Composable
+private fun OnboardingVideoCard(
+    state: OnboardingVideoState,
+    onVideoButton: () -> Unit,
+    cameraSlot: @Composable () -> Unit
+) {
+    val colors = NarsilTheme.colors
+    val spacing = NarsilTheme.spacing
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, if (state.hasVideo) colors.positive else MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(spacing.md),
+            verticalArrangement = Arrangement.spacedBy(spacing.sm)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Video pro Ozvěnu", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                if (state.hasVideo) {
+                    Surface(shape = CircleShape, color = colors.positiveContainer, contentColor = colors.onPositiveContainer) {
+                        Text(
+                            text = "Uloženo",
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
+                        )
+                    }
+                }
+            }
+            Text(
+                text = "Nepovinné. Řekni do ${state.maxSeconds} s, proč chceš mít večer klid od feedu. " +
+                    "Ozvěna ti to přehraje, než natočíš video ve večerní smlouvě.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (state.cameraOpen) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(3f / 4f),
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    cameraSlot()
+                }
+            }
+            state.error?.let {
+                Text(text = it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            }
+            OutlinedButton(onClick = onVideoButton, modifier = Modifier.fillMaxWidth()) {
+                Text(state.buttonLabel)
             }
         }
     }

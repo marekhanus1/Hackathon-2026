@@ -53,14 +53,42 @@ class EchoOverlayController(
     private val gamification: GamificationEngine? = null,
     /** Dřepy nad 20 (SPEC 8: žolík za každých 50 navíc). */
     private val onExtraSquats: suspend (Int) -> Unit = {},
+    /** Rozdělaná Ozvěna mimo instanci služby (141); sdílí ji ovladače po sobě jdoucích instancí. */
+    private val session: EchoSessionStore = EchoSessionStore(),
+    /** Rozdělaná Ozvěna byla moc stará na obnovu: detekce smí zasáhnout znovu. */
+    private val onRestoreExpired: suspend (InterventionTrigger) -> Unit = {},
+    private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private var job: Job? = null
 
     fun start() {
         if (job != null) return
-        job = scope.launch { triggers.triggers.collect { show(it) } }
+        job = scope.launch {
+            restore()
+            triggers.triggers.collect { show(it) }
+        }
     }
 
+    /** Obnoví Ozvěnu rozdělanou ve staré instanci služby (141). */
+    private suspend fun restore() {
+        when (val r = session.takeForRestore(clock())) {
+            null -> Unit
+            is EchoSessionStore.Restore.Expired -> {
+                Log.i(TAG, "rozdělaná Ozvěna prošlá, neobnovuji")
+                runCatching { onRestoreExpired(r.pending.trigger) }
+            }
+            is EchoSessionStore.Restore.Show -> {
+                val p = r.pending
+                Log.i(TAG, "obnovuji rozdělanou Ozvěnu (${p.phase}, pocit ${p.feeling})")
+                when (p.phase) {
+                    EchoSessionStore.Phase.ECHO -> showEcho(p.trigger, p.feeling)
+                    EchoSessionStore.Phase.EXERCISE -> startSquats(p.trigger, p.feeling)
+                }
+            }
+        }
+    }
+
+    /** Okno pryč se starou instancí služby; rozdělaná volba zůstává v [session] pro obnovu. */
     fun stop() {
         job?.cancel()
         job = null
@@ -73,12 +101,15 @@ class EchoOverlayController(
         showEcho(trigger)
     }
 
-    private suspend fun showEcho(trigger: InterventionTrigger) {
+    private suspend fun showEcho(trigger: InterventionTrigger, feeling: EchoFeeling? = session.pending?.takeIf { it.trigger == trigger }?.feeling) {
+        session.begin(trigger, clock())
+        session.setPhase(EchoSessionStore.Phase.ECHO)
+        session.setFeeling(feeling)
         val video = runCatching { videos.pickEchoVideo() }.getOrNull()
         val content = exercise().let { ex ->
             EchoStateBuilder.build(trigger, movement.state.value, contracts.today.value, video, ex, repsPerUnlock(ex))
         }
-        val ui = MutableStateFlow(content.ui)
+        val ui = MutableStateFlow(content.ui.copy(selectedFeeling = feeling))
         val shown = window.show {
             val state by ui.collectAsState()
             NarsilTheme {
@@ -86,6 +117,7 @@ class EchoOverlayController(
                     state = state,
                     onSelectFeeling = { f ->
                         ui.value = state.copy(selectedFeeling = if (state.selectedFeeling == f) null else f)
+                        session.setFeeling(ui.value.selectedFeeling)
                     },
                     onCloseFeed = { choose(trigger, InterventionOutcome.CLOSED, ui.value.selectedFeeling) },
                     onStartSquats = { startSquats(trigger, ui.value.selectedFeeling) },
@@ -103,6 +135,9 @@ class EchoOverlayController(
         val reps = repsPerUnlock(ex)
         val counter = (if (ex == Exercise.PUSHUPS) pushupCounter else squatCounter)
             ?: return choose(trigger, InterventionOutcome.SQUATS, feeling)
+        session.begin(trigger, clock())
+        session.setFeeling(feeling)
+        session.setPhase(EchoSessionStore.Phase.EXERCISE)
         window.show {
             NarsilTheme {
                 SquatOverlayContent(
@@ -126,6 +161,7 @@ class EchoOverlayController(
     }
 
     private fun choose(trigger: InterventionTrigger, outcome: InterventionOutcome, feeling: EchoFeeling?) {
+        session.clear()
         val before = gamification?.state?.value
         // Okno se schová hned (Zavřít → plocha, odemknutí → zpět do aplikace); odměna se ukáže zvlášť.
         window.dismiss()
