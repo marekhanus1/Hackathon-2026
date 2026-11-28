@@ -115,6 +115,18 @@ class ScrollSessionTracker(
         videoGate.reset()
     }
 
+    /**
+     * Jak blízko je limit (135): 0..1 podle délky relace, null = ukazatel skrýt (žádná relace, mimo nekonečný
+     * povrch nebo pauza, mimo domov, odemčeno, Ozvěna už běží nebo čeká na konec videa).
+     * Volat po [observe] se stejným [now] a kontextem.
+     */
+    fun progress(now: Long, thresholdMillis: Long, context: ComfortContext): Float? {
+        val s = session ?: return null
+        if (context != ComfortContext.HOME || lastSurface?.isEndless != true) return null
+        if (awaitingOutcome || now < unlockedUntil || videoGate.isWaiting || thresholdMillis <= 0) return null
+        return ((now - s.startedAtMillis).toFloat() / thresholdMillis).coerceIn(0f, 1f)
+    }
+
     /** Délka relace v [now], 0 bez relace. */
     fun durationMillis(now: Long): Long = session?.let { now - it.startedAtMillis } ?: 0
 

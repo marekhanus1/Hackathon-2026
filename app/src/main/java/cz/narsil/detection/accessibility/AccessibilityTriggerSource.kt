@@ -49,6 +49,14 @@ class AccessibilityTriggerSource(
     /** Probíhající úsek nekonečného obsahu (pro ukládání v 121 a UI); null = žádná relace. */
     val current: StateFlow<ConsumptionEvent?> = _current.asStateFlow()
 
+    private val _progressPercent = MutableStateFlow<Int?>(null)
+
+    /**
+     * Ukazatel blížícího se limitu (135): 0–100 % délky relace vůči prahu, null = skrýt.
+     * Zaokrouhleno na celá procenta: StateFlow vydá novou hodnotu (a overlay překreslí) jen při změně.
+     */
+    val progressPercent: StateFlow<Int?> = _progressPercent.asStateFlow()
+
     init {
         scope.launch { snapshots.collect { handle(it, scrolled = it.kind == SnapshotKind.SCROLLED) } }
         // Tik: video může běžet bez událostí (autoplay), čas relace musí běžet dál.
@@ -65,11 +73,13 @@ class AccessibilityTriggerSource(
         val surface = SurfaceClassifier.classify(snapshot)
         val now = snapshot.atMillis
         val context = contextRepository.context.value
+        val threshold = thresholdMillis()
         val hit = tracker.observe(
-            snapshot.packageName, surface, context, now, thresholdMillis(), scrolled,
+            snapshot.packageName, surface, context, now, threshold, scrolled,
             video = snapshot.video,
             onVideoSite = isVideoSite(snapshot),
         )
+        _progressPercent.value = tracker.progress(now, threshold, context)?.let(::toPercent)
         val session = tracker.session
         // Relace běží na nekonečném povrchu, nebo pokračuje na videu (134).
         val counting = surface != null && context == ComfortContext.HOME &&
@@ -104,9 +114,13 @@ class AccessibilityTriggerSource(
                 tracker.onUnlocked(clock() + unlockMinutes * 60_000L)
             InterventionOutcome.PLANNED_FREE -> tracker.onDismissed()
         }
+        _progressPercent.value = null // do dalšího pozorování (snímek nebo tik) skrytý
     }
 
     companion object {
         const val DEFAULT_THRESHOLD_MILLIS = 5 * 60_000L
+
+        /** 0..1 → celá procenta (dolů, 100 jen při plném limitu). */
+        fun toPercent(fraction: Float): Int = (fraction * 100).toInt().coerceIn(0, 100)
     }
 }

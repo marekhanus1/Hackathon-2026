@@ -13,6 +13,11 @@ import cz.narsil.overlay.EchoOutcomeHandler
 import cz.narsil.overlay.EchoOverlayController
 import cz.narsil.overlay.EchoOverlayWindow
 import cz.narsil.overlay.HomeNavigator
+import cz.narsil.overlay.ScrollProgressOverlay
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 /**
@@ -23,6 +28,8 @@ import kotlinx.coroutines.launch
 object EchoOverlayStarter {
     private const val TAG = "NarsilApp"
     private var controller: EchoOverlayController? = null
+    private var progressBar: ScrollProgressOverlay? = null
+    private var progressJob: Job? = null
 
     private val _ready = MutableStateFlow(false)
 
@@ -43,9 +50,20 @@ object EchoOverlayStarter {
             AccessibilityEvents.service.collect { service ->
                 controller?.stop()
                 controller = null
+                progressJob?.cancel()
+                progressBar?.dismiss()
+                progressBar = null
                 _ready.value = false
                 if (service == null) return@collect
                 val triggers = sl.interventionTriggerSource
+                // Ukazatel blížícího se limitu (135): jen se skutečnou detekcí a zapnutým nastavením.
+                val bar = ScrollProgressOverlay(service).also { progressBar = it }
+                val percent = (triggers as? AccessibilityTriggerSource)?.progressPercent ?: flowOf(null)
+                progressJob = sl.appScope.launch {
+                    combine(percent, sl.settingsRepository.settings) { p, s -> p.takeIf { s.showScrollProgress } }
+                        .distinctUntilChanged()
+                        .collect { bar.update(it) }
+                }
                 val handler = EchoOutcomeHandler(
                     movement = sl.movementRepository,
                     gamification = sl.gamificationEngine,
