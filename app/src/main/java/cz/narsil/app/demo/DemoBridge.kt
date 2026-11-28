@@ -4,7 +4,9 @@ import android.util.Log
 import cz.narsil.app.EchoOverlayStarter
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.Exercise
 import cz.narsil.core.data.NarsilDatabase
+import cz.narsil.overlay.ExerciseText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
@@ -50,12 +52,28 @@ object DemoBridge {
         }
 
         // Dřepy i kliky: počet jen během běžící série (stop nechává count, ten už neposílat).
-        listOf(sl.squatCounter, sl.pushupCounter).distinct().forEach { counter ->
+        listOf(Exercise.SQUATS, Exercise.PUSHUPS).map { it to sl.exerciseCounter(it) }.distinctBy { it.second }.forEach { (ex, counter) ->
+            val target = ExerciseText.target(ex)
             scope.launch {
-                counter.count.collect { n -> if (counter.isRunning.value) emit(DemoEvent.Squats(n)) }
+                counter.count.collect { n -> if (counter.isRunning.value) emit(DemoEvent.Squats(n, target)) }
             }
             scope.launch {
-                counter.isRunning.drop(1).collect { running -> if (running) emit(DemoEvent.Squats(0)) }
+                counter.isRunning.drop(1).collect { running -> if (running) emit(DemoEvent.Squats(0, target)) }
+            }
+        }
+
+        // Odevzdání / ověření úkolu smlouvy: změna stavu úkolu ve stejném dni.
+        scope.launch {
+            var lastDate: java.time.LocalDate? = null
+            var last = emptyMap<Long, cz.narsil.core.TaskStatus>()
+            sl.contractRepository.today.collect { c ->
+                val now = c?.tasks.orEmpty().associate { it.id to it.status }
+                if (c != null && c.date == lastDate) {
+                    c.tasks.filter { last[it.id] != null && last[it.id] != it.status }
+                        .forEach { emit(DemoEvent.Task(it.title, it.status.name)) }
+                }
+                lastDate = c?.date
+                last = now
             }
         }
 

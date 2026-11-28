@@ -46,14 +46,14 @@ class FakeContractRepository(
     }
 
     companion object {
-        /** 6 000 kroků, dokument o přírodě + seriál, 4 úkoly (běh ověřený přes Stravu, ostatní čekají). */
+        /** 6 000 kroků, dokument o přírodě + seriál, 4 úkoly – všechny čekají na odevzdání (demo 161). */
         fun demoContract(date: LocalDate) = DailyContract(
             date = date,
             stepGoal = 6_000,
             plannedContent = listOf("dokument o přírodě", "jeden díl seriálu"),
             videoUri = FakeEchoVideoRepository.DEMO_URI,
             tasks = listOf(
-                PlanTask(type = TaskType.MOVEMENT, title = "Běh", target = "5 km", status = TaskStatus.VERIFIED, attempts = 1),
+                PlanTask(type = TaskType.MOVEMENT, title = "Běh", target = "5 km"),
                 PlanTask(type = TaskType.SCHOOL, title = "Lineární algebra", target = "kapitola 3, příklady 1–10"),
                 PlanTask(type = TaskType.WORK, title = "Dopsat report", method = VerificationMethod.TEXT),
                 PlanTask(type = TaskType.OTHER, title = "Uklidit pokoj"),

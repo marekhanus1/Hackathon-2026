@@ -15,8 +15,11 @@ sealed class DemoEvent(val name: String) {
     /** Ozvěna zmizela (volba, zavření). */
     data object EchoHidden : DemoEvent("echo_end")
 
-    /** Kamera počítá cvik ([n] od začátku série). */
-    data class Squats(val n: Int) : DemoEvent("squats")
+    /** Kamera počítá cvik ([n] od začátku série, cíl [target]). */
+    data class Squats(val n: Int, val target: Int = 20) : DemoEvent("squats")
+
+    /** Úkol smlouvy změnil stav (odevzdání / ověření): `PENDING|VERIFIED|REJECTED|VERIFY_LATER`. */
+    data class Task(val title: String, val status: String) : DemoEvent("task")
 
     /** Feed odemčený, [min] minut zbývá. */
     data class Unlocked(val min: Int) : DemoEvent("unlocked")
@@ -42,7 +45,8 @@ sealed class DemoEvent(val name: String) {
             when (this@DemoEvent) {
                 is Context -> add("where" to str(where))
                 EchoShown, EchoHidden -> Unit
-                is Squats -> add("n" to "$n")
+                is Squats -> { add("n" to "$n"); add("target" to "$target") }
+                is Task -> { add("title" to str(title)); add("status" to str(status)) }
                 is Unlocked -> add("min" to "$min")
                 is Level -> add("level" to "$level")
                 is Xp -> { add("delta" to "$delta"); add("xp" to "$xp") }

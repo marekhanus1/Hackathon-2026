@@ -161,7 +161,7 @@ svg text{font-family:var(--f)}
 #s06 .kick,#s06 h2.t{left:820px}
 #s06 h2.t{right:200px;font-size:54px}
 #s06 .scenes{position:absolute;left:820px;top:300px;width:960px;display:grid;gap:6px}
-#s06 .scenes div{display:flex;gap:26px;align-items:baseline;padding:16px 26px;border-radius:18px;font:700 32px/1.25 var(--f);color:#B5AB9E;transition:all .35s}
+#s06 .scenes div{display:flex;gap:26px;align-items:baseline;padding:12px 26px;border-radius:18px;font:700 32px/1.25 var(--f);color:#B5AB9E;transition:all .35s}
 #s06 .scenes div i{font-style:normal;font:800 26px/1 var(--mono);min-width:36px}
 #s06 .scenes div small{margin-left:auto;font:600 22px/1 var(--f)}
 #s06 .scenes div.done{color:var(--muted)}
@@ -319,6 +319,12 @@ svg text{font-family:var(--f)}
 .xpr .tr i{display:block;height:100%;background:var(--xc);width:0;border-radius:20px;transition:width 1s cubic-bezier(.3,1.2,.5,1)}
 .xpr em{font:800 36px/1 var(--f);font-style:normal;color:var(--xc);text-align:right}
 #s13 .side{position:absolute;left:1140px;top:340px;width:640px;display:grid;gap:26px}
+#s13 .xpwhat{position:absolute;left:140px;top:640px;width:900px;display:grid;gap:14px}
+#s13 .xpwhat b{font:800 34px/1.1 var(--f)}
+#s13 .xpwhat .lad{display:flex;flex-wrap:wrap;gap:10px}
+#s13 .xpwhat .lad span{padding:10px 16px;border-radius:14px;background:var(--surface);border:1.5px solid var(--line);font:700 21px/1 var(--f);color:var(--muted)}
+#s13 .xpwhat .lad span:nth-child(4){border-color:var(--amber);color:var(--ink)}
+#s13 .xpwhat p{margin:0;font:500 24px/1.4 var(--f);color:var(--muted)}
 #s13 .side .card{padding:30px 34px}
 #s13 .side b{display:block;font:800 34px/1.15 var(--f);margin-bottom:8px}
 
@@ -500,28 +506,28 @@ svg text{font-family:var(--f)}
   <div class="pil">
     <div class="card" data-s="1" style="--pc:var(--gold)"><b>Večerní smlouva</b><p>Dvě minuty se sebou: kroky, plán na zítřek a krátké video.</p></div>
     <div class="card" data-s="2" style="--pc:var(--tw)"><b>Ozvěna</b><p>Když sklouzneš do feedu, pustí ti tvoje včerejší video.</p></div>
-    <div class="card" data-s="3" style="--pc:var(--amber)"><b>Cena pohybem</b><p>Pokračovat jde vždycky – za kroky, dřepy, nebo dluh do zítřka.</p></div>
+    <div class="card" data-s="3" style="--pc:var(--amber)"><b>Cena pohybem</b><p>Pokračovat jde vždycky – za kroky, dřepy, nebo s minutami od Parťáka.</p></div>
     <div class="card" data-s="4" style="--pc:var(--sage)"><b>Parťák</b><p>Když aplikaci smažeš, nedozví se to server. Dozví se to kamarád.</p></div>
   </div>
 </section>
 
 <!-- 06 DEMO -->
-<section class="sl" id="s06" data-steps="7" data-title="Demo">
+<section class="sl" id="s06" data-steps="8" data-title="Demo">
   <div class="phone" id="livePhone" data-live="1"><div class="scr">
     <div class="sbar"><span>21:47</span><span>Wi-Fi Domov_5G</span></div>
     <div class="app" style="gap:14px;padding:12px 16px 14px">
-      <div class="a-row" style="gap:12px"><div class="eh-logo e-ins"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F2A359" stroke-width="2" stroke-linecap="round"><path d="M12 3v11M9 14h6M12 14v3M10.5 20h3"/><path d="M12 17l-1 3" opacity=".5"/></svg></div><div style="flex:1"><div style="font:700 16px/1.2 var(--f)">Úroveň 4 · Kovář klidu</div><div class="a-sm" style="font-size:12px">1 860 XP · série 6 dní</div></div></div>
+      <div class="a-row" style="gap:12px"><div class="eh-logo e-ins"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F2A359" stroke-width="2" stroke-linecap="round"><path d="M12 3v11M9 14h6M12 14v3M10.5 20h3"/><path d="M12 17l-1 3" opacity=".5"/></svg></div><div style="flex:1"><div style="font:700 16px/1.2 var(--f)">Úroveň 4 · Strážce pozornosti</div><div class="a-sm" style="font-size:12px">1 860 XP · série 6 dní</div></div></div>
       <div class="e-in" style="border-radius:26px;padding:14px;display:flex;gap:14px;align-items:center">
-        <div class="eh-ring"><b style="font:800 34px/1 var(--f);color:#F2A359">40</b><span style="font:600 11px/1 var(--f);color:#A3AAB8;margin-top:4px">min zůstatek</span></div>
+        <div class="eh-ring"><b style="font:800 34px/1 var(--f);color:#F2A359">0</b><span style="font:600 11px/1 var(--f);color:#A3AAB8;margin-top:4px">min zůstatek</span></div>
         <div style="flex:1;display:flex;flex-direction:column;gap:11px">
           <div class="a-row" style="gap:7px;font:600 12px/1 var(--f)"><i style="width:8px;height:8px;border-radius:50%;background:#5CC497"></i>Doma · ochrana aktivní</div>
-          <div><div class="a-row" style="font:700 12px/1 var(--f);margin-bottom:6px"><span>4 820 kroků</span><span class="sp" style="color:#A3AAB8;font-weight:500">cíl 6 000</span></div><div class="a-bar"><i style="width:80%"></i></div></div>
-          <div class="a-row" style="gap:14px"><div><b style="font:800 16px/1 var(--f);color:#5CC497">45</b><div style="font:500 11px/1.3 var(--f);color:#A3AAB8">min získáno</div></div><div><b style="font:800 16px/1 var(--f)">14</b><div style="font:500 11px/1.3 var(--f);color:#A3AAB8">min ve feedu</div></div></div>
+          <div><div class="a-row" style="font:700 12px/1 var(--f);margin-bottom:6px"><span>0 kroků</span><span class="sp" style="color:#A3AAB8;font-weight:500">cíl 6 000</span></div><div class="a-bar"><i style="width:0%"></i></div></div>
+          <div class="a-row" style="gap:14px"><div><b style="font:800 16px/1 var(--f);color:#5CC497">0</b><div style="font:500 11px/1.3 var(--f);color:#A3AAB8">min získáno</div></div><div><b style="font:800 16px/1 var(--f)">14</b><div style="font:500 11px/1.3 var(--f);color:#A3AAB8">min ve feedu</div></div></div>
         </div>
       </div>
       <div class="e-in" style="flex:1;border-radius:26px;padding:14px 14px 10px;display:flex;flex-direction:column;min-height:0">
-        <div class="a-row" style="padding:0 2px 6px"><b style="font:800 16px/1 var(--f)">Dnešní smlouva</b><span class="sp" style="font:700 12px/1 var(--f);color:#A3AAB8">1 / 4 hotovo</span></div>
-        <div class="eh-task"><div class="eh-chk" style="background:#5CC497"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10241B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Běh 5 km</div><div style="font:600 11px/1.3 var(--f);color:#5CC497">Pohyb · ověřeno</div></div><span style="font:800 12px/1 var(--f);color:#5CC497">+30 min</span></div>
+        <div class="a-row" style="padding:0 2px 6px"><b style="font:800 16px/1 var(--f)">Dnešní smlouva</b><span class="sp" style="font:700 12px/1 var(--f);color:#A3AAB8">0 / 4 hotovo</span></div>
+        <div class="eh-task"><div class="eh-chk e-ind"></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Běh 5 km</div><div style="font:600 11px/1.3 var(--f);color:#A3AAB8">Pohyb · ze Stravy nebo fotkou · +30 min</div></div><span class="e-ind" style="height:32px;padding:0 12px;border-radius:11px;font:800 12px/32px var(--f);color:#F2A359">Ověřit</span></div>
         <div class="eh-task"><div class="eh-chk e-ind"></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Laboratorní úloha z databází</div><div style="font:600 11px/1.3 var(--f);color:#A3AAB8">Škola · fotka · +20 min</div></div><span class="e-ind" style="height:32px;padding:0 12px;border-radius:11px;font:800 12px/32px var(--f);color:#F2A359">Ověřit</span></div>
         <div class="eh-task"><div class="eh-chk e-ind"></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dopsat report do práce</div><div style="font:600 11px/1.3 var(--f);color:#F59A8B">Práce · zbývají 2 pokusy</div></div><span class="e-ind" style="height:32px;padding:0 12px;border-radius:11px;font:800 12px/32px var(--f);color:#F2A359">Ověřit</span></div>
         <div class="eh-task"><div class="eh-chk e-ind"></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Uklidit pokoj</div><div style="font:600 11px/1.3 var(--f);color:#A3AAB8">Ostatní · fotka prostředí · +10 min</div></div><span class="e-ind" style="height:32px;padding:0 12px;border-radius:11px;font:800 12px/32px var(--f);color:#F2A359">Ověřit</span></div>
@@ -537,11 +543,12 @@ svg text{font-family:var(--f)}
   <div class="scenes" id="scenes">
     <div><i>1</i>Večerní smlouva<small>plán a video</small></div>
     <div><i>2</i>Venku<small>Narsil mlčí</small></div>
-    <div><i>3</i>Doma ve feedu<small>Ozvěna</small></div>
+    <div><i>3</i>Doma, 0 minut<small>Ozvěna hned</small></div>
     <div><i>4</i>20 dřepů<small>kamera počítá</small></div>
-    <div><i>5</i>Dokument z plánu<small>zdarma</small></div>
-    <div><i>6</i>Zrcadlo<small>co tě vysává</small></div>
-    <div><i>7</i>Parťák<small>kamarád, ne server</small></div>
+    <div><i>5</i>Odevzdání úkolu<small>AI ověří</small></div>
+    <div><i>6</i>Dokument z plánu<small>zdarma</small></div>
+    <div><i>7</i>Zrcadlo<small>co tě vysává</small></div>
+    <div><i>8</i>Parťák<small>kamarád, ne server</small></div>
   </div>
   <div id="dlive"><span><i class="dot"></i>z telefonu</span><span id="dlWhere">–</span><span id="dlLvl">–</span><span id="dlEcho" style="display:none">Ozvěna</span></div>
   <div id="dhud"><div class="lab" id="dhLab">Kamera počítá dřepy</div><div class="num" id="dhNum">0<small> / 20</small></div><div class="bar"><i id="dhBar"></i></div><div class="msg" id="dhMsg"></div></div>
@@ -612,7 +619,7 @@ svg text{font-family:var(--f)}
       <div class="choice pos"><div><div class="ct">Zavřít feed</div><div class="cs">Chuť opadla, vracím se k tomu, co má smysl</div></div><span class="bd">+50 XP</span></div>
       <div class="choice emb" id="chSq"><div><div class="ct">Udělat 20 dřepů hned</div><div class="cs">Kamera spočítá opakování a odemkne 10 min</div></div><span class="bd">+20 XP</span></div>
       <div class="choice ech"><div><div class="ct">Zaplatit kroky</div><div class="cs">1000 kroků za 10 min · máš 2400</div></div><span class="bd">+10 XP</span></div>
-      <div class="choice dbt"><div><div class="ct">Půjčit si 10 min</div><div class="cs">Přičte se k zítřejšímu pohybovému cíli</div></div><span class="bd">0 XP</span></div>
+      <div class="choice dbt"><div><div class="ct">Poprosit Parťáka o 10 min</div><div class="cs">Kamarád ti pošle minuty · do zítřka se nic nepřenáší</div></div><span class="bd">0 XP</span></div>
     </div>
   </div></div>
   <div class="bk-tag">Demo · 2/6</div>
@@ -645,7 +652,7 @@ svg text{font-family:var(--f)}
     <div class="r" style="--pc:var(--sage)"><div><b>Zavřít feed</b><span>nejlepší volba</span></div><em>+50 XP</em></div>
     <div class="r" style="--pc:var(--amber)"><div><b>20 dřepů</b><span>počítá kamera přes ML Kit</span></div><em>+20 XP</em></div>
     <div class="r" style="--pc:var(--tw)"><div><b>Zaplatit kroky</b><span>1 000 kroků = 10 min</span></div><em>+10 XP</em></div>
-    <div class="r" style="--pc:var(--debt)"><div><b>Půjčit si 10 min</b><span>dluh do zítřka, limit 30 min</span></div><em>0 XP</em></div>
+    <div class="r" style="--pc:var(--debt)"><div><b>Poprosit Parťáka o 10 min</b><span>pošle kamarád, nejvýš 30 min denně, nic se nepřenáší</span></div><em>0 XP</em></div>
   </div></div>
 </section>
 
@@ -735,7 +742,12 @@ svg text{font-family:var(--f)}
     <div class="xpr" style="--xc:var(--sage)">Zavřít<div class="tr"><i data-w="100"></i></div><em>50</em></div>
     <div class="xpr" style="--xc:var(--amber)">Dřepy<div class="tr"><i data-w="40"></i></div><em>20</em></div>
     <div class="xpr" style="--xc:var(--tw)">Kroky<div class="tr"><i data-w="20"></i></div><em>10</em></div>
-    <div class="xpr" style="--xc:var(--debt)">Půjčka<div class="tr"><i data-w="1"></i></div><em>0</em></div>
+    <div class="xpr" style="--xc:var(--debt)">Od Parťáka<div class="tr"><i data-w="1"></i></div><em>0</em></div>
+  </div>
+  <div class="xpwhat">
+    <b>Co XP mění</b>
+    <div class="lad"><span>1 · Začátek cesty</span><span>2 · Pozorovatel</span><span>3 · Kovář vůle</span><span>4 · Strážce pozornosti</span><span>5 · Znovu ukovaný</span><span>6+ · Mistr klidu</span></div>
+    <p>Každých 500 XP nová úroveň s titulem a oslavou. XP se ale nedají utratit – minuty na feed dává jen pohyb a splněné úkoly, takže se čas nedá vyfarmit klikáním.</p>
   </div>
   <div class="side">
     <div class="card"><b>Nic ti nikdy XP nevezme.</b><p class="sm">Série má žolíky. Relaps není konec – proto Narsil, meč zlomený a znovu ukovaný.</p></div>
@@ -1002,11 +1014,14 @@ const MOST=window.MOST=(()=>{
     if(!m){s.classList.remove('hud');h.classList.remove('lvl');$('#dhMsg').textContent='';return}
     s.classList.add('hud');
     const later=t=>{hudT=setTimeout(()=>hud(null),t)};
-    if(m==='squats'){h.classList.remove('lvl');const t=CONFIG.squatsTarget;$('#dhLab').textContent='Kamera počítá dřepy';
+    if(m==='squats'){h.classList.remove('lvl');const t=o.target||CONFIG.squatsTarget;$('#dhLab').textContent='Kamera počítá dřepy';
       num.innerHTML=`${o.n}<small> / ${t}</small>`;num.classList.remove("lvlin");restart(num,"pop");$('#dhBar').style.width=Math.min(100,o.n/t*100)+'%';
       $('#dhMsg').textContent=o.n>=t?'Hotovo!':''}
     else if(m==='unlocked'){h.classList.remove('lvl');$('#dhLab').textContent='Zaplaceno pohybem';
       num.innerHTML=`${o.min}<small> min</small>`;$('#dhBar').style.width='100%';$('#dhMsg').textContent='Feed je odemčený';later(6000)}
+    else if(m==='task'){h.classList.remove('lvl');const ok=o.status==='VERIFIED',bad=o.status==='REJECTED';
+      $('#dhLab').textContent=ok?'Úkol ověřený':bad?'Úkol zamítnutý – zkus znovu':'Úkol odevzdaný';num.innerHTML=ok?'✓':bad?'✗':'…';
+      $('#dhBar').style.width=ok?'100%':'0';$('#dhMsg').textContent=o.title+(ok?' · minuty připsané':'');later(6000)}
     else if(m==='level'){h.classList.add('lvl');$('#dhLab').textContent='Nová úroveň – za pohyb';
       num.innerHTML=`${o.level}<small>. úroveň</small>`;restart(num,'lvlin');later(6000)}}
   function onEvent(d){
@@ -1021,7 +1036,8 @@ const MOST=window.MOST=(()=>{
       case 'unlocked':advance(4);if(onDemo()){if(mode==='squats'){$('#dhMsg').textContent=`Hotovo! Feed odemčený na ${d.min} min`;clearTimeout(hudT);hudT=setTimeout(()=>hud(null),6000)}else hud('unlocked',d)}break;
       case 'xp':xp=d.xp;break;
       case 'level':lvl=d.level;flash('#dlLvl');advance(4);if(onDemo()){const msg=$('#dhMsg').textContent;hud('level',d);$('#dhMsg').textContent=msg}break;
-      case 'rated':advance(5);break;
+      case 'task':if(d.status!=='PENDING'){advance(5);if(onDemo())hud('task',d)}break;
+      case 'rated':advance(6);break;
       case 'ack':ms(`Telefon: ${d.cmd} ${d.ok?'✓':'– nepovedlo se'}`,d.ok?'ok':'err');break;
     }
     chips()}
@@ -1057,9 +1073,9 @@ s05:`(Štěpán, 0:40) Plánované je zdarma, neplánované se platí pohybem. �
 večerní smlouva, Ozvěna, cena pohybem, Parťák.
 → Ukážeme vám to naživo.`,
 s06:`DEMO 2:00 – Šimon ovládá telefon, Štěpán komentuje, každým klikem další scéna:
-1 smlouva (6000 kroků, dokument o přírodě, video) · 2 venku Reels + zpráva – mlčí · 3 doma TikTok, po 20 s Ozvěna · 4 únava → 20 dřepů, nová úroveň · 5 dokument o přírodě projde zdarma, neplánované stojí kroky · 6 Zrcadlo – past · 7 Parťák (Marek zvedne Redmi).
+1 smlouva (6000 kroků, dokument o přírodě, video) · 2 venku Reels + zpráva – mlčí · 3 doma, 0 minut a nic splněno: TikTok zablokuje hned, žádných 5 minut tolerance · 4 únava → 20 dřepů, feed na 10 min, nová úroveň · 5 odevzdání úkolu (fotka, AI ověří, připíšou se minuty) · 6 dokument o přírodě projde zdarma · 7 Zrcadlo – past · 8 Parťák: poprosit o 10 min (Marek zvedne Redmi).
 Bez živého přenosu následuje 6 záložních slidů s maketami.
-S mostem (scripts/demo-most.py): scéna 2 přepne telefon na Venku, scéna 3 na Doma; Ozvěna, dřepy a hodnocení videa posunou scény samy, dřepy běží velkým počítadlem. Záloha z klávesnice: E Ozvěna hned, X +500 XP, H doma, V venku.`,
+S mostem (scripts/demo-most.py): scéna 2 přepne telefon na Venku, scéna 3 na Doma; Ozvěna, dřepy, odevzdaný úkol a hodnocení videa posunou scény samy, dřepy běží velkým počítadlem. Záloha z klávesnice: E Ozvěna hned, X +500 XP, H doma, V venku.`,
 s07:`(Záloha) Večer si Šimon dvě minuty sedne sám se sebou. Šest tisíc kroků, v plánu dokument o přírodě – a krátké video pro sebe na zítra.`,
 s08:`(Záloha) Večer doma. Jen na chvilku TikTok… (Ozvěna) Tohle je jeho vlastní video. A otázka: Čemu se teď vyhýbáš? → Únava, 20 dřepů.`,
 s09:`(Záloha) Pokračovat může vždycky – jen to něco stojí. Dvacet dřepů, kamera je počítá… a feed je na deset minut odemčený. A nová úroveň – za pohyb.`,
@@ -1067,7 +1083,8 @@ s10:`(Záloha) Dokument o přírodě je v plánu, projde zdarma – plán s náz
 s11:`(Záloha) …takže po třech týdnech vidí, co dokoukává, ale hodnotí na jedničku. To je jeho past.`,
 s12:`(Záloha) A když aplikaci smaže? Nedozví se to server. Dozví se to kamarád. Kód se dá obejít, lidi ne.
 Poctivě: v MVP ukázková notifikace, hlídání odinstalace je v roadmapě.`,
-s13:`(Štěpán, 0:30) Nejvíc bodů je za to, že od feedu odejdeš sám. Nic ti body nebere, série má žolíky – relaps není konec. Proto Narsil.`,
+s13:`(Štěpán, 0:30) Nejvíc bodů je za to, že od feedu odejdeš sám. Nic ti body nebere, série má žolíky – relaps není konec. Proto Narsil.
+→ Co XP mění: každých 500 XP nová úroveň s titulem – od Začátku cesty po Mistra klidu. Utratit se nedají: minuty na feed dává jen pohyb a úkoly, takže se čas nedá vyfarmit.`,
 s14:`(Štěpán, 0:20) Aplikace, která vidí obrazovku, musí být důvěryhodná. Chaty nesledujeme vůbec, videa zůstávají v telefonu, do AI jde jen název videa a plán.`,
 s15:`(Marek, 0:20) Nativní Android: detekce přes službu přístupnosti, domov podle Wi-Fi, dřepy přes ML Kit, plán s videem páruje Gemini. Za 20 hodin s týmem AI agentů – každý měl svůj balíček a úkoly.`,
 s16:`(Štěpán, 0:15) Venku vás necháme žít. Doma vám připomeneme, kým chcete být. Narsil. Děkujeme.`,

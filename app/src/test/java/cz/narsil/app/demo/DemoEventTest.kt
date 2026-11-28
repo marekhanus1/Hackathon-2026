@@ -7,7 +7,8 @@ class DemoEventTest {
     @Test
     fun `jednoduche udalosti`() {
         assertEquals("""{"e":"echo"}""", DemoEvent.EchoShown.toJson())
-        assertEquals("""{"e":"squats","n":12}""", DemoEvent.Squats(12).toJson())
+        assertEquals("""{"e":"squats","n":12,"target":20}""", DemoEvent.Squats(12).toJson())
+        assertEquals("""{"e":"task","title":"Běh","status":"VERIFIED"}""", DemoEvent.Task("Běh", "VERIFIED").toJson())
         assertEquals("""{"e":"context","where":"home"}""", DemoEvent.Context("home").toJson())
         assertEquals("""{"e":"xp","delta":50,"xp":1000}""", DemoEvent.Xp(50, 1000).toJson())
     }

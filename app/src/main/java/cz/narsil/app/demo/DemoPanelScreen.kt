@@ -164,7 +164,7 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                 // Hlavní akce
                 ChoiceCard(
                     title = "Připravit demo",
-                    subtitle = "Doma, práh 20 s, dnešní smlouva s úkoly, čistý den",
+                    subtitle = "Doma, 0 minut (blokuje hned), úkoly neodevzdané, dřepy",
                     onClick = { act("Demo připraveno") { DemoActions.prepareDemo(); true } },
                     tone = ChoiceCardTone.POSITIVE,
                 )
