@@ -50,6 +50,7 @@ class DataStoreSettingsRepository(
         demoThresholdSec = this[DEMO_THRESHOLD_SEC],
         demoContractToday = this[DEMO_CONTRACT_TODAY] ?: false,
         demoAlwaysYes = this[DEMO_ALWAYS_YES] ?: false,
+        exercise = enumOr(this[EXERCISE], Settings().exercise),
     )
 
     private fun androidx.datastore.preferences.core.MutablePreferences.write(s: Settings) {
@@ -59,10 +60,12 @@ class DataStoreSettingsRepository(
         if (s.demoThresholdSec != null) this[DEMO_THRESHOLD_SEC] = s.demoThresholdSec else remove(DEMO_THRESHOLD_SEC)
         this[DEMO_CONTRACT_TODAY] = s.demoContractToday
         this[DEMO_ALWAYS_YES] = s.demoAlwaysYes
+        this[EXERCISE] = s.exercise.name
     }
 
     private companion object {
         val HOME_SSID = stringPreferencesKey("home_ssid")
+        val EXERCISE = stringPreferencesKey("exercise")
         val LLM_PROVIDER = stringPreferencesKey("llm_provider")
         val DEMO_MODE = booleanPreferencesKey("demo_mode")
         val DEMO_THRESHOLD_SEC = intPreferencesKey("demo_threshold_sec")

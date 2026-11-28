@@ -247,7 +247,9 @@ data class Settings(
     val homeSsid: String? = null, val llmProvider: LlmProvider = LlmProvider.GEMINI,
     val demoMode: Boolean = false, val demoThresholdSec: Int? = null,
     val demoContractToday: Boolean = false, val demoAlwaysYes: Boolean = false,
+    val exercise: Exercise = Exercise.SQUATS,
 )
+enum class Exercise { SQUATS, PUSHUPS } // 232: odemčení 20 dřepů nebo 10 kliků (MovementRates.PUSHUPS_PER_UNLOCK)
 interface SettingsRepository { val settings: StateFlow<Settings>; suspend fun update(change: (Settings) -> Settings) }
 ```
 

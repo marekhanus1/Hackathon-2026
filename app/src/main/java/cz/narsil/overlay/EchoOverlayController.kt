@@ -3,6 +3,7 @@ package cz.narsil.overlay
 import android.util.Log
 import cz.narsil.core.ContractRepository
 import cz.narsil.core.EchoVideoRepository
+import cz.narsil.core.Exercise
 import cz.narsil.core.InterventionOutcome
 import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.InterventionTriggerSource
@@ -41,6 +42,10 @@ class EchoOverlayController(
     private val scope: CoroutineScope,
     private val choiceHandler: EchoChoiceHandler = EchoChoiceHandler { _, _, _ -> },
     private val squatCounter: SquatCounter? = null,
+    /** Počítadlo kliků (232); použije se, když [exercise] vrátí PUSHUPS. */
+    private val pushupCounter: SquatCounter? = null,
+    /** Zvolený cvik (232), čte se při každém zobrazení. */
+    private val exercise: () -> Exercise = { Exercise.SQUATS },
     /** Demo režim: ladicí ukazatel přes kameru dřepů. */
     private val demoMode: () -> Boolean = { false },
     /** XP a úroveň před/po volbě → obrazovka odměny (321). null = bez odměny. */
@@ -69,7 +74,7 @@ class EchoOverlayController(
 
     private suspend fun showEcho(trigger: InterventionTrigger) {
         val video = runCatching { videos.pickEchoVideo() }.getOrNull()
-        val content = EchoStateBuilder.build(trigger, movement.state.value, contracts.today.value, video)
+        val content = EchoStateBuilder.build(trigger, movement.state.value, contracts.today.value, video, exercise())
         val ui = MutableStateFlow(content.ui)
         val shown = window.show {
             val state by ui.collectAsState()
@@ -91,7 +96,9 @@ class EchoOverlayController(
     }
 
     private fun startSquats(trigger: InterventionTrigger, feeling: EchoFeeling?) {
-        val counter = squatCounter ?: return choose(trigger, InterventionOutcome.SQUATS, feeling)
+        val ex = exercise()
+        val counter = (if (ex == Exercise.PUSHUPS) pushupCounter else squatCounter)
+            ?: return choose(trigger, InterventionOutcome.SQUATS, feeling)
         window.show {
             NarsilTheme {
                 SquatOverlayContent(
@@ -102,10 +109,12 @@ class EchoOverlayController(
                     },
                     onDone = { count ->
                         choose(trigger, InterventionOutcome.SQUATS, feeling)
-                        val extra = count - MovementRates.SQUATS_PER_UNLOCK
+                        // Pohyb a gamifikace počítají v dřepech: kliky se převedou (10 kliků = 20 dřepů).
+                        val extra = ExerciseText.squatEquivalent(ex, count) - MovementRates.SQUATS_PER_UNLOCK
                         if (extra > 0) scope.launch { runCatching { onExtraSquats(extra) } }
                     },
                     demoMode = demoMode(),
+                    exercise = ex,
                 )
             }
         }
@@ -120,7 +129,7 @@ class EchoOverlayController(
                 .onFailure { Log.e(TAG, "volba $outcome selhala", it) }
             Log.i(TAG, "volba: $outcome, pocit: $feeling")
             val after = gamification?.state?.value
-            val reward = RewardBuilder.build(outcome, before, after) ?: return@launch
+            val reward = RewardBuilder.build(outcome, before, after, exercise()) ?: return@launch
             Log.i(TAG, "odměna: +${reward.gainedXp} XP, úroveň ${reward.previousLevel} → ${reward.newLevel}")
             window.show {
                 NarsilTheme {

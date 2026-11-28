@@ -1,5 +1,6 @@
 package cz.narsil.overlay
 
+import cz.narsil.core.Exercise
 import cz.narsil.core.GamificationState
 import cz.narsil.core.InterventionOutcome
 import cz.narsil.ui.screens.reward.RewardUiState
@@ -9,13 +10,18 @@ import cz.narsil.ui.screens.reward.RewardUiState
  * null = žádné XP (půjčka, zamítnutá volba) → nic neukazovat.
  */
 object RewardBuilder {
-    fun build(outcome: InterventionOutcome, before: GamificationState?, after: GamificationState?): RewardUiState? {
+    fun build(
+        outcome: InterventionOutcome,
+        before: GamificationState?,
+        after: GamificationState?,
+        exercise: Exercise = Exercise.SQUATS,
+    ): RewardUiState? {
         if (before == null || after == null) return null
         val gained = after.xp - before.xp
         if (gained <= 0) return null
         val (title, subtitle) = when (outcome) {
             InterventionOutcome.CLOSED -> "Odešel jsi od feedu sám!" to "Tohle je ta nejtěžší volba. Budoucí já ti děkuje."
-            InterventionOutcome.SQUATS -> "20 dřepů hotovo!" to "Pohyb místo scrollu. Tělo si to pamatuje."
+            InterventionOutcome.SQUATS -> ExerciseText.doneTitle(exercise) to "Pohyb místo scrollu. Tělo si to pamatuje."
             InterventionOutcome.PAID_STEPS -> "Zaplaceno kroky" to "Čas sis vyšlapal. Užij si ho vědomě."
             else -> "Dobrá volba" to "Každé rozhodnutí se počítá."
         }

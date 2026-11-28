@@ -24,7 +24,9 @@ data class EchoUiState(
     val availableSteps: Int = 2400,
     val stepCostForTenMin: Int = 1000,
     val currentDebtMinutes: Int = 0,
-    val isVideoPlaying: Boolean = true
+    val isVideoPlaying: Boolean = true,
+    /** Titulek volby pohybu (232): „Udělat 20 dřepů hned“ nebo „Udělat 10 kliků hned“. */
+    val exerciseOptionTitle: String = "Udělat 20 dřepů hned"
 )
 
 class EchoViewModel : ViewModel() {
