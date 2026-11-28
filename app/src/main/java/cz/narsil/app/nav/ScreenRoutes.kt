@@ -27,8 +27,11 @@ import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.DailyContract
+import cz.narsil.core.LlmProvider
 import cz.narsil.core.TaskStatus
 import cz.narsil.core.data.DayKey
+import cz.narsil.llm.client.BuildConfigLlmKeys
+import cz.narsil.llm.client.LlmKeys
 import cz.narsil.llm.client.LlmRequest
 import cz.narsil.llm.client.MultiProviderLlmClient
 import cz.narsil.overlay.ExerciseText
@@ -43,9 +46,11 @@ import cz.narsil.ui.screens.home.HomeUiState
 import cz.narsil.ui.screens.home.ZoneStatus
 import cz.narsil.ui.screens.mirror.MirrorScreen
 import cz.narsil.ui.screens.mirror.MirrorViewModel
+import cz.narsil.ui.screens.pet.PetApiResult
 import cz.narsil.ui.screens.pet.PetBubble
 import cz.narsil.ui.screens.pet.PetChatScreen
 import cz.narsil.ui.screens.pet.PetContext
+import cz.narsil.ui.screens.pet.PetRateLimiter
 import cz.narsil.ui.screens.pet.PetSpeechPolicy
 import cz.narsil.ui.screens.pet.PetViewModel
 import cz.narsil.ui.screens.pet.SharedPrefsPetMemoryStore
@@ -229,15 +234,34 @@ private fun createPetViewModel(): PetViewModel {
             plannedTasks = planned,
         )
     }
-    val llmClient = MultiProviderLlmClient({ sl.settingsRepository.settings.value.llmProvider })
-    val policy = PetSpeechPolicy(SharedPrefsPetMemoryStore(sl.appContext))
+    val store = SharedPrefsPetMemoryStore(sl.appContext)
+    val policy = PetSpeechPolicy(store)
+    val rateLimiter = PetRateLimiter(store)
+    val llmClient = MultiProviderLlmClient(
+        provider = { LlmProvider.GEMINI },
+        keys = LlmKeys {
+            buildConfigKey("PET_GEMINI_API_KEY") ?: BuildConfigLlmKeys.keyFor(LlmProvider.GEMINI)
+        },
+    )
     return PetViewModel(
         context = contextFlow,
         replier = { prompt ->
-            llmClient.complete(
-                LlmRequest(prompt = prompt, maxTokens = 150, timeoutMillis = 8_000L),
-            ).text
+            val resp = llmClient.complete(
+                LlmRequest(prompt = prompt, maxTokens = 90, timeoutMillis = 4_000L),
+            )
+            val text = resp.text
+            when {
+                text != null -> PetApiResult.Success(text)
+                resp.error?.startsWith("HTTP 429") == true -> PetApiResult.RateLimited
+                else -> PetApiResult.Unavailable
+            }
         },
         policy = policy,
+        rateLimiter = rateLimiter,
     )
 }
+
+private fun buildConfigKey(field: String): String? =
+    runCatching { Class.forName("cz.narsil.BuildConfig").getField(field).get(null) as? String }
+        .getOrNull()
+        ?.takeIf { it.isNotBlank() }
