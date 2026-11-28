@@ -142,7 +142,7 @@ object ServiceLocator {
     val movementRepository: MovementRepository
         get() = cached("movement") {
             if (useFakes) FakeMovementRepository()
-            else MovementModule.create(appContext).also { it.startAutoRefresh(appScope) }
+            else MovementModule.create(appContext, settings = settingsRepository).also { it.startAutoRefresh(appScope) }
         }
 
     val contractRepository: ContractRepository
