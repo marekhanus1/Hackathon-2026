@@ -12,7 +12,10 @@ import cz.narsil.detection.accessibility.AccessibilityTriggerSource
 import cz.narsil.overlay.EchoOutcomeHandler
 import cz.narsil.overlay.EchoOverlayController
 import cz.narsil.overlay.EchoOverlayWindow
+import cz.narsil.core.data.ConsumptionRecorder
+import cz.narsil.core.data.NarsilDatabase
 import cz.narsil.overlay.ExerciseText
+import cz.narsil.overlay.InterventionRecords
 import cz.narsil.overlay.HomeNavigator
 import cz.narsil.overlay.ScrollProgressOverlay
 import kotlinx.coroutines.Job
@@ -46,6 +49,10 @@ object EchoOverlayStarter {
 
     fun start() {
         val sl = ServiceLocator
+        // Úseky spotřeby z detekce → Room (121): souboj s algoritmem a Zrcadlo ze skutečných minut.
+        (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.let { source ->
+            ConsumptionRecorder(NarsilDatabase.get(sl.appContext).consumptionDao()).start(source.current, sl.appScope)
+        }
         sl.appScope.launch {
             // Sleduje instanci služby: nová instance (přeinstalace) dostane nové okno i ovladač.
             AccessibilityEvents.service.collect { service ->
@@ -72,6 +79,12 @@ object EchoOverlayStarter {
                     goHome = { HomeNavigator.goHome(sl.appContext) },
                     onDetectionOutcome = { outcome, minutes ->
                         (triggers as? AccessibilityTriggerSource)?.onOutcome(outcome, minutes)
+                    },
+                    // Zásahy do Room (121): Zrcadlo, strop a odstup u Zavřít (SPEC 4). Zamítnutá volba se neukládá.
+                    onResult = { r ->
+                        if (r.accepted) {
+                            NarsilDatabase.get(sl.appContext).interventionDao().insert(InterventionRecords.entity(r, System.currentTimeMillis()))
+                        }
                     },
                     squatsForUnlock = {
                         val st = sl.settingsRepository.settings.value
