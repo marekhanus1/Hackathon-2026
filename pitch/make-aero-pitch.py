@@ -7,13 +7,15 @@ Vezme pitch/narsil-pitch.html a vyrobí pitch/narsil-pitch-aero.html:
   (původní HTML makety zůstanou v DOM jen skryté, aby jejich skripty dál běžely),
 - přidá galerii obrazovek nového vzhledu za slide Demo.
 
-Spuštění: python3 pitch/make-aero-pitch.py  (znovu po každé změně původního pitche nebo screenshotů)
+Spuštění: python3 pitch/make-aero-pitch.py [cesta/k/narsil-pitch.html]
+(znovu po každé změně původního pitche nebo screenshotů; bez cesty bere pitch/narsil-pitch.html vedle skriptu)
 """
 from pathlib import Path
 import re
+import sys
 
 ROOT = Path(__file__).resolve().parent
-src = (ROOT / "narsil-pitch.html").read_text(encoding="utf-8")
+src = Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "narsil-pitch.html").read_text(encoding="utf-8")
 
 # slide -> screenshot (cesty relativní k pitch/)
 # Ozvěna, dřepy a hodnocení videa zatím z původních maket (screenshot by zasáhl do dat / ukázal kameru).
