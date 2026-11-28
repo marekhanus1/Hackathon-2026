@@ -151,8 +151,9 @@ class WifiContextRepository(
      */
     fun refresh() {
         _locationOn.value = isLocationOn()
-        val wifiNet = wifiNetworks.firstOrNull()
-            ?: connectivity.activeNetwork?.takeIf { connectivity.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true }
+        // Wi-Fi s přihlašovacím portálem nebo bez internetu není aktivní síť (tou jsou mobilní data):
+        // proto projít všechny sítě, ne jen activeNetwork.
+        val wifiNet = wifiNetworks.firstOrNull() ?: systemWifiNetwork()
         _fingerprint.value = wifiNet?.let { fingerprintOf(connectivity.getLinkProperties(it)) }
         val known = callbackWifi
         // Dokud callback drží připojenou Wi-Fi, je jeho stav pravdivý: activeNetwork může být mobilní
@@ -162,9 +163,14 @@ class WifiContextRepository(
             _wifi.value = if (reading is WifiReading.Connected) reading else known
             return
         }
-        val caps = connectivity.activeNetwork?.let { connectivity.getNetworkCapabilities(it) }
+        val caps = (wifiNet ?: connectivity.activeNetwork)?.let { connectivity.getNetworkCapabilities(it) }
         _wifi.value = readingFrom(caps)
     }
+
+    @Suppress("DEPRECATION")
+    private fun systemWifiNetwork(): Network? = runCatching {
+        connectivity.allNetworks.firstOrNull { connectivity.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true }
+    }.getOrNull()
 
     private fun onCallback(network: Network, caps: NetworkCapabilities) {
         wifiNetworks += network
@@ -207,8 +213,9 @@ class WifiContextRepository(
     @Suppress("DEPRECATION")
     private fun readingFrom(caps: NetworkCapabilities?): WifiReading {
         val onWifi = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true || wifiNetworks.isNotEmpty()
-        if (!onWifi) {
-            // Aktivní síť může být mobilní, i když je Wi-Fi připojená (bez internetu) – rozhoduje WifiManager.
+        if (!onWifi && systemWifiNetwork() == null) {
+            // Aktivní síť může být mobilní, i když je Wi-Fi připojená (bez internetu) – rozhoduje WifiManager
+            // (s vypnutou polohou vrací networkId -1, proto napřed všechny sítě výše).
             if (wifiManager?.connectionInfo?.networkId?.let { it != -1 } != true) return WifiReading.NotOnWifi
         }
         if (!hasLocationPermission()) return WifiReading.Unknown
@@ -234,12 +241,14 @@ class WifiContextRepository(
     private fun isLocationOn(): Boolean =
         runCatching { app.getSystemService(LocationManager::class.java)?.isLocationEnabled }.getOrNull() ?: true
 
+    /** Přepnutí polohy a odemčení telefonu → znovu přečíst Wi-Fi (pojistka, kdyby callback nedorazil). */
     private fun registerLocationReceiver() {
+        val filter = IntentFilter(LocationManager.MODE_CHANGED_ACTION).apply { addAction(Intent.ACTION_USER_PRESENT) }
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) = refresh()
         }
         runCatching {
-            ContextCompat.registerReceiver(app, receiver, IntentFilter(LocationManager.MODE_CHANGED_ACTION), ContextCompat.RECEIVER_NOT_EXPORTED)
+            ContextCompat.registerReceiver(app, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
         }
             .onFailure { Log.w(TAG, "registerReceiver poloha selhal", it) }
     }
