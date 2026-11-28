@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -80,9 +82,15 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
         },
     )
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        // Vstup do nastavení (a odtud dřepy, ověření, demo panel), dokud Jan nedodá 325.
+        // Rychlé vstupy: dřepy, ověření úkolu, nastavení (odtud onboarding a demo panel).
         // Vlastní lišta nad Janovou obrazovkou, ať se nepřekrývá se štítkem zóny v jejím záhlaví.
-        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.End) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            TextButton(onClick = { onNavigate(NarsilRoute.Squat) }) { Text("Dřepy") }
+            TextButton(onClick = { onNavigate(NarsilRoute.Verify) }) { Text("Ověřit úkol") }
             IconButton(onClick = { onNavigate(NarsilRoute.Settings) }) {
                 Icon(Icons.Filled.Settings, contentDescription = "Nastavení", tint = MaterialTheme.colorScheme.onBackground)
             }
