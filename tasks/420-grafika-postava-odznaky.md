@@ -1,8 +1,8 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:              # jméno člověka
-agent:              # claude | gemini | human
-branch:
+status: in-progress
+owner: stepan
+agent: codex
+branch: stepan/codex/420-grafika-postava-odznaky
 pr:
 ---
 
