@@ -85,6 +85,14 @@ class AccessibilityTriggerSource(
      */
     val progressPercent: StateFlow<Int?> = _progressPercent.asStateFlow()
 
+    private val _watchingVideo = MutableStateFlow(false)
+
+    /**
+     * Doma běží přehrávač jednoho videa (156). Přehrávač YouTube během videa nehlásí události, konec videa
+     * pro otázku „Co ti to video dalo?“ proto `EchoOverlayStarter` dočte vlastním čtením okna.
+     */
+    val watchingVideo: StateFlow<Boolean> = _watchingVideo.asStateFlow()
+
     private val _waitingForVideoEnd = MutableStateFlow(false)
 
     /**
@@ -152,6 +160,7 @@ class AccessibilityTriggerSource(
         // Řetězení (137): přehrávač jednoho videa doma ve sledované aplikaci (surface je null mimo sledované).
         val onVideoHome = surface == Surface.VIDEO && context == ComfortContext.HOME
         watch.observe(onVideoHome, snapshot.packageName, video, now)?.let { _videoFinished.tryEmit(it) }
+        _watchingVideo.value = onVideoHome
         val newVideo = chain.observe(onVideoHome, video, now)
         if (newVideo != null) scope.launch { evaluate(newVideo, snapshot) }
     }

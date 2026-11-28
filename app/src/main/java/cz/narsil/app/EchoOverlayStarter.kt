@@ -95,7 +95,8 @@ object EchoOverlayStarter {
         // 134: během čekání na konec videa číst okno samo (YouTube při přehrávání nehlásí události).
         (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.let { source ->
             sl.appScope.launch {
-                source.waitingForVideoEnd.collectLatest { waiting ->
+                // 156: i během sledování videa doma – konec videa spouští otázku „Co ti to video dalo?“.
+                combine(source.waitingForVideoEnd, source.watchingVideo) { a, b -> a || b }.distinctUntilChanged().collectLatest { waiting ->
                     while (waiting) {
                         delay(VIDEO_POLL_MILLIS)
                         runCatching { NarsilAccessibilityService.instance?.pollForeground() }
