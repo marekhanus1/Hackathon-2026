@@ -21,21 +21,21 @@ XP_IN_LEVEL_AT_END = 480  # 20 XP pod úrovní = 20 dřepů v demu spustí anima
 
 XP = {"CLOSED": 50, "SQUATS": 20, "PAID_STEPS": 10, "BORROWED": 0}
 OUT = {"C": "CLOSED", "S": "SQUATS", "P": "PAID_STEPS", "B": "BORROWED"}
-APPS = {"ig": "instagram", "tt": "tiktok", "yt": "youtube"}
+APPS = {"ig": "instagram", "tt": "tiktok", "yt": "youtube", "ff": "firefox"}
 
 # Zásahy: "HH:MM app povrch výsledek čemu_se_vyhýbá" (avoiding: nuda/unava/ukol/samota/-)
 INTERVENTIONS = {
     1: ["20:10 ig REELS P nuda", "21:47 tt FEED B unava", "22:30 ig REELS S ukol"],
-    2: ["19:40 tt FEED P nuda", "21:15 tt FEED B unava", "22:05 yt SHORTS B unava"],
+    2: ["19:40 tt FEED P nuda", "21:15 tt FEED B unava", "22:05 ff SHORTS B unava"],
     3: ["20:30 ig REELS S ukol", "21:30 tt FEED P nuda"],
     4: ["19:55 tt FEED B samota", "21:20 ig REELS B unava", "22:40 tt FEED P nuda"],
     5: ["20:20 tt FEED C nuda", "21:35 ig REELS P unava", "22:50 tt FEED B unava"],
     6: ["20:05 tt FEED S ukol", "21:10 ig REELS C nuda"],
-    7: ["19:30 yt SHORTS P nuda", "21:40 tt FEED B samota", "22:15 ig REELS C unava"],
+    7: ["19:30 ff VIDEO P nuda", "21:40 tt FEED B samota", "22:15 ig REELS C unava"],
     8: ["20:45 tt FEED C ukol", "21:25 ig REELS S nuda"],
     9: ["20:00 tt FEED C nuda", "21:05 tt FEED P unava", "22:20 ig REELS S ukol"],
     10: ["19:50 ig REELS C ukol", "21:30 tt FEED C nuda"],
-    11: ["20:15 tt FEED C nuda", "21:45 yt SHORTS S unava"],
+    11: ["20:15 tt FEED C nuda", "21:45 ff SHORTS S unava"],
     12: ["19:45 tt FEED P samota", "21:20 tt FEED C nuda", "22:35 ig REELS B unava"],
     13: ["20:30 ig REELS C ukol", "21:15 tt FEED C nuda", "22:10 tt FEED S unava"],
     14: ["20:05 tt FEED C nuda", "21:50 ig REELS P samota"],
@@ -249,15 +249,19 @@ def leaderboard(stats):
 
 def validate(mirror, vm, lb, stats):
     days = mirror["days"]
+    allowed_apps = {"instagram", "tiktok", "youtube", "firefox"}
     assert len(days) == 21 and [d["day_index"] for d in days] == list(range(1, 22))
     for d in days:
         assert sum(d["by_app"].values()) == d["feed_minutes"], d["day_index"]
+        assert set(d["by_app"]) <= allowed_apps
         assert d["battle_won"] == (d["reclaimed_minutes"] > d["feed_minutes"])
         for x in d["interventions"]:
+            assert x["app"] in allowed_apps
             assert x["surface"] in {"FEED", "REELS", "SHORTS", "MESSAGES", "VIDEO"}
             assert x["outcome"] in {"CLOSED", "PAID_STEPS", "SQUATS", "BORROWED", "PLANNED_FREE"}
             assert x["avoiding"] in {"nuda", "unava", "ukol", "samota", None}
     assert days[-1]["feed_minutes"] < days[0]["feed_minutes"] / 3, "příběh: feedu ubývá"
+    assert any(x["app"] == "firefox" for d in days for x in d["interventions"]), "Firefox musí být v demu vidět"
     assert 3 <= len(mirror["insights"]) <= 5
     for r in vm["ratings"]:
         assert 1 <= r["rating"] <= 5 and 0 <= r["watched_percent"] <= 100 and r["format"] in {"SHORT", "LONG"}

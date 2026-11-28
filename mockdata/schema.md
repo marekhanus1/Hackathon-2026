@@ -12,7 +12,8 @@ zlepšení: minut feedu ubývá, „Zavřít“ přibývá, série roste.
   relativně k dnešku (`day_index` 1–21 je proto u dnů povinný).
 - Povrchy podle `ConsumptionEvent`: `FEED`, `REELS`, `SHORTS`, `MESSAGES`, `VIDEO`.
 - Výsledky podle `InterventionOutcome`: `CLOSED`, `PAID_STEPS`, `SQUATS`, `BORROWED`, `PLANNED_FREE`.
-- Aplikace: `instagram`, `tiktok`, `youtube`, `chrome`.
+- Aplikace: `instagram`, `tiktok`, `youtube`, `firefox` (`firefox` = sledovaný obsah na webu,
+  například YouTube nebo Instagram otevřený v mobilním Firefoxu).
 - Čísla XP podle `docs/GAMIFICATION.md` (201); do té doby podle briefu
   (Zavřít 50, dřepy 20, kroky 10, půjčka 0, smlouva +100, hodnocení +5).
 - Návrh: aplikace čte soubory jako assets – v `app/build.gradle.kts` přidat
