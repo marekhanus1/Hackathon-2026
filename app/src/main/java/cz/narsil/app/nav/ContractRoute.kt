@@ -18,6 +18,7 @@ import cz.narsil.contract.ContractDraft
 import cz.narsil.contract.ContractSigner
 import cz.narsil.contract.ContractVideoRecorder
 import cz.narsil.core.PlanRules
+import cz.narsil.core.data.DayKey
 import cz.narsil.ui.screens.contract.ContractScreen
 import cz.narsil.ui.screens.contract.ContractStep
 import cz.narsil.ui.screens.contract.ContractViewModel
@@ -39,6 +40,11 @@ fun ContractRoute(onBack: () -> Unit) {
     val signer = remember { ContractSigner(sl.contractRepository, sl.settingsRepository) }
     val recorder = remember { ContractVideoRecorder(context) }
     val recording by recorder.state.collectAsState()
+    // Texty „dnes“ / „zítra“ podle dne, na který se smlouva uloží (DayKey.contractDateFor).
+    val appSettings by sl.settingsRepository.settings.collectAsState()
+    val targetIsToday = remember(appSettings.demoContractToday) {
+        signer.targetDate() == DayKey.of(System.currentTimeMillis())
+    }
     var cameraAllowed by remember { mutableStateOf(hasCameraPermission(context)) }
     val cameraPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         cameraAllowed = hasCameraPermission(context)
@@ -69,7 +75,7 @@ fun ContractRoute(onBack: () -> Unit) {
     }
 
     ContractScreen(
-        state = state.copy(maxVideoSeconds = PlanRules.MAX_VIDEO_SECONDS),
+        state = state.copy(maxVideoSeconds = PlanRules.MAX_VIDEO_SECONDS, targetIsToday = targetIsToday),
         onSelectGoalType = vm::selectGoalType,
         onSetGoalAmount = vm::setGoalAmount,
         onAdjustGoalAmount = vm::adjustGoalAmount,

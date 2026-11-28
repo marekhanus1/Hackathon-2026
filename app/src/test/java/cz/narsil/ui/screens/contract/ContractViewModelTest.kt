@@ -81,4 +81,14 @@ class ContractViewModelTest {
         assertTrue(fresh.uiState.value.isSubmitted)
         assertFalse(fresh.uiState.value.hasRecordedVideo)
     }
+
+    @Test
+    fun textsFollowTargetDay() {
+        assertEquals("Úkoly na zítřek", ContractStep.TASKS.title(targetIsToday = false))
+        assertEquals("Úkoly na dnešek", ContractStep.TASKS.title(targetIsToday = true))
+        assertEquals("Pohybový cíl na dnešek", ContractStep.MOVEMENT_GOAL.title(targetIsToday = true))
+        assertEquals("Tvoje 15s Ozvěna", ContractStep.ECHO_VIDEO.title(targetIsToday = true))
+        assertEquals("dnes", ContractUiState(targetIsToday = true).dayWord)
+        assertEquals("zítra", ContractUiState().dayWord)
+    }
 }

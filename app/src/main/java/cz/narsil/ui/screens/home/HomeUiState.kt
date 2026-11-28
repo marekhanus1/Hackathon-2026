@@ -28,9 +28,38 @@ data class HomeUiState(
     val availableStepMinutes: Int = 40,
     val debtMinutes: Int = 0,
     val contractCompletedToday: Boolean = false,
+    /** Smlouva pro den, na který by se teď podepisovala (ráno dnešek, večer zítřek), už existuje. */
+    val contractSigned: Boolean = false,
+    /** Podepsaná smlouva platí dnes (jinak zítra). */
+    val contractSignedForToday: Boolean = true,
+    val contractTaskCount: Int = 0,
     val plannedContentSummary: String = "Přednáška o Rustu, 1 díl seriálu",
     val zoneStatus: ZoneStatus = ZoneStatus.HOME
-)
+) {
+    /** Nadpis karty smlouvy: splněná / podepsaná (dnes, zítra) / čeká. */
+    val contractTitle: String
+        get() = when {
+            contractCompletedToday -> "Dnešní smlouva splněná (+100 XP)"
+            contractSigned -> "Smlouva na ${if (contractSignedForToday) "dnes" else "zítra"} podepsaná · " +
+                "$contractTaskCount ${taskWord(contractTaskCount)}"
+            else -> "Večerní smlouva čeká (2 minuty)"
+        }
+
+    val contractButton: String
+        get() = when {
+            contractCompletedToday -> "Upravit dnešní plán"
+            contractSigned -> "Upravit smlouvu"
+            else -> "Uzavřít večerní smlouvu"
+        }
+
+    val contractDone: Boolean get() = contractCompletedToday || contractSigned
+}
+
+private fun taskWord(n: Int): String = when {
+    n == 1 -> "úkol"
+    n in 2..4 -> "úkoly"
+    else -> "úkolů"
+}
 
 class HomeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
