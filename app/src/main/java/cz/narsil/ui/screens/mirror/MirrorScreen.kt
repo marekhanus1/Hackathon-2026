@@ -100,12 +100,12 @@ private fun MirrorOverviewContent(state: MirrorUiState) {
                 verticalArrangement = Arrangement.spacedBy(spacing.xs)
             ) {
                 Text(
-                    text = state.reclaimedHeadline,
+                    text = "Za 21 dní sis vzal zpět ${state.totalReclaimedMinutes / 60} hodin",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = state.trendLine,
+                    text = "Pasivní scrollování kleslo o ${state.feedDropPercent} % · v průměru ${state.averageDailySquats} dřepů denně.",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -214,13 +214,6 @@ private fun ValueMapContent(state: MirrorUiState) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        if (state.valueEntries.isEmpty()) {
-            Text(
-                text = "Zatím žádná hodnocení. Po videu na YouTube ohodnoť, co ti dalo – tady se pak ukáže, co stojí za to.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
         state.valueEntries.forEach { entry ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -253,9 +246,9 @@ private fun ValueMapContent(state: MirrorUiState) {
                         )
                         Text(
                             text = if (entry.isLowValueTrap) {
-                                "${entry.videoCount}× · díváš se, ale hodnotíš nízko"
+                                "${entry.watchedMinutes} min · dokoukáváš, ale hodnotíš nízko"
                             } else {
-                                if (entry.averageRating >= 4f) "${entry.videoCount}× · vysoká hodnota pro tebe" else "${entry.videoCount}× · střední hodnota"
+                                "${entry.watchedMinutes} min · vysoká hodnota pro tebe"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
