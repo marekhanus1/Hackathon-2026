@@ -171,10 +171,16 @@ class GenericFeedTest {
     }
 
     /** Scrollování v aplikaci [pkg] jako [app] po 3 s po dobu [millis]. */
-    private suspend fun TestScope.scrollApp(r: Run, pkg: String, app: WatchedApp, millis: Long, edits: List<String> = emptyList()) {
+    private suspend fun TestScope.scrollApp(
+        r: Run, pkg: String, app: WatchedApp, millis: Long,
+        edits: List<String> = emptyList(), ids: Set<String> = emptySet(),
+    ) {
         val end = testScheduler.currentTime + millis
         while (testScheduler.currentTime < end) {
-            r.snapshots.emit(ForegroundSnapshot(pkg, app, SnapshotKind.SCROLLED, testScheduler.currentTime, editFields = edits, scroll = down()))
+            r.snapshots.emit(ForegroundSnapshot(
+                pkg, app, SnapshotKind.SCROLLED, testScheduler.currentTime,
+                viewIds = ids.map { "$pkg:id/$it" }.toSet(), editFields = edits, scroll = down(),
+            ))
             runCurrent()
             advanceTimeBy(3_000)
         }
@@ -189,6 +195,18 @@ class GenericFeedTest {
         assertEquals(1, r.got.size) // relace od prvního scrollu: 20 s práh za ~21 s scrollování
         assertEquals(x, r.got[0].event.packageName)
         assertEquals(Surface.FEED, r.got[0].event.surface)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun linkedInResultsDoNotTriggerEchoButHomeFeedDoes() = runTest {
+        val r = start(Settings(demoThresholdSec = 20))
+        val linkedIn = "com.linkedin.android"
+        scrollApp(r, linkedIn, WatchedApp.LINKEDIN, 30_000, ids = setOf("search_results_list"))
+        assertTrue(r.got.isEmpty())
+        assertNull(r.source.progressPercent.value)
+        scrollApp(r, linkedIn, WatchedApp.LINKEDIN, 27_000, ids = setOf("search_bar", "search_input"))
+        assertEquals(Surface.FEED, r.got.single().event.surface)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
