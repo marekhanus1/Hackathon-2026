@@ -92,7 +92,7 @@ fun NarsilNavHost(
                 MirrorRoute()
             }
             composable(NarsilRoute.Badges.route) {
-                BadgesRoute(onOpenMirror = { navigate(NarsilRoute.Mirror) })
+                BadgesRoute(onOpenMirror = null) // Zrcadlo je v doku
             }
             composable(NarsilRoute.Onboarding.route) {
                 // 122: logika + funkční obrazovka; Janova 320 ji později nahradí

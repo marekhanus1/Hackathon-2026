@@ -15,6 +15,7 @@ import cz.narsil.ui.screens.echo.EchoScreen
 import cz.narsil.ui.screens.echo.EchoUiState
 import cz.narsil.ui.screens.echo.FriendRequest
 import cz.narsil.ui.screens.reward.RewardOverlay
+import cz.narsil.ui.theme.AeroBackdrop
 import cz.narsil.ui.theme.NarsilTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -148,7 +149,7 @@ class EchoOverlayController(
         val ui = MutableStateFlow(content.ui.copy(selectedFeeling = feeling))
         val shown = window.show {
             val state by ui.collectAsState()
-            NarsilTheme {
+            NarsilTheme { AeroBackdrop {
                 EchoScreen(
                     state = state,
                     onSelectFeeling = { f ->
@@ -161,7 +162,7 @@ class EchoOverlayController(
                     onBorrow = { askFriend(trigger, ui) },
                     videoSlot = { EchoVideoPlayer(content.videoUri, content.fallbackText) },
                 )
-            }
+            } }
         }
         Log.i(TAG, "Ozvěna ${if (shown) "ukázána" else "neukázána (oprávnění)"}: ${trigger.reason} ${trigger.event.packageName}")
         if (!shown) {
@@ -198,7 +199,7 @@ class EchoOverlayController(
         session.setFeeling(feeling)
         session.setPhase(EchoSessionStore.Phase.EXERCISE)
         window.show {
-            NarsilTheme {
+            NarsilTheme { AeroBackdrop {
                 SquatOverlayContent(
                     counter = counter,
                     onCancel = {
@@ -216,7 +217,7 @@ class EchoOverlayController(
                     exercise = ex,
                     target = reps,
                 )
-            }
+            } }
         }
     }
 
@@ -249,9 +250,9 @@ class EchoOverlayController(
             ) ?: return@launch
             Log.i(TAG, "odměna: +${reward.gainedXp} XP, úroveň ${reward.previousLevel} → ${reward.newLevel}")
             window.show {
-                NarsilTheme {
+                NarsilTheme { AeroBackdrop {
                     RewardOverlay(state = reward, onContinue = { window.dismiss() })
-                }
+                } }
             }
         }
     }

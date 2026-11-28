@@ -4,9 +4,11 @@ import android.accessibilityservice.AccessibilityService
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Handler
@@ -23,7 +25,7 @@ import kotlin.math.sin
 
 /**
  * Ukazatel blížícího se limitu (135, 148): 7 dp pruh se zaoblenými konci hned POD stavovým řádkem
- * (respektuje výřez kamery), tmavá stopa a obrys, ať je vidět na světlém i tmavém obsahu. Při 50 % a 80 %
+ * (respektuje výřez kamery), tmavě modrá stopa a obrys, lesk Frutiger Aero, ať je vidět na světlém i tmavém obsahu. Při 50 % a 80 %
  * krátce pulsuje, v posledních 20 % ukáže štítek „Ozvěna za 0:15“ (odpočítává sám mezi aktualizacemi).
  * Neblokuje dotyky ani fokus (`FLAG_NOT_TOUCHABLE`, `FLAG_NOT_FOCUSABLE`). Volat odkudkoli, běží na hlavním vlákně.
  */
@@ -118,6 +120,14 @@ class ScrollProgressOverlay(private val context: Context) {
             strokeWidth = 1.5f * d
             color = ScrollProgressColors.OUTLINE
         }
+        private val gloss = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+        private val rim = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 1f * d
+            color = ScrollProgressColors.RIM
+        }
+        private val labelBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL; color = ScrollProgressColors.LABEL_BG }
+        private val labelEdge = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 1.5f * d }
         private val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = ScrollProgressColors.LABEL_TEXT
             textSize = ScrollProgressStyle.LABEL_TEXT_SP * context.resources.displayMetrics.scaledDensity
@@ -197,6 +207,17 @@ class ScrollProgressOverlay(private val context: Context) {
             }
             rect.set(left, top, fillRight, bottom)
             canvas.drawRoundRect(rect, r, r, fill)
+            // Aero lesk: bílý odlesk v horní polovině vyplněné části a jemný bílý vnitřní okraj.
+            val inset = 1.2f * d
+            val glossBottom = top + h * 0.5f
+            gloss.shader = LinearGradient(
+                0f, top + inset, 0f, glossBottom,
+                ScrollProgressColors.GLOSS, ScrollProgressColors.GLOSS and 0x00FFFFFF, Shader.TileMode.CLAMP,
+            )
+            rect.set(left + inset * 2, top + inset, fillRight - inset * 2, glossBottom)
+            if (rect.width() > 0f) canvas.drawRoundRect(rect, rect.height() / 2, rect.height() / 2, gloss)
+            rect.set(left + inset, top + inset, fillRight - inset, bottom - inset)
+            canvas.drawRoundRect(rect, r - inset, r - inset, rim)
             rect.set(left, top, right, bottom)
             canvas.drawRoundRect(rect, r, r, outline)
 
@@ -209,8 +230,10 @@ class ScrollProgressOverlay(private val context: Context) {
                 val w = text.measureText(label) + padX * 2
                 val lTop = centerY + baseH + 4f * d
                 rect.set(right - w, lTop, right, lTop + labelH)
-                canvas.drawRoundRect(rect, labelH / 2, labelH / 2, fill)
-                canvas.drawRoundRect(rect, labelH / 2, labelH / 2, outline)
+                // Toast: tmavě modrá pilulka, okraj v barvě pruhu (naléhavost), bílý text.
+                labelEdge.color = fill.color or 0xFF000000.toInt()
+                canvas.drawRoundRect(rect, labelH / 2, labelH / 2, labelBg)
+                canvas.drawRoundRect(rect, labelH / 2, labelH / 2, labelEdge)
                 val baseline = rect.centerY() - (text.descent() + text.ascent()) / 2
                 canvas.drawText(label, rect.left + padX, baseline, text)
             }

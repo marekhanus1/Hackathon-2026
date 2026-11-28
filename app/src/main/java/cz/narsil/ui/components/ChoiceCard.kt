@@ -1,25 +1,29 @@
 package cz.narsil.ui.components
 
-import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cz.narsil.ui.theme.AeroBackdrop
+import cz.narsil.ui.theme.AeroStyle
 import cz.narsil.ui.theme.NarsilTheme
+import cz.narsil.ui.theme.NeuColors
+import cz.narsil.ui.theme.aeroSurface
 
 /**
  * Visual emphasis tones for intervention and contract choice cards.
@@ -32,9 +36,19 @@ enum class ChoiceCardTone {
     NEUTRAL
 }
 
+private class ChoiceLook(val style: AeroStyle, val title: Color, val subtitle: Color, val badge: AeroStyle, val badgeText: Color)
+
+private fun lookFor(tone: ChoiceCardTone): ChoiceLook = when (tone) {
+    ChoiceCardTone.POSITIVE -> ChoiceLook(AeroStyle.GreenGloss, NeuColors.OnAccent, Color(0xFF0B5A26), AeroStyle.GreenBubble, NeuColors.OnAccent)
+    ChoiceCardTone.EMBER -> ChoiceLook(AeroStyle.AmberGloss, Color(0xFF5A3A00), Color(0xFF6E4C0E), AeroStyle.Glass, Color(0xFF5A3A00))
+    ChoiceCardTone.ECHO -> ChoiceLook(AeroStyle.Glass, NeuColors.Accent, NeuColors.Muted, AeroStyle.BlueGlass, NeuColors.Text)
+    ChoiceCardTone.DEBT -> ChoiceLook(AeroStyle.RedGloss, Color.White, Color(0xF2FFFFFF), AeroStyle.Glass, NeuColors.Error)
+    ChoiceCardTone.NEUTRAL -> ChoiceLook(AeroStyle.Glass, NeuColors.Text, NeuColors.Muted, AeroStyle.Frost, NeuColors.Label)
+}
+
 /**
- * Large tactile option card used primarily in the Ozvěna overlay and contract steps.
- * [ChoiceCardTone.POSITIVE] receives strong visual prominence to highlight closing the feed.
+ * Velká volba (Ozvěna, kroky smlouvy, demo panel) ve stylu Frutiger Aero.
+ * [ChoiceCardTone.POSITIVE] je lesklé zelené tlačítko, ostatní tóny jantarový / červený lesk nebo sklo.
  */
 @Composable
 fun ChoiceCard(
@@ -46,177 +60,57 @@ fun ChoiceCard(
     badgeText: String? = null,
     enabled: Boolean = true
 ) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    val containerColor = when (tone) {
-        ChoiceCardTone.POSITIVE -> colors.positive
-        ChoiceCardTone.EMBER -> colors.emberContainer
-        ChoiceCardTone.ECHO -> colors.echoContainer
-        ChoiceCardTone.DEBT -> colors.debtContainer
-        ChoiceCardTone.NEUTRAL -> MaterialTheme.colorScheme.surface
-    }
-
-    val titleColor = when (tone) {
-        ChoiceCardTone.POSITIVE -> colors.onPositive
-        ChoiceCardTone.EMBER -> colors.onEmberContainer
-        ChoiceCardTone.ECHO -> colors.onEchoContainer
-        ChoiceCardTone.DEBT -> colors.onDebtContainer
-        ChoiceCardTone.NEUTRAL -> MaterialTheme.colorScheme.onSurface
-    }
-
-    val subtitleColor = when (tone) {
-        ChoiceCardTone.POSITIVE -> colors.onPositive.copy(alpha = 0.88f)
-        ChoiceCardTone.EMBER -> colors.onEmberContainer.copy(alpha = 0.82f)
-        ChoiceCardTone.ECHO -> colors.onEchoContainer.copy(alpha = 0.82f)
-        ChoiceCardTone.DEBT -> colors.onDebtContainer.copy(alpha = 0.82f)
-        ChoiceCardTone.NEUTRAL -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    val borderStroke = when (tone) {
-        ChoiceCardTone.POSITIVE -> BorderStroke(2.dp, colors.goldAccent.copy(alpha = 0.65f))
-        ChoiceCardTone.EMBER -> BorderStroke(1.dp, colors.ember.copy(alpha = 0.4f))
-        ChoiceCardTone.ECHO -> BorderStroke(1.dp, colors.echo.copy(alpha = 0.4f))
-        ChoiceCardTone.DEBT -> BorderStroke(1.dp, colors.debt.copy(alpha = 0.4f))
-        ChoiceCardTone.NEUTRAL -> BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-    }
-
-    val badgeContainer = when (tone) {
-        ChoiceCardTone.POSITIVE -> colors.onPositive.copy(alpha = 0.20f)
-        ChoiceCardTone.EMBER -> colors.ember.copy(alpha = 0.16f)
-        ChoiceCardTone.ECHO -> colors.echo.copy(alpha = 0.16f)
-        ChoiceCardTone.DEBT -> colors.debt.copy(alpha = 0.16f)
-        ChoiceCardTone.NEUTRAL -> MaterialTheme.colorScheme.surfaceVariant
-    }
-
-    Card(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = titleColor
-        ),
-        border = borderStroke,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (tone == ChoiceCardTone.POSITIVE) 4.dp else 0.dp
-        )
-    ) {
+    val look = lookFor(tone)
+    val shape = RoundedCornerShape(22.dp)
+    OnGlass {
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = spacing.md, vertical = spacing.md),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .alpha(if (enabled) 1f else 0.55f)
+                .aeroSurface(look.style, shape)
+                .clip(shape)
+                .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = spacing.sm),
-                verticalArrangement = Arrangement.spacedBy(spacing.xxs)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = if (tone == ChoiceCardTone.POSITIVE) FontWeight.Bold else FontWeight.SemiBold,
-                    color = titleColor
+                NeuText(
+                    title,
+                    size = 16.sp,
+                    weight = if (tone == ChoiceCardTone.POSITIVE) FontWeight.ExtraBold else FontWeight.Bold,
+                    color = look.title,
                 )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = subtitleColor
-                )
+                NeuText(subtitle, size = 13.sp, weight = FontWeight.Medium, color = look.subtitle, lineHeight = 18.sp)
             }
 
             if (!badgeText.isNullOrBlank()) {
-                Surface(
-                    shape = CircleShape,
-                    color = badgeContainer,
-                    contentColor = titleColor
+                Box(
+                    Modifier
+                        .aeroSurface(look.badge, RoundedCornerShape(50))
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
-                    Text(
-                        text = badgeText,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
-                    )
+                    NeuText(badgeText, size = 12.sp, weight = FontWeight.ExtraBold, color = look.badgeText, maxLines = 1)
                 }
             }
         }
     }
 }
 
-@Preview(name = "ChoiceCard – Světlý", showBackground = true)
+@Preview(name = "ChoiceCard – Aero", widthDp = 390, heightDp = 520)
 @Composable
-private fun ChoiceCardLightPreview() {
-    NarsilTheme(darkTheme = false) {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                ChoiceCard(
-                    title = "Zavřít feed",
-                    subtitle = "Chuť opadla, vracím se k sobě",
-                    badgeText = "+50 XP",
-                    tone = ChoiceCardTone.POSITIVE,
-                    onClick = {}
-                )
-                ChoiceCard(
-                    title = "Udělat 20 dřepů hned",
-                    subtitle = "Kamera spočítá opakování a odemkne 10 min",
-                    badgeText = "+20 XP",
-                    tone = ChoiceCardTone.EMBER,
-                    onClick = {}
-                )
-                ChoiceCard(
-                    title = "Zaplatit kroky",
-                    subtitle = "1 000 kroků ze dneška za 10 min",
-                    badgeText = "+10 XP",
-                    tone = ChoiceCardTone.ECHO,
-                    onClick = {}
-                )
-                ChoiceCard(
-                    title = "Poprosit Parťáka o 10 min",
-                    subtitle = "Kamarád ti pošle pár minut navíc",
-                    badgeText = "0 XP",
-                    tone = ChoiceCardTone.DEBT,
-                    onClick = {}
-                )
-            }
-        }
-    }
-}
-
-@Preview(
-    name = "ChoiceCard – Tmavý",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun ChoiceCardDarkPreview() {
-    NarsilTheme(darkTheme = true) {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                ChoiceCard(
-                    title = "Zavřít feed",
-                    subtitle = "Chuť opadla, vracím se k sobě",
-                    badgeText = "+50 XP",
-                    tone = ChoiceCardTone.POSITIVE,
-                    onClick = {}
-                )
-                ChoiceCard(
-                    title = "Udělat 20 dřepů hned",
-                    subtitle = "Kamera spočítá opakování a odemkne 10 min",
-                    badgeText = "+20 XP",
-                    tone = ChoiceCardTone.EMBER,
-                    onClick = {}
-                )
-                ChoiceCard(
-                    title = "Poprosit Parťáka o 10 min",
-                    subtitle = "Kamarád ti pošle pár minut navíc",
-                    badgeText = "0 XP",
-                    tone = ChoiceCardTone.DEBT,
-                    onClick = {}
-                )
+private fun ChoiceCardPreview() {
+    NarsilTheme {
+        AeroBackdrop {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                ChoiceCard("Zavřít feed", "Chuť opadla, vracím se k sobě", {}, tone = ChoiceCardTone.POSITIVE, badgeText = "+50 XP")
+                ChoiceCard("Udělat 20 dřepů hned", "Kamera spočítá opakování a odemkne 10 min", {}, tone = ChoiceCardTone.EMBER, badgeText = "+20 XP")
+                ChoiceCard("Zaplatit kroky", "1 000 kroků ze dneška za 10 min", {}, tone = ChoiceCardTone.ECHO, badgeText = "+10 XP")
+                ChoiceCard("Poprosit Parťáka o 10 min", "Kamarád ti pošle pár minut navíc", {}, tone = ChoiceCardTone.DEBT, badgeText = "0 XP")
+                ChoiceCard("Pokračovat", "Bez odměny", {}, enabled = false)
             }
         }
     }

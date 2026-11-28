@@ -1,29 +1,27 @@
 package cz.narsil.ui.components
 
-import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cz.narsil.ui.theme.AeroBackdrop
+import cz.narsil.ui.theme.AeroStyle
 import cz.narsil.ui.theme.NarsilTheme
+import cz.narsil.ui.theme.NeuColors
+import cz.narsil.ui.theme.aeroSurface
 
 /**
  * Five states of the "Budoucí já" avatar reflecting the last 7 days.
@@ -61,7 +59,8 @@ enum class AvatarState(
 }
 
 /**
- * Displays the "Budoucí já" character card with an optional slot for Štěpán's illustrations.
+ * Karta „Budoucí já“ ve skle: zelená bublina s ilustrací (slot pro Štěpánovy obrázky) nebo koulí s úrovní,
+ * tmavě modrý text a souhrn 7 dní v matné pilulce.
  */
 @Composable
 fun AvatarCard(
@@ -70,137 +69,53 @@ fun AvatarCard(
     modifier: Modifier = Modifier,
     avatarContent: (@Composable (AvatarState) -> Unit)? = null
 ) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    val accentColor = when (state) {
-        AvatarState.TIRED -> colors.echo
-        AvatarState.RESTING -> MaterialTheme.colorScheme.onSurfaceVariant
-        AvatarState.BALANCED -> colors.ember
-        AvatarState.ENERGIZED -> colors.positive
-        AvatarState.THRIVING -> colors.goldAccent
-    }
-
-    val containerColor = when (state) {
-        AvatarState.TIRED -> colors.echoContainer
-        AvatarState.RESTING -> MaterialTheme.colorScheme.surfaceVariant
-        AvatarState.BALANCED -> colors.emberContainer
-        AvatarState.ENERGIZED -> colors.positiveContainer
-        AvatarState.THRIVING -> colors.positiveContainer
-    }
-
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-    ) {
+    NeuPanel(modifier.fillMaxWidth(), radius = 22.dp, padding = PaddingValues(16.dp)) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.md),
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(72.dp)
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(containerColor),
+                    .aeroSurface(AeroStyle.GreenBubble, RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 if (avatarContent != null) {
                     avatarContent(state)
                 } else {
-                    DefaultAvatarEmblem(state = state, accentColor = accentColor)
+                    AeroOrb("${state.level}/5", size = 40.dp, fontSize = 12.sp)
                 }
             }
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(spacing.xxs)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    text = "Budoucí já · ${state.label}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = state.encouragement,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.padding(top = spacing.xxs)
+                NeuText("Budoucí já · ${state.label}", size = 15.sp, weight = FontWeight.Bold)
+                NeuText(state.encouragement, size = 13.sp, weight = FontWeight.Medium, color = NeuColors.Muted, lineHeight = 18.sp)
+                Box(
+                    Modifier
+                        .padding(top = 2.dp)
+                        .aeroSurface(AeroStyle.Frost, CircleShape)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
-                    Text(
-                        text = summary7Days,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
-                    )
+                    NeuText(summary7Days, size = 11.sp, weight = FontWeight.Bold, color = NeuColors.Label)
                 }
             }
         }
     }
 }
 
+@Preview(name = "AvatarCard – Aero", widthDp = 390, heightDp = 200)
 @Composable
-private fun DefaultAvatarEmblem(
-    state: AvatarState,
-    accentColor: androidx.compose.ui.graphics.Color
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(34.dp)
-                .clip(CircleShape)
-                .background(accentColor),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "${state.level}/5",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.surface
-            )
-        }
-    }
-}
-
-@Preview(name = "AvatarCard – Světlý", showBackground = true)
-@Composable
-private fun AvatarCardLightPreview() {
-    NarsilTheme(darkTheme = false) {
-        Surface(modifier = Modifier.padding(16.dp)) {
+private fun AvatarCardPreview() {
+    NarsilTheme {
+        AeroBackdrop {
             AvatarCard(
                 state = AvatarState.ENERGIZED,
-                summary7Days = "Posledních 7 dní: 5 výher · 420 dřepů"
-            )
-        }
-    }
-}
-
-@Preview(
-    name = "AvatarCard – Tmavý",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun AvatarCardDarkPreview() {
-    NarsilTheme(darkTheme = true) {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            AvatarCard(
-                state = AvatarState.TIRED,
-                summary7Days = "Posledních 7 dní: 2 výhry · prostor na klid"
+                summary7Days = "Posledních 7 dní: 5 výher · 420 dřepů",
+                modifier = Modifier.padding(16.dp),
             )
         }
     }

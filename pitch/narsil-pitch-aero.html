@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Narsil · pitch (Aero)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Narsil – pitch. Jednoduchý světlý styl podle barev aplikace, motiv = meč Narsil (zlomený a znovu ukovaný).
+   Ovládání jen šipkami / prezentérem: → ↓ PageDown mezerník = dál, ← ↑ PageUp = zpět. Žádná tlačítka na slidech.
+   Před pitchem: S = panel pro živý přenos z telefonu. Když přenos běží, záložní slidy s maketami se přeskočí.
+   Další klávesy: N poznámky, O přehled, F celá obrazovka, B / . černá obrazovka, T časomíra, Home / End. */
+:root{
+  --bg:#FAF7F2; --surface:#FFFFFF; --ink:#1E1B18; --muted:#6B6258; --line:#E5DDD1;
+  --amber:#C86D2D; --amberD:#F2A359; --sage:#2E7D5B; --sageD:#5CC497; --tw:#5465B8; --twD:#9FA8DA;
+  --gold:#D49B27; --gold2:#F2C14E; --debt:#C27B38; --alg:#7B6B8D;
+  --night:#121110; --night2:#1C1A17; --night3:#26231F; --onN:#F3EFE9; --onN2:#C1B7AA;
+  --f:'Manrope','Segoe UI',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:#0c0b0a;color:var(--ink);font-family:var(--f);overflow:hidden;-webkit-font-smoothing:antialiased;cursor:default}
+body.hidecur{cursor:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform:translate(-50%,-50%) scale(.5);overflow:hidden;background:var(--bg)}
+
+/* ---------- slidy ---------- */
+.sl{position:absolute;inset:0;display:none;padding:0}
+.sl.on{display:block;animation:inz .45s cubic-bezier(.2,.7,.2,1) both}
+@keyframes inz{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.kick{position:absolute;left:140px;top:96px;font:800 20px/1 var(--f);letter-spacing:.22em;text-transform:uppercase;color:var(--amber)}
+h2.t{position:absolute;left:140px;top:136px;right:420px;margin:0;font:800 76px/1.05 var(--f);letter-spacing:-.02em;text-wrap:balance}
+h2.t em{font-style:normal;color:var(--amber)}
+.box{position:absolute}
+.p{font:500 36px/1.4 var(--f);margin:0}
+.sm{font:500 26px/1.4 var(--f);color:var(--muted);margin:0}
+.lab{font:800 17px/1 var(--f);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:24px}
+[data-s]{opacity:0;transform:translateY(12px);transition:opacity .45s,transform .45s}
+[data-s].in{opacity:1;transform:none}
+[data-s].dim{opacity:.35}
+b{font-weight:800}
+svg text{font-family:var(--f)}
+
+/* ---------- meč – ukazatel postupu ---------- */
+#sword{position:absolute;right:90px;top:80px;width:280px;height:90px;z-index:15;transition:opacity .4s}
+#stage.nosword #sword{opacity:0}
+#sword .sh{transition:transform 1s cubic-bezier(.4,1.4,.5,1)}
+#sword .seam{opacity:0;transition:opacity .8s}
+#sword.whole .seam{opacity:1}
+
+/* ---------- spodní linka ---------- */
+#prog{position:absolute;left:0;bottom:0;height:6px;background:var(--amber);transition:width .4s;z-index:20}
+#no{position:absolute;right:56px;bottom:34px;font:700 20px/1 var(--mono);color:#B5AB9E;z-index:20}
+#clock{position:absolute;left:56px;bottom:34px;font:700 20px/1 var(--mono);color:#B5AB9E;z-index:20;display:none}
+#clock.on{display:block} #clock.late{color:#C0392B}
+#black{position:absolute;inset:0;background:#000;z-index:90;display:none}
+#black.on{display:block}
+
+/* ---------- poznámky, přehled, panel přenosu (jen pro řečníka) ---------- */
+#notes{position:absolute;right:40px;bottom:70px;width:1000px;max-height:460px;overflow:auto;background:rgba(18,17,16,.96);color:var(--onN);border-radius:18px;padding:26px 32px;z-index:60;display:none}
+#notes.on{display:block}
+#notes h5{margin:0 0 12px;font:800 15px/1 var(--f);letter-spacing:.2em;color:var(--amberD)}
+#notes-t{font:500 25px/1.45 var(--f);white-space:pre-line}
+#ov{position:absolute;inset:0;background:rgba(18,17,16,.96);z-index:70;display:none;padding:60px 80px;overflow:auto}
+#ov.on{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;align-content:start}
+#ov h3{grid-column:1/-1;margin:0 0 6px;font:800 40px/1 var(--f);color:var(--onN)}
+.ovc{background:var(--bg);border-radius:14px;padding:16px 18px;text-align:left;min-height:110px;display:flex;flex-direction:column;gap:8px;border-top:8px solid var(--amber)}
+.ovc.bk{border-top-color:#B5AB9E;opacity:.8}
+.ovc.cur{outline:4px solid var(--amberD)}
+.ovc small{font:700 14px/1 var(--mono);color:var(--muted)}
+.ovc span{font:800 20px/1.2 var(--f)}
+#setup{position:absolute;left:50%;top:50%;width:1100px;margin-left:-550px;transform:translateY(-50%);background:var(--surface);border-radius:28px;padding:44px 52px;z-index:80;display:none;box-shadow:0 40px 120px rgba(0,0,0,.45)}
+#setup.on{display:block}
+#setup h3{margin:0 0 8px;font:800 40px/1.1 var(--f)}
+#setup ol{margin:18px 0;padding-left:30px;font:500 24px/1.6 var(--f)}
+#setup pre{margin:0 0 20px;background:var(--night);color:var(--onN);border-radius:12px;padding:16px 20px;font:500 17px/1.5 var(--mono);white-space:pre-wrap}
+.sbtn{display:inline-flex;align-items:center;height:60px;padding:0 26px;border-radius:30px;font:800 21px/1 var(--f);border:2px solid var(--amber);color:var(--amber);margin-right:12px}
+.sbtn.solid{background:var(--amber);color:#fff}
+#live-st{margin-top:18px;font:700 22px/1.3 var(--f)}
+#live-st.ok{color:var(--sage)} #live-st.err{color:#C0392B}
+#liveDot{position:absolute;left:24px;top:24px;width:12px;height:12px;border-radius:50%;background:#C0392B;z-index:20;display:none}
+#liveDot.on{display:block}
+
+/* ---------- telefon (tmavý motiv aplikace) ---------- */
+.phone{position:absolute;width:420px;height:860px;background:#0b0a09;border-radius:58px;padding:16px;box-shadow:0 0 0 2px #2a2520,0 30px 70px rgba(40,25,5,.28)}
+.scr{position:relative;width:100%;height:100%;border-radius:44px;overflow:hidden;background:var(--night);color:var(--onN);font-family:var(--f)}
+.scr::before{content:"";position:absolute;left:50%;top:14px;width:22px;height:22px;margin-left:-11px;background:#000;border-radius:50%;z-index:30}
+.sbar{position:absolute;left:0;right:0;top:0;height:46px;display:flex;justify-content:space-between;align-items:center;padding:0 30px;font:700 15px/1 var(--f);z-index:8}
+.app{position:absolute;inset:46px 0 0 0;padding:14px 18px 18px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.a-h1{font:800 24px/1.15 var(--f);margin:4px 0 0}
+.a-h2{font:800 19px/1.2 var(--f);margin:0}
+.a-sm{font:500 14px/1.35 var(--f);color:var(--onN2)}
+.a-lab{font:700 11px/1 var(--f);letter-spacing:.14em;text-transform:uppercase;color:var(--onN2)}
+.a-card{background:var(--night2);border:1px solid #2E2A24;border-radius:20px;padding:14px 16px}
+.a-btn{display:flex;align-items:center;justify-content:center;gap:8px;height:50px;border-radius:25px;font:800 16px/1 var(--f);width:100%}
+.a-btn.amber{background:var(--amberD);color:#451E00} .a-btn.sage{background:var(--sageD);color:#003823}
+.a-btn.tw{background:var(--twD);color:#1D285E} .a-btn.out{border:1.5px solid #4a4339;color:var(--onN)}
+.a-chip{display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:16px;border:1.5px solid #4a4339;font:700 13px/1 var(--f);color:var(--onN);transition:all .25s}
+.a-chip.on{background:var(--twD);border-color:var(--twD);color:#1D285E}
+.a-chips{display:flex;flex-wrap:wrap;gap:7px}
+.a-bar{height:10px;border-radius:5px;background:#2E2A24;overflow:hidden}
+.a-bar i{display:block;height:100%;border-radius:5px;background:var(--amberD);transition:width .4s}
+.a-row{display:flex;align-items:center;gap:10px} .a-row .sp{margin-left:auto}
+.livev{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:25;display:none}
+.phone.live .livev{display:block}
+</style>
+<style>
+/* ---------- titul ---------- */
+#s01 .wm{position:absolute;left:140px;top:300px;font:800 200px/.9 var(--f);letter-spacing:.04em}
+#s01 .sub{position:absolute;left:146px;top:520px;width:1000px;font:600 46px/1.25 var(--f);color:var(--muted)}
+#s01 .sub b{color:var(--amber)}
+#s01 .by{position:absolute;left:146px;top:760px;font:700 28px/1.5 var(--f)}
+#s01 .by small{display:block;font:600 20px/1.5 var(--f);color:var(--muted)}
+#s01 .blade{position:absolute;right:150px;top:90px;width:560px;height:900px}
+#s01 .blade .up{animation:mend 2.6s cubic-bezier(.5,0,.2,1) .8s both}
+@keyframes mend{from{transform:translate(50px,-46px) rotate(8deg)}to{transform:none}}
+#s01 .blade .seam{animation:fade 1s ease 3.2s both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---------- hook ---------- */
+#s02 .col{position:absolute;top:330px;width:760px}
+#s02 .wall{left:140px} #s02 .mir{left:1020px}
+#s02 .col h3{margin:0 0 30px;font:800 48px/1.1 var(--f)}
+#s02 .row{display:flex;gap:22px;align-items:baseline;font:600 34px/1.35 var(--f);padding:20px 0;border-top:2px solid var(--line)}
+#s02 .row s{color:var(--muted)}
+#s02 .row span{color:#C0392B;font-weight:800;min-width:40px}
+#s02 .mir .big{font:800 64px/1.15 var(--f);color:var(--amber)}
+
+/* ---------- problém ---------- */
+#s03 .clk{position:absolute;left:140px;top:340px;font:800 190px/1 var(--mono);letter-spacing:-.04em;color:var(--ink);font-variant-numeric:tabular-nums}
+#s03 .clk.late{color:#B23A2B}
+#s03 .clab{position:absolute;left:146px;top:560px;width:720px}
+#s03 .right{position:absolute;left:1000px;top:340px;width:780px;display:grid;gap:34px}
+#s03 .big{font:800 58px/1.15 var(--f)}
+#s03 .big em{font-style:normal;color:#B23A2B}
+#s03 .chips{display:flex;flex-wrap:wrap;gap:12px}
+#s03 .chips span{font:700 26px/1 var(--f);padding:16px 24px;border-radius:40px;background:#EFE8DC;color:var(--muted)}
+
+/* ---------- kdy zasáhne ---------- */
+#s04 .conds{position:absolute;left:140px;top:350px;width:1640px;display:grid;grid-template-columns:repeat(3,1fr);gap:34px}
+#s04 .cond{padding:40px 40px 44px;display:flex;flex-direction:column;gap:18px}
+#s04 .cond .n{font:800 84px/1 var(--f);color:var(--tw)}
+#s04 .cond b{font:800 40px/1.1 var(--f)}
+#s04 .cond p{margin:0;font:500 26px/1.4 var(--f);color:var(--muted)}
+#s04 .quiet{position:absolute;left:140px;top:790px;width:1640px;font:700 34px/1.3 var(--f);color:var(--sage)}
+
+/* ---------- čtyři pilíře ---------- */
+#s05 .motto{position:absolute;left:140px;top:300px;font:800 52px/1.2 var(--f)}
+#s05 .motto i{font-style:normal;color:var(--amber)} #s05 .motto u{text-decoration:none;color:var(--sage)}
+#s05 .pil{position:absolute;left:140px;top:450px;width:1640px;display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+#s05 .pil>div{padding:34px 32px;border-top:10px solid var(--pc);display:flex;flex-direction:column;gap:14px}
+#s05 .pil b{font:800 34px/1.15 var(--f)}
+#s05 .pil p{margin:0;font:500 25px/1.4 var(--f);color:var(--muted)}
+
+/* ---------- demo (živě) ---------- */
+#s06 .phone{left:230px;top:110px;transform:scale(1);transform-origin:0 0}
+#s06 .kick,#s06 h2.t{left:820px}
+#s06 h2.t{right:200px;font-size:54px}
+#s06 .scenes{position:absolute;left:820px;top:300px;width:960px;display:grid;gap:6px}
+#s06 .scenes div{display:flex;gap:26px;align-items:baseline;padding:12px 26px;border-radius:18px;font:700 32px/1.25 var(--f);color:#B5AB9E;transition:all .35s}
+#s06 .scenes div i{font-style:normal;font:800 26px/1 var(--mono);min-width:36px}
+#s06 .scenes div small{margin-left:auto;font:600 22px/1 var(--f)}
+#s06 .scenes div.done{color:var(--muted)}
+#s06 .scenes div.cur{background:var(--surface);color:var(--ink);box-shadow:0 10px 30px rgba(60,40,10,.08)}
+#s06 .scenes div.cur i{color:var(--amber)}
+/* demo most (161): stav telefonu, počítadlo dřepů, nová úroveň */
+#s06 .scenes{transition:opacity .35s}
+#s06.hud .scenes{opacity:0}
+#dlive{position:absolute;left:820px;top:238px;display:none;gap:12px;font:700 20px/1 var(--f)}
+#dlive.on{display:flex}
+#dlive span{padding:10px 16px;border-radius:20px;background:var(--surface);border:1.5px solid var(--line);color:var(--muted);transition:all .3s}
+#dlive span b{color:var(--ink)}
+#dlive .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#C0392B;margin-right:8px;vertical-align:1px;animation:blink 1.6s infinite}
+#dlive span.flash{background:var(--amber);border-color:var(--amber);color:#fff}
+#dlive span.flash b{color:#fff}
+@keyframes blink{50%{opacity:.25}}
+#dhud{position:absolute;left:820px;top:320px;width:960px;display:none;flex-direction:column;gap:22px}
+#s06.hud #dhud{display:flex;animation:inz .35s both}
+#dhud .lab{font:800 22px/1 var(--f);letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+#dhud .num{font:800 230px/.9 var(--mono);letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--ink)}
+#dhud .num small{font-size:90px;color:#B5AB9E}
+#dhud .num.pop{animation:pop .25s}
+@keyframes pop{40%{transform:scale(1.06)}}
+#dhud .bar{height:22px;border-radius:11px;background:var(--line);overflow:hidden}
+#dhud .bar i{display:block;height:100%;width:0;background:var(--sage);border-radius:11px;transition:width .3s}
+#dhud .msg{font:700 40px/1.25 var(--f);color:var(--sage);min-height:50px}
+#dhud.lvl .num{color:var(--amber)}
+#dhud .num.lvlin{animation:mendup .6s cubic-bezier(.2,1.4,.4,1) both}
+#dhud.lvl .bar{display:none}
+@keyframes mendup{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+#most-st{margin-top:10px;font:700 20px/1.3 var(--f);color:var(--muted)}
+#most-st.ok{color:var(--sage)} #most-st.err{color:#C0392B}
+#setup .mrow{margin-top:14px}
+#setup .mrow .sbtn{height:48px;font-size:18px;padding:0 20px;margin-bottom:8px}
+
+/* ---------- záložní slidy s maketou: telefon vlevo, text vpravo ---------- */
+.feat .phone{left:230px;top:110px}
+.feat .kick,.feat h2.t{left:820px}
+.feat .txt{position:absolute;left:820px;top:330px;width:960px;display:grid;gap:26px}
+.feat .pts{display:grid;gap:14px}
+.feat .pts div{font:600 30px/1.35 var(--f);padding-left:30px;position:relative;transition:opacity .35s}
+.feat .pts div::before{content:"";position:absolute;left:0;top:16px;width:12px;height:12px;border-radius:50%;background:var(--amber)}
+.feat .pts div.dim{opacity:.35}
+.bk-tag{position:absolute;left:820px;top:60px;font:700 16px/1 var(--f);letter-spacing:.14em;color:#B5AB9E;text-transform:uppercase}
+
+/* smlouva */
+.cw-steps{display:flex;gap:6px}
+.cw-steps i{flex:1;height:6px;border-radius:3px;background:#332E28;transition:background .3s}
+.cw-steps i.on{background:var(--twD)}
+.cw-pane{display:none;flex-direction:column;gap:12px}
+.cw-pane.on{display:flex;animation:inz .35s both}
+.cw-amt{font:800 40px/1 var(--f);color:var(--amberD);text-align:center;padding:8px 0}
+.cw-item{display:flex;align-items:center;justify-content:space-between;background:#175139;color:#D2EFE0;border-radius:16px;padding:12px 14px;font:700 15px/1.25 var(--f)}
+.cw-item small{font:700 12px/1.2 var(--f);color:var(--sageD)}
+.cw-task{background:#344180;color:#E0E5FA} .cw-task small{color:var(--twD)}
+.cw-cam{height:260px;border-radius:24px;background:#26231F;border:1.5px solid rgba(159,168,218,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative;transition:border-color .3s}
+.cw-cam .rec{position:absolute;top:12px;right:12px}
+
+/* Ozvěna */
+.feed{position:absolute;inset:0;overflow:hidden;background:#000}
+.feed .strip{position:absolute;left:0;right:0;top:0;transition:transform .7s cubic-bezier(.6,0,.3,1)}
+.feed .post{height:828px;position:relative;display:flex;align-items:flex-end;padding:0 18px 90px}
+.feed .post .who{font:800 16px/1.3 var(--f);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.feed .post .who small{display:block;font:500 14px/1.3 var(--f);opacity:.85}
+.feed .rail{position:absolute;right:14px;bottom:150px;display:flex;flex-direction:column;gap:20px;align-items:center;color:#fff;font:700 12px/1 var(--f)}
+.feed .rail i{display:block;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.25);margin-bottom:5px}
+.feed .tabs{position:absolute;top:56px;left:0;right:0;text-align:center;color:#fff;font:700 16px/1 var(--f);z-index:3}
+.feed .tabs span{opacity:.6;margin:0 10px}.feed .tabs b{border-bottom:2px solid #fff;padding-bottom:5px}
+.feed .timer{position:absolute;top:0;left:0;height:5px;background:var(--twD);z-index:4;transition:width .2s linear}
+.echo{position:absolute;inset:0;background:var(--night);z-index:6;padding:58px 16px 16px;display:flex;flex-direction:column;gap:11px;transform:translateY(100%);transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.echo.in{transform:none}
+.echo .vid{aspect-ratio:16/9;border-radius:22px;background:#344180;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#E0E5FA;text-align:center;padding:10px}
+.echo .play{width:44px;height:44px;border-radius:50%;background:var(--twD);color:#1D285E;display:grid;place-items:center;font:800 16px/1 var(--f)}
+.choice{display:flex;align-items:center;gap:10px;border-radius:20px;padding:11px 14px;transition:transform .3s,box-shadow .3s}
+.choice .ct{font:800 15px/1.2 var(--f)} .choice .cs{font:500 12px/1.3 var(--f);opacity:.85;margin-top:2px}
+.choice .bd{margin-left:auto;flex:0 0 auto;font:800 12px/1 var(--f);padding:7px 9px;border-radius:14px}
+.choice.pos{background:var(--sageD);color:#003823} .choice.pos .bd{background:#003823;color:var(--sageD)}
+.choice.emb{background:#663209;color:#FFE5D0} .choice.emb .bd{background:var(--amberD);color:#451E00}
+.choice.ech{background:#344180;color:#E0E5FA} .choice.ech .bd{background:var(--twD);color:#1D285E}
+.choice.dbt{background:#5A3916;color:#FBE9D5} .choice.dbt .bd{background:#E5A96D;color:#3a2208}
+.choice.pick{transform:scale(1.04);box-shadow:0 0 0 3px var(--gold2)}
+.reward{position:absolute;inset:0;background:rgba(18,17,16,.94);z-index:10;display:flex;align-items:center;justify-content:center;padding:22px;opacity:0;transition:opacity .25s}
+.reward.in{opacity:1}
+.reward .rc{background:var(--night2);border:2px solid var(--gold2);border-radius:32px;padding:24px 20px;display:flex;flex-direction:column;align-items:center;gap:11px;text-align:center;transform:scale(.9);transition:transform .5s cubic-bezier(.3,1.7,.5,1)}
+.reward.in .rc{transform:none}
+.reward .num{width:76px;height:76px;border-radius:50%;background:#663209;color:#FFE5D0;display:grid;place-items:center;font:800 26px/1 var(--f)}
+.reward .nl{font:800 13px/1 var(--f);color:var(--amberD);background:rgba(242,193,78,.2);padding:7px 12px;border-radius:14px}
+.lvlb{display:inline-flex;align-items:center;gap:8px;background:#663209;color:#FFE5D0;border-radius:20px;padding:5px 12px 5px 5px;font:700 13px/1 var(--f)}
+.lvlb i{font-style:normal;width:26px;height:26px;border-radius:50%;background:var(--amberD);color:#451E00;display:grid;place-items:center;font:800 13px/1 var(--f)}
+
+/* dřepy */
+.sq-cam{flex:1;border-radius:24px;background:#26231F;border:1.5px solid #332E28;position:relative;overflow:hidden;transition:border-color .3s}
+.sq-cam.done{border-color:var(--sageD)}
+.sq-cam svg{position:absolute;inset:0;width:100%;height:100%}
+.sq-tip{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(28,26,23,.9);border-radius:16px;padding:8px 12px;font:700 13px/1.25 var(--f);white-space:nowrap}
+.sq-cnt{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(28,26,23,.92);border-radius:24px;padding:10px 22px;text-align:center;white-space:nowrap}
+.sq-cnt b{display:block;font:800 52px/1 var(--f);color:var(--amberD);transition:color .3s}
+.sq-cnt.done b{color:var(--sageD)}
+.sq-cnt small{font:600 13px/1 var(--f);color:var(--onN2)}
+.sq-fb{background:#663209;color:#FFE5D0;border-radius:16px;padding:11px 14px;font:700 14px/1.3 var(--f)}
+.sq-fb.done{background:#175139;color:#D2EFE0}
+.price{display:grid;gap:12px}
+.price .r{display:grid;grid-template-columns:1fr 150px;gap:18px;align-items:center;padding:20px 26px;background:var(--surface);border-radius:18px;border-left:10px solid var(--pc)}
+.price .r b{font:800 30px/1.1 var(--f)} .price .r span{display:block;margin-top:6px;font:500 22px/1.3 var(--f);color:var(--muted)}
+.price .r em{font:800 34px/1 var(--f);font-style:normal;color:var(--pc);text-align:right}
+
+/* plán + hodnocení */
+.vrow{display:flex;align-items:center;gap:22px;padding:24px 28px;background:var(--surface);border-radius:20px;border:1.5px solid var(--line)}
+.vrow .vt{font:700 28px/1.25 var(--f)} .vrow .vc{font:500 20px/1.3 var(--f);color:var(--muted);margin-top:4px}
+.vrow .vv{margin-left:auto;font:800 22px/1.2 var(--f);text-align:right;white-space:nowrap}
+.rt-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.rt-tiles span{height:50px;border-radius:16px;background:#26231F;font:800 18px/50px var(--f);text-align:center;transition:all .25s}
+.rt-tiles span.on{background:var(--amberD);color:#451E00;box-shadow:inset 0 0 0 2px var(--gold2)}
+
+/* zrcadlo */
+.mi-pane{display:none;flex-direction:column;gap:10px}
+.mi-pane.on{display:flex;animation:inz .35s both}
+.wk{display:flex;flex-direction:column;gap:5px;font:600 12px/1.2 var(--f);color:var(--onN2)}
+.wk .bars{display:flex;gap:3px;height:9px} .wk .bars i{border-radius:4px}
+.vm{border-radius:18px;padding:11px 13px;display:flex;align-items:center;gap:10px;border:1.5px solid var(--sageD);background:var(--night2);transition:box-shadow .3s}
+.vm.trap{border-color:#E5A96D;background:#5A3916}
+.vm.hl{box-shadow:0 0 0 3px var(--gold2)}
+.vm .t{font:800 14px/1.2 var(--f)} .vm .s{font:500 12px/1.3 var(--f);color:var(--onN2)} .vm.trap .s{color:#FBE9D5}
+.vm .r{margin-left:auto;font:800 12px/1 var(--f);padding:7px 9px;border-radius:13px;background:var(--sageD);color:#003823;white-space:nowrap}
+.vm.trap .r{background:#E5A96D;color:#3a2208}
+
+/* parťák */
+#s12 .phone.p1{left:180px;top:110px}
+#s12 .phone.p2{left:1320px;top:110px}
+#s12 .mid{position:absolute;left:660px;top:330px;width:600px;text-align:center;display:grid;gap:26px}
+#s12 .mid .q{font:800 50px/1.15 var(--f)}
+.home{position:absolute;inset:0;background:radial-gradient(500px 500px at 50% 20%,#2b2f4a,#121110);padding:90px 26px 26px}
+.icons{display:grid;grid-template-columns:repeat(4,1fr);gap:24px 14px}
+.ic{display:flex;flex-direction:column;align-items:center;gap:7px;font:600 12px/1 var(--f);color:var(--onN);transition:all .5s}
+.ic i{width:62px;height:62px;border-radius:20px;display:block}
+.ic.gone{opacity:0;transform:scale(.3)}
+.ctxm{position:absolute;left:30px;top:260px;width:220px;background:#2E2A24;border-radius:18px;padding:8px;opacity:0;transform:scale(.8);transform-origin:20% 0;transition:all .25s;z-index:4}
+.ctxm.in{opacity:1;transform:none}
+.ctxm div{padding:11px 12px;font:700 14px/1 var(--f);border-radius:10px}
+.ctxm div.del{color:#E58C83;background:rgba(229,140,131,.12)}
+.lock{position:absolute;inset:0;background:linear-gradient(160deg,#1d2a3a,#121110 60%);padding:90px 18px 18px;text-align:center}
+.lock .tm{font:300 84px/1 var(--f);color:#fff}
+.lock .dt{font:600 16px/1 var(--f);color:var(--onN2);margin-top:8px}
+.notif{margin-top:36px;background:rgba(46,42,36,.96);border-radius:22px;padding:14px 16px;text-align:left;transform:translateY(-30px) scale(.95);opacity:0;transition:all .55s cubic-bezier(.3,1.5,.5,1)}
+.notif.in{transform:none;opacity:1}
+.notif .h{font:700 12px/1 var(--f);color:var(--onN2)}
+.notif b{display:block;margin-top:9px;font:800 15px/1.25 var(--f);color:#fff}
+.notif p{margin:4px 0 0;font:500 14px/1.35 var(--f);color:var(--onN2)}
+.ph-cap{position:absolute;font:700 20px/1.3 var(--f);color:var(--muted);text-align:center;width:420px}
+
+/* gamifikace */
+#s13 .xp{position:absolute;left:140px;top:340px;width:900px;display:grid;gap:22px}
+.xpr{display:grid;grid-template-columns:200px 1fr 90px;gap:22px;align-items:center;font:800 32px/1 var(--f)}
+.xpr .tr{height:40px;background:#EFE8DC;border-radius:20px;overflow:hidden}
+.xpr .tr i{display:block;height:100%;background:var(--xc);width:0;border-radius:20px;transition:width 1s cubic-bezier(.3,1.2,.5,1)}
+.xpr em{font:800 36px/1 var(--f);font-style:normal;color:var(--xc);text-align:right}
+#s13 .side{position:absolute;left:1140px;top:340px;width:640px;display:grid;gap:26px}
+#s13 .xpwhat{position:absolute;left:140px;top:640px;width:900px;display:grid;gap:14px}
+#s13 .xpwhat b{font:800 34px/1.1 var(--f)}
+#s13 .xpwhat .lad{display:flex;flex-wrap:wrap;gap:10px}
+#s13 .xpwhat .lad span{padding:10px 16px;border-radius:14px;background:var(--surface);border:1.5px solid var(--line);font:700 21px/1 var(--f);color:var(--muted)}
+#s13 .xpwhat .lad span:nth-child(4){border-color:var(--amber);color:var(--ink)}
+#s13 .xpwhat p{margin:0;font:500 24px/1.4 var(--f);color:var(--muted)}
+#s13 .side .card{padding:30px 34px}
+#s13 .side b{display:block;font:800 34px/1.15 var(--f);margin-bottom:8px}
+
+/* soukromí */
+#s14 .rows{position:absolute;left:140px;top:330px;width:1640px;display:grid;gap:22px}
+#s14 .rows .card{padding:30px 40px;display:grid;grid-template-columns:90px 1fr;gap:24px;align-items:center}
+#s14 .rows .ic2{width:72px;height:72px;border-radius:50%;background:#E7F3EC;display:grid;place-items:center}
+#s14 .rows b{font:800 36px/1.15 var(--f)} #s14 .rows span{display:block;margin-top:6px;font:500 25px/1.35 var(--f);color:var(--muted)}
+
+/* jak jsme postavili */
+#s15 .stack{position:absolute;left:140px;top:330px;width:1640px;display:grid;grid-template-columns:repeat(5,1fr);gap:20px}
+#s15 .stack>div{padding:28px 26px;display:flex;flex-direction:column;gap:10px}
+#s15 .stack i{font-style:normal;font:800 22px/1 var(--mono);color:var(--amber)}
+#s15 .stack b{font:800 28px/1.15 var(--f)} #s15 .stack span{font:500 21px/1.35 var(--f);color:var(--muted)}
+#s15 .team{position:absolute;left:140px;top:640px;width:1640px;display:grid;grid-template-columns:repeat(5,1fr);gap:20px}
+#s15 .team>div{padding:24px 26px}
+#s15 .team b{display:block;font:800 30px/1.1 var(--f)} #s15 .team span{font:500 20px/1.35 var(--f);color:var(--muted)}
+#s15 .road{position:absolute;left:140px;top:850px;width:1640px;font:600 26px/1.4 var(--f);color:var(--muted)}
+#s15 .road b{color:var(--ink)}
+
+/* pointa */
+#s16{background:var(--night);color:var(--onN)}
+#s16 .blade2{position:absolute;left:260px;top:170px;width:1400px;height:300px}
+#s16 .seamd{stroke-dasharray:300;stroke-dashoffset:300}
+#s16.on .seamd{animation:draw 1.4s ease .6s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#s16 .lines{position:absolute;left:0;right:0;top:540px;text-align:center}
+#s16 .l1{font:600 54px/1.25 var(--f);color:var(--onN2)}
+#s16 .l2{font:800 66px/1.2 var(--f);color:var(--gold2);margin-top:10px}
+#s16 .l3{margin-top:70px;font:800 40px/1 var(--f);letter-spacing:.3em}
+
+/* otázky */
+#s17 .faq{position:absolute;left:140px;top:330px;width:1100px;display:grid;gap:4px}
+#s17 .faq div{font:600 32px/1.3 var(--f);padding:20px 0;border-top:2px solid var(--line)}
+#s17 .team{position:absolute;left:1340px;top:330px;width:440px;font:700 32px/1.7 var(--f)}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media print{
+  @page{size:1920px 1080px;margin:0}
+  body{background:#fff;overflow:visible}
+  #stage{position:static;transform:none!important;height:auto;overflow:visible}
+  .sl{display:block!important;position:relative;height:1080px;break-after:page;animation:none!important;overflow:hidden}
+  [data-s]{opacity:1!important;transform:none!important}
+  #notes,#ov,#setup,#sword,#prog,#no,#clock,#black,#liveDot{display:none!important}
+}
+
+/* ---------- styl aplikace E (334): tmavý neumorfismus, vše vnořené ---------- */
+.scr{background:#272B34;color:#E9ECF2}
+.a-sm,.a-lab{color:#A3AAB8}
+.e-in{background:#23272F;box-shadow:inset 6px 6px 12px #181B20,inset -6px -6px 12px #2E333D}
+.e-ins{background:#23272F;box-shadow:inset 3px 3px 6px #181B20,inset -3px -3px 6px #2E333D}
+.e-ind{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039}
+.a-card{background:#23272F;border:0;border-radius:24px;box-shadow:inset 6px 6px 12px #181B20,inset -6px -6px 12px #2E333D}
+.a-btn{height:52px;border-radius:18px}
+.a-btn.amber{background:#F2A359;color:#3A1A00}
+.a-btn.sage,.a-btn.tw,.a-btn.out{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;border:0}
+.a-btn.sage{color:#5CC497} .a-btn.tw{color:#F2A359} .a-btn.out{color:#A3AAB8}
+.a-chip{border:0;border-radius:10px;height:30px;background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#A3AAB8;font-weight:800}
+.a-chip.on{background:#20232A;color:#F2A359;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039,0 0 0 1.5px #F2A359}
+.a-chip.ok{color:#5CC497} .a-chip.acc{color:#F2A359}
+.a-bar{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;padding:2px;height:12px;box-sizing:border-box;border-radius:6px}
+.a-bar i{background:#F2A359;border-radius:4px}
+.lvlb{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#E9ECF2}
+.lvlb i{background:transparent;border:2px solid #F2A359;color:#F2A359;box-sizing:border-box}
+/* smlouva */
+.cw-steps i{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039} .cw-steps i.on{background:#F2A359;box-shadow:none}
+.cw-amt{color:#F2A359}
+.cw-item,.cw-task{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#E9ECF2}
+.cw-item small{color:#A3AAB8} .cw-task small{color:#F2A359}
+.cw-cam{background:#20232A;border:0;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039}
+/* Ozvěna */
+.echo{background:#272B34}
+.echo .vid{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#E9ECF2}
+.echo .play{background:transparent;border:2px solid #F2A359;color:#F2A359}
+.choice{background:#23272F;box-shadow:inset 3px 3px 6px #181B20,inset -3px -3px 6px #2E333D;color:#E9ECF2;border-radius:18px}
+.choice.pos,.choice.emb,.choice.ech,.choice.dbt{background:#23272F;color:#E9ECF2}
+.choice .cs{color:#A3AAB8;opacity:1}
+.choice .bd,.choice.pos .bd,.choice.emb .bd,.choice.ech .bd,.choice.dbt .bd{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039}
+.choice.pos .bd{color:#5CC497} .choice.emb .bd{color:#F2A359} .choice.ech .bd{color:#9FA8DA} .choice.dbt .bd{color:#E5A96D}
+.choice.pick{transform:scale(1.03);box-shadow:inset 3px 3px 6px #181B20,inset -3px -3px 6px #2E333D,0 0 0 2px #F2A359}
+.reward{background:rgba(39,43,52,.95)}
+.reward .rc{background:#23272F;border:0;box-shadow:inset 6px 6px 12px #181B20,inset -6px -6px 12px #2E333D}
+.reward .num{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#F2A359}
+.reward .nl{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#F2A359}
+/* dřepy */
+.sq-cam{background:#20232A;border:0;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039}
+.sq-cam.done{box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039,0 0 0 2px #5CC497}
+.sq-tip,.sq-cnt{background:rgba(35,39,47,.94)}
+.sq-cnt b{color:#F2A359} .sq-cnt.done b{color:#5CC497}
+.sq-fb{background:#23272F;box-shadow:inset 3px 3px 6px #181B20,inset -3px -3px 6px #2E333D;color:#F2A359} .sq-fb.done{background:#23272F;color:#5CC497}
+/* hodnocení */
+.rt-tiles span{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#A3AAB8}
+.rt-tiles span.on{background:#F2A359;color:#3A1A00;box-shadow:none}
+/* zrcadlo */
+.vm{background:#23272F;border:0;box-shadow:inset 3px 3px 6px #181B20,inset -3px -3px 6px #2E333D}
+.vm.trap{background:#23272F} .vm.trap .s{color:#E5A96D}
+.vm .r{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#5CC497} .vm.trap .r{background:#20232A;color:#E5A96D}
+.vm.hl{box-shadow:inset 3px 3px 6px #181B20,inset -3px -3px 6px #2E333D,0 0 0 2px #F2A359}
+/* domov podle návrhu E */
+.eh-logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex-shrink:0}
+.eh-ring{width:118px;height:118px;border-radius:50%;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid #F2A359;box-sizing:border-box}
+.eh-task{padding:9px 2px;display:flex;align-items:center;gap:11px;border-top:1px solid #30353F}
+.eh-chk{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:grid;place-items:center}
+.eh-tab{flex:1;height:48px;border-radius:16px;font:700 11px/1 var(--f);color:#A3AAB8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.eh-tab.on{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039;color:#F2A359;font-weight:800}
+.a-card.e-ind{background:#20232A;box-shadow:inset 4px 4px 8px #15181C,inset -3px -3px 6px #2B3039}
+</style>
+
+<style>
+/* ===== Frutiger Aero (narsil-frontend-v2) – přebíjí barvy původního pitche ===== */
+:root{
+  --bg:#EAF8FF; --surface:rgba(255,255,255,.86); --ink:#063B5C; --muted:#3F6B78; --line:rgba(255,255,255,.95);
+  --amber:#0A7FC0; --amberD:#36BB45; --sage:#168231; --sageD:#7EE06A; --tw:#2B6CC4; --twD:#8EC9FF;
+  --gold:#E0A500; --gold2:#FFD166; --debt:#D2861A; --alg:#6E5BA8;
+  --f:'Trebuchet MS','Manrope','Segoe UI',system-ui,sans-serif;
+}
+#stage{background:
+  radial-gradient(900px 520px at 12% 8%,rgba(255,255,255,.95),transparent 60%),
+  radial-gradient(800px 600px at 92% 95%,rgba(150,240,120,.45),transparent 60%),
+  linear-gradient(170deg,#c9efff 0%,#eefbff 45%,#e6ffe0 100%)}
+.card{background:linear-gradient(145deg,rgba(255,255,255,.95),rgba(207,250,255,.8));border:1.5px solid #fff;
+  box-shadow:inset 0 2px #fff,0 8px 22px rgba(0,66,112,.16)}
+#prog{background:linear-gradient(#adf87a,#22af42)}
+.phone{background:linear-gradient(160deg,#ffffff,#cdeeff 55%,#7cc8f0);box-shadow:0 0 0 2px #fff,0 30px 70px rgba(0,60,120,.32)}
+.phone .scr{background:#159de9}
+.phone.shot .scr > :not(.shot):not(.livev){visibility:hidden}
+.phone .scr img.shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:20;border-radius:44px}
+.phone.live .scr img.shot{display:none}
+/* galerie nového vzhledu */
+#sAero .row{position:absolute;left:110px;right:110px;top:300px;display:flex;justify-content:space-between}
+#sAero figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:22px}
+#sAero .mini{width:300px;height:640px;border-radius:44px;padding:11px;background:linear-gradient(160deg,#fff,#cdeeff 55%,#7cc8f0);
+  box-shadow:0 0 0 2px #fff,0 22px 50px rgba(0,60,120,.28)}
+#sAero .mini img{width:100%;height:100%;object-fit:cover;border-radius:34px;display:block;background:#159de9}
+#sAero figcaption{font:800 28px/1 var(--f);color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="stage">
+<svg id="sword" viewBox="0 0 380 120" aria-hidden="true"></svg>
+
+<!-- 01 TITUL -->
+<section class="sl" id="s01" data-title="Narsil">
+  <div class="kick" style="top:230px">Hackathon 2026</div>
+  <div class="wm">NARSIL</div>
+  <div class="sub">Zlomený meč se dá ukovat znovu. <b>Tvůj den taky.</b></div>
+  <div class="by">%TEAM%<small>%DATE%</small></div>
+  <svg class="blade" viewBox="0 0 560 900" aria-hidden="true">
+    <defs><linearGradient id="bl" x1="0" x2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#DCD5C8"/><stop offset="1" stop-color="#B3AA9A"/></linearGradient>
+      <filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g transform="rotate(12 280 450)">
+      <circle cx="280" cy="860" r="22" fill="#D49B27"/><circle cx="280" cy="860" r="7" fill="#2E7D5B"/>
+      <rect x="267" y="752" width="26" height="88" rx="6" fill="#4a3a2a"/>
+      <path d="M160 732 Q180 716 216 724 L344 724 Q380 716 400 732 Q380 750 344 744 L216 744 Q180 750 160 732Z" fill="#D49B27"/>
+      <path d="M256 724 L304 724 L302 432 L291 420 L282 438 L270 416 L258 432 Z" fill="url(#bl)" stroke="#8a8170" stroke-width="2" stroke-linejoin="round"/>
+      <g class="up"><path d="M258 432 L270 416 L282 438 L291 420 L302 432 L298 140 L280 66 L262 140 Z" fill="url(#bl)" stroke="#8a8170" stroke-width="2" stroke-linejoin="round"/></g>
+      <path class="seam" filter="url(#gl)" d="M256 432 L270 416 L282 438 L291 420 L304 432" fill="none" stroke="#F2C14E" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+    </g>
+  </svg>
+</section>
+
+<!-- 02 HOOK -->
+<section class="sl" id="s02" data-steps="4" data-title="Zeď, nebo zrcadlo?">
+  <div class="kick">Problém dnešních aplikací</div>
+  <h2 class="t">Zeď, nebo <em>zrcadlo?</em></h2>
+  <div class="col wall">
+    <h3>Zeď se dá přelézt</h3>
+    <div class="row" data-s="1"><span>✕</span>Zablokuješ Instagram – otevřeš ho v prohlížeči.</div>
+    <div class="row" data-s="2"><span>✕</span>Nastavíš limit – klikneš „ještě 15 minut“.</div>
+    <div class="row" data-s="3"><span>✕</span>Smažeš aplikaci – za tři dny ji máš zpátky.</div>
+  </div>
+  <div class="col mir" data-s="4">
+    <h3>&nbsp;</h3>
+    <div class="big">My jsme zeď nepostavili.<br>Postavili jsme zrcadlo.</div>
+  </div>
+</section>
+
+<!-- 03 PROBLÉM -->
+<section class="sl" id="s03" data-steps="2" data-title="Prokrastinace je útěk">
+  <div class="kick">Šimon Sketa, 18 let, student</div>
+  <h2 class="t">„Jen na <em>chvilku</em>.“</h2>
+  <div class="clk" id="clk3">21:40</div>
+  <p class="sm clab">Otevře TikTok na chvilku. Úkol z lineární algebry zůstane neudělaný.</p>
+  <div class="right">
+    <div class="big" data-s="1">Prokrastinace není lenost.<br><em>Je to útěk.</em></div>
+    <div class="chips" data-s="1"><span>před nudou</span><span>před únavou</span><span>před úkolem</span><span>před samotou</span></div>
+    <p class="p" data-s="2">Zákazy neřeší, před čím utíkáš – a otravují i tam, kde nemusí.</p>
+  </div>
+</section>
+
+<!-- 04 KDY ZASÁHNE -->
+<section class="sl" id="s04" data-steps="4" data-title="Kdy Narsil zasáhne">
+  <div class="kick">Řešení</div>
+  <h2 class="t">Zasahujeme jen tam, kde prokrastinace <em>vzniká</em></h2>
+  <div class="conds">
+    <div class="card cond" data-s="1"><div class="n">1</div><b>Doma</b><p>Domov pozná podle domácí Wi-Fi.</p></div>
+    <div class="card cond" data-s="2"><div class="n">2</div><b>U nekonečného obsahu</b><p>Feed, Reels, Shorts, řetězení videí – pozná je služba přístupnosti.</p></div>
+    <div class="card cond" data-s="3"><div class="n">3</div><b>Po 5 minutách</b><p>Ne hned. Chvilka je v pořádku.</p></div>
+  </div>
+  <div class="quiet" data-s="4">Venku, ve zprávách a u plánovaného obsahu Narsil mlčí.</div>
+</section>
+
+<!-- 05 PILÍŘE -->
+<section class="sl" id="s05" data-steps="4" data-title="Pomocník, ne dozorce">
+  <div class="kick">Řešení</div>
+  <h2 class="t">Pomocník, <em>ne dozorce</em></h2>
+  <div class="motto"><u>Plánované je zdarma.</u> <i>Neplánované se platí pohybem.</i></div>
+  <div class="pil">
+    <div class="card" data-s="1" style="--pc:var(--gold)"><b>Večerní smlouva</b><p>Dvě minuty se sebou: kroky, plán na zítřek a krátké video.</p></div>
+    <div class="card" data-s="2" style="--pc:var(--tw)"><b>Ozvěna</b><p>Když sklouzneš do feedu, pustí ti tvoje včerejší video.</p></div>
+    <div class="card" data-s="3" style="--pc:var(--amber)"><b>Cena pohybem</b><p>Pokračovat jde vždycky – za kroky, dřepy, nebo s minutami od Parťáka.</p></div>
+    <div class="card" data-s="4" style="--pc:var(--sage)"><b>Parťák</b><p>Když aplikaci smažeš, nedozví se to server. Dozví se to kamarád.</p></div>
+  </div>
+</section>
+
+<!-- 06 DEMO -->
+<section class="sl" id="s06" data-steps="8" data-title="Demo">
+  <div class="phone shot" id="livePhone" data-live="1"><div class="scr"><img class="shot" src="snimky-aero/01-ukoly.png" alt="">
+    <div class="sbar"><span>21:47</span><span>Wi-Fi Domov_5G</span></div>
+    <div class="app" style="gap:14px;padding:12px 16px 14px">
+      <div class="a-row" style="gap:12px"><div class="eh-logo e-ins"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F2A359" stroke-width="2" stroke-linecap="round"><path d="M12 3v11M9 14h6M12 14v3M10.5 20h3"/><path d="M12 17l-1 3" opacity=".5"/></svg></div><div style="flex:1"><div style="font:700 16px/1.2 var(--f)">Úroveň 4 · Strážce pozornosti</div><div class="a-sm" style="font-size:12px">1 860 XP · série 6 dní</div></div></div>
+      <div class="e-in" style="border-radius:26px;padding:14px;display:flex;gap:14px;align-items:center">
+        <div class="eh-ring"><b style="font:800 34px/1 var(--f);color:#F2A359">0</b><span style="font:600 11px/1 var(--f);color:#A3AAB8;margin-top:4px">min zůstatek</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:11px">
+          <div class="a-row" style="gap:7px;font:600 12px/1 var(--f)"><i style="width:8px;height:8px;border-radius:50%;background:#5CC497"></i>Doma · ochrana aktivní</div>
+          <div><div class="a-row" style="font:700 12px/1 var(--f);margin-bottom:6px"><span>0 kroků</span><span class="sp" style="color:#A3AAB8;font-weight:500">cíl 6 000</span></div><div class="a-bar"><i style="width:0%"></i></div></div>
+          <div class="a-row" style="gap:14px"><div><b style="font:800 16px/1 var(--f);color:#5CC497">0</b><div style="font:500 11px/1.3 var(--f);color:#A3AAB8">min získáno</div></div><div><b style="font:800 16px/1 var(--f)">14</b><div style="font:500 11px/1.3 var(--f);color:#A3AAB8">min ve feedu</div></div></div>
+        </div>
+      </div>
+      <div class="e-in" style="flex:1;border-radius:26px;padding:14px 14px 10px;display:flex;flex-direction:column;min-height:0">
+        <div class="a-row" style="padding:0 2px 6px"><b style="font:800 16px/1 var(--f)">Dnešní smlouva</b><span class="sp" style="font:700 12px/1 var(--f);color:#A3AAB8">0 / 4 hotovo</span></div>
+        <div class="eh-task"><div class="eh-chk e-ind"></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Běh 5 km</div><div style="font:600 11px/1.3 var(--f);color:#A3AAB8">Pohyb · ze Stravy nebo fotkou · +30 min</div></div><span class="e-ind" style="height:32px;padding:0 12px;border-radius:11px;font:800 12px/32px var(--f);color:#F2A359">Ověřit</span></div>
+        <div class="eh-task"><div class="eh-chk e-ind"></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Laboratorní úloha z databází</div><div style="font:600 11px/1.3 var(--f);color:#A3AAB8">Škola · fotka · +20 min</div></div><span class="e-ind" style="height:32px;padding:0 12px;border-radius:11px;font:800 12px/32px var(--f);color:#F2A359">Ověřit</span></div>
+        <div class="eh-task"><div class="eh-chk e-ind"></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dopsat report do práce</div><div style="font:600 11px/1.3 var(--f);color:#F59A8B">Práce · zbývají 2 pokusy</div></div><span class="e-ind" style="height:32px;padding:0 12px;border-radius:11px;font:800 12px/32px var(--f);color:#F2A359">Ověřit</span></div>
+        <div class="eh-task"><div class="eh-chk e-ind"></div><div style="flex:1;min-width:0"><div style="font:700 14px/1.25 var(--f);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Uklidit pokoj</div><div style="font:600 11px/1.3 var(--f);color:#A3AAB8">Ostatní · fotka prostředí · +10 min</div></div><span class="e-ind" style="height:32px;padding:0 12px;border-radius:11px;font:800 12px/32px var(--f);color:#F2A359">Ověřit</span></div>
+        <div style="margin-top:auto;padding:7px 2px 0;border-top:1px solid #30353F;font:500 11px/1.3 var(--f);color:#A3AAB8">Plánovaný obsah: dokument o přírodě, 1 díl seriálu</div>
+      </div>
+      <div class="e-in" style="border-radius:22px;padding:7px;display:flex;gap:6px">
+        <span class="eh-tab on">Domů</span><span class="eh-tab">Smlouva</span><span class="eh-tab">Odznaky</span><span class="eh-tab">Nastavení</span>
+      </div>
+    </div>
+  </div></div>
+  <div class="kick">Demo</div>
+  <h2 class="t">Jeden den <em>Šimona Skety</em>, 18 let</h2>
+  <div class="scenes" id="scenes">
+    <div><i>1</i>Večerní smlouva<small>plán a video</small></div>
+    <div><i>2</i>Venku<small>Narsil mlčí</small></div>
+    <div><i>3</i>Doma, 0 minut<small>Ozvěna hned</small></div>
+    <div><i>4</i>20 dřepů<small>kamera počítá</small></div>
+    <div><i>5</i>Odevzdání úkolu<small>AI ověří</small></div>
+    <div><i>6</i>Dokument z plánu<small>zdarma</small></div>
+    <div><i>7</i>Zrcadlo<small>co tě vysává</small></div>
+    <div><i>8</i>Parťák<small>kamarád, ne server</small></div>
+  </div>
+  <div id="dlive"><span><i class="dot"></i>z telefonu</span><span id="dlWhere">–</span><span id="dlLvl">–</span><span id="dlEcho" style="display:none">Ozvěna</span></div>
+  <div id="dhud"><div class="lab" id="dhLab">Kamera počítá dřepy</div><div class="num" id="dhNum">0<small> / 20</small></div><div class="bar"><i id="dhBar"></i></div><div class="msg" id="dhMsg"></div></div>
+</section>
+
+<!-- NOVÝ VZHLED (Aero) -->
+<section class="sl" id="sAero" data-steps="5" data-title="Nový vzhled">
+  <div class="kick">Frutiger Aero</div>
+  <h2 class="t">Sklo, bubliny a <em>modré nebe</em></h2>
+  <div class="row">
+    <figure data-s="1"><div class="mini"><img src="snimky-aero/01-ukoly.png" alt="Úkoly"></div><figcaption>Úkoly</figcaption></figure>
+    <figure data-s="2"><div class="mini"><img src="snimky-aero/07-overeni.png" alt="Ověření úkolu"></div><figcaption>Ověření úkolu</figcaption></figure>
+    <figure data-s="3"><div class="mini"><img src="snimky-aero/02-plan.png" alt="Plán na zítra"></div><figcaption>Plán na zítra</figcaption></figure>
+    <figure data-s="4"><div class="mini"><img src="snimky-aero/06-zrcadlo.png" alt="Zrcadlo"></div><figcaption>Zrcadlo</figcaption></figure>
+    <figure data-s="5"><div class="mini"><img src="snimky-aero/08-odznaky.png" alt="Odznaky"></div><figcaption>Odznaky</figcaption></figure>
+  </div>
+</section>
+
+<!-- 07 ZÁLOHA: SMLOUVA -->
+<section class="sl feat" id="s07" data-backup="1" data-steps="4" data-title="Večerní smlouva">
+  <div class="phone shot"><div class="scr"><img class="shot" src="snimky-aero/02-plan.png" alt="">
+    <div class="sbar"><span>21:12</span><span>5G · 82 %</span></div>
+    <div class="app" id="cw">
+      <div class="a-row"><div class="a-h1" style="font-size:22px">Večerní smlouva</div><span class="a-chip on sp" id="cwStep" style="height:28px;font-size:12px">Krok 1 ze 4</span></div>
+      <div class="cw-steps"><i class="on"></i><i></i><i></i><i></i></div>
+      <div class="cw-pane on" data-p="1">
+        <div class="a-h2">Pohybový cíl na zítřek</div>
+        <div class="a-sm">Rozhoduješ teď v klidu – ne zítra v pokušení.</div>
+        <div class="a-chips"><span class="a-chip on">Kroky</span><span class="a-chip">Minuty aktivity</span><span class="a-chip">Dřepy</span></div>
+        <div class="a-card"><div class="cw-amt">6000 kroků</div><div class="a-row" style="gap:8px"><span class="a-btn out" style="height:40px">-1000</span><span class="a-btn out" style="height:40px">+1000</span></div></div>
+      </div>
+      <div class="cw-pane" data-p="2">
+        <div class="a-h2">Plánovaný obsah zdarma</div>
+        <div class="a-sm">Plánovaný obsah máš zítra na YouTube zdarma. Ostatní videa se platí pohybem.</div>
+        <div class="cw-item">Dokument o přírodě<small>Odebrat</small></div>
+        <div class="cw-item">Jeden díl seriálu<small>Odebrat</small></div>
+      </div>
+      <div class="cw-pane" data-p="3">
+        <div class="a-h2">Úkoly na zítřek</div>
+        <div class="a-sm">Splněný úkol doložíš fotkou, fotkou prostředí nebo popisem a dostaneš minuty navíc.</div>
+        <div class="cw-item cw-task"><div>Úkol z lineární algebry<br><small>Škola · +20 min · fotka nebo popis</small></div><small>Odebrat</small></div>
+        <div class="cw-item cw-task"><div>Běh nebo procházka 20 min<br><small>Pohyb · +30 min · fotka nebo popis</small></div><small>Odebrat</small></div>
+      </div>
+      <div class="cw-pane" data-p="4">
+        <div class="a-h2">Tvoje 15s Ozvěna</div>
+        <div class="a-sm">Nahraj krátké video pro své zítřejší já: jak se dnes cítíš a proč chceš mít zítra klid.</div>
+        <div class="cw-cam" id="cwCam"><span class="a-chip rec" id="cwRec">Nahrávám 3/15 s</span>
+          <svg width="120" height="130" viewBox="0 0 120 130"><circle cx="60" cy="44" r="26" fill="#3A404C"/><path d="M14 130 Q18 78 60 74 Q102 78 106 130Z" fill="#3A404C"/></svg>
+          <div class="a-sm" style="text-align:center;font-style:italic">„Zítra chci dopsat report, ne scrollovat.“</div></div>
+      </div>
+      <div class="cw-pane" data-p="5">
+        <div class="a-card" style="display:flex;flex-direction:column;gap:10px;padding:18px">
+          <div class="a-h2">Smlouva podepsaná!</div>
+          <div style="font:500 14px/1.4 var(--f)">Až ji zítra splníš (krokový cíl a všechny úkoly ověřené), dostaneš +100 XP. Ozvěna tě zítra jemně podpoří tvým vlastním hlasem.</div>
+          <span class="a-btn sage">Zpět na hlavní obrazovku</span></div>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px" id="cwFoot">
+        <div class="a-row"><span class="a-btn out" style="flex:1">Zpět</span><span class="a-btn tw" style="flex:1.4" id="cwNext">Další krok</span></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="bk-tag">Demo · 1/6</div>
+  <div class="kick">Večer</div>
+  <h2 class="t">Večerní <em>smlouva</em></h2>
+  <div class="txt">
+    <p class="p">Dvě minuty před spaním. Rozhoduješ v klidu – ne zítra v pokušení.</p>
+    <div class="pts" id="cwPts"><div>6 000 kroků – kroky jsou zároveň měna</div><div>„Dokument o přírodě“ projde zítra zdarma</div><div>Úkoly ověří AI z fotky nebo popisu</div><div>15s video pro zítřejší já – zůstane v telefonu</div></div>
+  </div>
+</section>
+
+<!-- 08 ZÁLOHA: OZVĚNA -->
+<section class="sl feat" id="s08" data-backup="1" data-steps="1" data-title="Ozvěna">
+  <div class="phone shot"><div class="scr"><img class="shot" src="snimky-aero/03-ozvena.png" alt="">
+    <div class="sbar" style="z-index:9;color:#fff"><span>21:47</span><span>Wi-Fi Domov_5G</span></div>
+    <div class="feed"><div class="timer" id="fTimer" style="width:0"></div><div class="tabs"><span>Sledované</span><b>Pro tebe</b></div><div class="strip" id="fStrip"></div></div>
+    <div class="echo" id="echo">
+      <div class="a-row"><span class="a-chip acc" style="">Ozvěna · TikTok</span></div>
+      <div class="vid"><div class="play">▶</div><div style="font:700 15px var(--f)">Tvoje včerejší Ozvěna</div><div style="font:italic 500 13px/1.3 var(--f)">„Zítra chci dopsat report, ne scrollovat.“</div></div>
+      <div><div class="a-h2" style="font-size:20px">Čemu se teď vyhýbáš?</div><div class="a-sm" style="margin-top:4px">Pojmenovat pocit často stačí, aby tlak povolil.</div></div>
+      <div class="a-chips" id="feel"><span class="a-chip">Nuda</span><span class="a-chip">Únava</span><span class="a-chip">Těžký úkol</span><span class="a-chip">Samota</span><span class="a-chip">Jiné</span></div>
+      <div class="choice pos"><div><div class="ct">Zavřít feed</div><div class="cs">Chuť opadla, vracím se k tomu, co má smysl</div></div><span class="bd">+50 XP</span></div>
+      <div class="choice emb" id="chSq"><div><div class="ct">Udělat 20 dřepů hned</div><div class="cs">Kamera spočítá opakování a odemkne 10 min</div></div><span class="bd">+20 XP</span></div>
+      <div class="choice ech"><div><div class="ct">Zaplatit kroky</div><div class="cs">1000 kroků za 10 min · máš 2400</div></div><span class="bd">+10 XP</span></div>
+      <div class="choice dbt"><div><div class="ct">Poprosit Parťáka o 10 min</div><div class="cs">Kamarád ti pošle minuty · do zítřka se nic nepřenáší</div></div><span class="bd">0 XP</span></div>
+    </div>
+  </div></div>
+  <div class="bk-tag">Demo · 2/6</div>
+  <div class="kick">Doma ve 21:47</div>
+  <h2 class="t"><em>Ozvěna</em></h2>
+  <div class="txt">
+    <p class="p">Po 5 minutách scrollování doma Narsil přeruší feed – ne zákazem, ale <b>tvým včerejším videem</b>.</p>
+    <p class="sm">Odpověď na otázku je nepovinná. Pokračovat jde vždycky – jen to něco stojí.</p>
+  </div>
+</section>
+
+<!-- 09 ZÁLOHA: DŘEPY -->
+<section class="sl feat" id="s09" data-backup="1" data-title="20 dřepů">
+  <div class="phone shot"><div class="scr"><img class="shot" src="snimky-aero/04-drepy.png" alt="">
+    <div class="sbar"><span>21:49</span><span>Wi-Fi Domov_5G</span></div>
+    <div class="app">
+      <div class="a-row"><span class="a-btn out" style="width:auto;padding:0 14px;height:38px;font-size:13px">Zavřít místo dřepů</span><span class="a-chip acc sp" style="">+20 XP · 10 min</span></div>
+      <div class="sq-cam" id="sqCam"><svg id="sqSvg" viewBox="0 0 388 470" preserveAspectRatio="xMidYMax meet"></svg>
+        <div class="sq-tip" id="sqTip">Postav se před kameru a začni první dřep</div>
+        <div class="sq-cnt" id="sqCnt"><b id="sqN">0 / 20</b><small>dřepů hotovo</small></div></div>
+      <div class="a-bar"><i id="sqBar" style="width:0"></i></div>
+      <div class="sq-fb" id="sqFb">Kamera počítá hloubku dřepu podle úhlu v koleni.</div>
+    </div>
+    <div class="reward" id="rw9"><div class="rc"><div class="num" id="rw9n">+0</div><div class="nl">Nová úroveň!</div><div class="a-h2" style="font-size:21px">20 dřepů hotovo!</div><div class="a-sm">Skvělá práce. Získal jsi 10 minut i čerstvou energii.</div><span class="lvlb"><i>5</i>Úroveň 5 · Strážce pozornosti</span></div></div>
+  </div></div>
+  <div class="bk-tag">Demo · 3/6</div>
+  <div class="kick">Cena pohybem</div>
+  <h2 class="t">20 dřepů <em>odemkne 10 min</em></h2>
+  <div class="txt"><div class="price">
+    <div class="r" style="--pc:var(--sage)"><div><b>Zavřít feed</b><span>nejlepší volba</span></div><em>+50 XP</em></div>
+    <div class="r" style="--pc:var(--amber)"><div><b>20 dřepů</b><span>počítá kamera přes ML Kit</span></div><em>+20 XP</em></div>
+    <div class="r" style="--pc:var(--tw)"><div><b>Zaplatit kroky</b><span>1 000 kroků = 10 min</span></div><em>+10 XP</em></div>
+    <div class="r" style="--pc:var(--debt)"><div><b>Poprosit Parťáka o 10 min</b><span>pošle kamarád, nejvýš 30 min denně, nic se nepřenáší</span></div><em>0 XP</em></div>
+  </div></div>
+</section>
+
+<!-- 10 ZÁLOHA: PLÁNOVANÝ OBSAH -->
+<section class="sl feat" id="s10" data-backup="1" data-steps="2" data-title="Plánovaný obsah">
+  <div class="phone shot"><div class="scr"><img class="shot" src="snimky-aero/05-hodnoceni.png" alt="">
+    <div class="sbar"><span>21:58</span><span>Wi-Fi Domov_5G</span></div>
+    <div class="app" style="background:linear-gradient(#272B34cc,#272B34f2)">
+      <div style="flex:1"></div>
+      <div class="a-card" style="border-radius:28px;display:flex;flex-direction:column;gap:12px;padding:18px">
+        <div class="a-row"><div class="a-h2">Jakou hodnotu video mělo?</div><span class="a-chip ok sp" style="">+5 XP</span></div>
+        <div class="a-card e-ind" style="border-radius:16px"><div style="font:800 14px/1.3 var(--f)" id="rtT">Divoká příroda Šumavy – dokument</div><div class="a-sm" id="rtC">Příroda zblízka</div></div>
+        <div class="a-lab">Záměr před sledováním</div>
+        <div class="a-chips"><span class="a-chip on" id="rtI1">Učení</span><span class="a-chip">Odpočinek</span><span class="a-chip">Inspirace</span><span class="a-chip" id="rtI4">Jen tak</span></div>
+        <div class="rt-tiles" id="rtTiles"><span>1</span><span>2</span><span>3</span><span>4</span><span class="on">5</span></div>
+        <div class="a-sm" id="rtCap" style="text-align:center">5 · Skvělá hodnota</div>
+        <div class="a-row"><span class="a-btn out" style="flex:1;border:0">Přeskočit</span><span class="a-btn sage" style="flex:2;font-size:14px">Uložit hodnocení (+5 XP)</span></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="bk-tag">Demo · 4/6</div>
+  <div class="kick">YouTube</div>
+  <h2 class="t">Plánované je <em>zdarma</em></h2>
+  <div class="txt">
+    <div class="vrow"><div><div class="vt">Divoká příroda Šumavy – dokument</div><div class="vc">AI: odpovídá plánu „Dokument o přírodě“</div></div><div class="vv" style="color:var(--sage)">v plánu<br>zdarma</div></div>
+    <div class="vrow" data-s="1"><div><div class="vt">Top 10 funny moments kompilace</div><div class="vc">AI: v plánu nic podobného není</div></div><div class="vv" style="color:var(--amber)">stojí kroky<br><span style="font-weight:600;font-size:18px">3. v řadě = Ozvěna</span></div></div>
+    <p class="sm" data-s="2">Po každém videu hodnocení 1–5. Ozvěna nikdy nepřijde uprostřed videa.</p>
+  </div>
+</section>
+
+<!-- 11 ZÁLOHA: ZRCADLO -->
+<section class="sl feat" id="s11" data-backup="1" data-steps="1" data-title="Zrcadlo">
+  <div class="phone shot"><div class="scr"><img class="shot" src="snimky-aero/06-zrcadlo.png" alt="">
+    <div class="sbar"><span>22:05</span><span>Wi-Fi Domov_5G</span></div>
+    <div class="app">
+      <div class="a-h1" style="font-size:22px">Zrcadlo a hodnota obsahu</div>
+      <div class="a-row"><span class="a-chip on" id="mt1">Zrcadlo (21 dní)</span><span class="a-chip" id="mt2">Mapa hodnoty</span></div>
+      <div class="mi-pane on" id="mp1">
+        <div class="a-card"><div class="a-h2">Za 21 dní sis vzal zpět 13 hodin</div><div style="font:500 13px/1.35 var(--f);margin-top:6px">Pasivní scrollování kleslo o 58 % · v průměru 24 dřepů denně.</div></div>
+        <div class="a-card"><div class="a-h2" style="font-size:16px">Boss kritické hodiny · 22:00 – 23:00</div><div style="font:500 13px/1.35 var(--f);margin-top:6px">Největší pokušení přichází večer. Bez feedu přežito: 5 dní (+150 XP za den).</div></div>
+        <div class="a-card"><div style="font:800 14px/1.2 var(--f);margin-bottom:10px">Vývoj po týdnech (získaný čas vs. feed)</div><div style="display:flex;flex-direction:column;gap:10px" id="wk"></div></div>
+      </div>
+      <div class="mi-pane" id="mp2">
+        <div class="a-sm">Který obsah ti dává energii a který tě jen vysává (podle tvých hodnocení 1–5).</div>
+        <div class="vm"><div><div class="t">Přednášky a programování</div><div class="s">12× · vysoká hodnota pro tebe</div></div><span class="r">4.7 / 5</span></div>
+        <div class="vm"><div><div class="t">Dokumenty a rozhovory</div><div class="s">8× · vysoká hodnota pro tebe</div></div><span class="r">4.3 / 5</span></div>
+        <div class="vm trap hl"><div><div class="t">Krátké klipy a kompilace</div><div class="s">15× · díváš se, ale hodnotíš nízko</div></div><span class="r">1.6 / 5</span></div>
+        <div class="vm trap"><div><div class="t">Nekonečné herní streamy v noci</div><div class="s">6× · díváš se, ale hodnotíš nízko</div></div><span class="r">2.0 / 5</span></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="bk-tag">Demo · 5/6</div>
+  <div class="kick">Po třech týdnech</div>
+  <h2 class="t">Zrcadlo ukáže, <em>co tě vysává</em></h2>
+  <div class="txt">
+    <p class="p">Za 21 dní 13 hodin zpátky. Souboj s algoritmem: získaný čas proti minutám ve feedu.</p>
+    <p class="p" data-s="1">Krátké klipy dokoukává, ale hodnotí <b style="color:var(--debt)">1,6 z 5</b>. To je jeho past.</p>
+  </div>
+</section>
+
+<!-- 12 ZÁLOHA: PARŤÁK -->
+<section class="sl" id="s12" data-backup="1" data-steps="2" data-title="Parťák">
+  <div class="phone p1"><div class="scr">
+    <div class="sbar"><span>22:31</span><span>Wi-Fi Domov_5G</span></div>
+    <div class="home"><div class="icons" id="icons"></div><div class="ctxm" id="ctx"><div>Informace o aplikaci</div><div>Upravit</div><div class="del">Odinstalovat</div></div></div>
+  </div></div>
+  <div class="phone p2"><div class="scr">
+    <div class="lock"><div class="tm">22:31</div><div class="dt">sobota 28. listopadu</div>
+      <div class="notif" id="nt"><div class="h">Narsil · teď</div><b>Zpráva pro Parťáka</b><p>Šimon Sketa dnes vypnul ochranu Narsilu. Možná je dobrá chvíle mu napsat.</p></div></div>
+  </div></div>
+  <div class="ph-cap" style="left:180px;top:990px">telefon Šimona Skety</div>
+  <div class="ph-cap" style="left:1320px;top:990px">telefon kamaráda</div>
+  <div class="bk-tag" style="left:660px">Demo · 6/6</div>
+  <div class="mid">
+    <div class="kick" style="position:static">Parťák</div>
+    <div class="q">A když aplikaci smaže?</div>
+    <p class="p">Nedozví se to server.<br><b style="color:var(--sage)">Dozví se to kamarád.</b></p>
+    <p class="sm" data-s="2">Kód se dá obejít, lidi ne.</p>
+  </div>
+</section>
+
+<!-- 13 GAMIFIKACE -->
+<section class="sl" id="s13" data-title="Hra, která netrestá">
+  <div class="kick">Gamifikace</div>
+  <h2 class="t">Nejvíc XP dostaneš <em>za odchod</em></h2>
+  <div class="xp">
+    <div class="xpr" style="--xc:var(--sage)">Zavřít<div class="tr"><i data-w="100"></i></div><em>50</em></div>
+    <div class="xpr" style="--xc:var(--amber)">Dřepy<div class="tr"><i data-w="40"></i></div><em>20</em></div>
+    <div class="xpr" style="--xc:var(--tw)">Kroky<div class="tr"><i data-w="20"></i></div><em>10</em></div>
+    <div class="xpr" style="--xc:var(--debt)">Od Parťáka<div class="tr"><i data-w="1"></i></div><em>0</em></div>
+  </div>
+  <div class="xpwhat">
+    <b>Co XP mění</b>
+    <div class="lad"><span>1 · Začátek cesty</span><span>2 · Pozorovatel</span><span>3 · Kovář vůle</span><span>4 · Strážce pozornosti</span><span>5 · Znovu ukovaný</span><span>6+ · Mistr klidu</span></div>
+    <p>Každých 500 XP nová úroveň s titulem a oslavou. XP se ale nedají utratit – minuty na feed dává jen pohyb a splněné úkoly, takže se čas nedá vyfarmit klikáním.</p>
+  </div>
+  <div class="side">
+    <div class="card"><b>Nic ti nikdy XP nevezme.</b><p class="sm">Série má žolíky. Relaps není konec – proto Narsil, meč zlomený a znovu ukovaný.</p></div>
+    <div class="card"><b>Souboj s algoritmem</b><p class="sm">Každý den: čas, který sis vzal zpátky, proti minutám ve feedu. Postava budoucího já se mění podle posledního týdne.</p></div>
+  </div>
+</section>
+
+<!-- 14 SOUKROMÍ -->
+<section class="sl" id="s14" data-steps="3" data-title="Soukromí">
+  <div class="kick">Důvěra</div>
+  <h2 class="t">Zprávy nečteme. <em>Videa neopustí telefon.</em></h2>
+  <div class="rows">
+    <div class="card" data-s="1"><div class="ic2"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#2E7D5B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></div><div><b>Chaty se nikdy nesledují</b><span>WhatsApp, Messenger, Telegram ani zprávy v Instagramu.</span></div></div>
+    <div class="card" data-s="2"><div class="ic2"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#2E7D5B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></div><div><b>Videa zůstávají v telefonu</b><span>Večerní video i kamera dřepů – nic do cloudu.</span></div></div>
+    <div class="card" data-s="3"><div class="ic2"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#2E7D5B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div><div><b>Do AI jde jen název videa a plán</b><span>Parťák nedostává žádná data – jen jednu zprávu.</span></div></div>
+  </div>
+</section>
+
+<!-- 15 JAK JSME POSTAVILI -->
+<section class="sl" id="s15" data-title="Jak jsme to postavili">
+  <div class="kick">Tým</div>
+  <h2 class="t">%NPEOPLE% · AI agenti · <em>20 hodin</em></h2>
+  <div class="stack">
+    <div class="card"><i>01</i><b>Detekce</b><span>služba přístupnosti, domácí Wi-Fi</span></div>
+    <div class="card"><i>02</i><b>Ozvěna</b><span>okno přes aplikace, video, CameraX</span></div>
+    <div class="card"><i>03</i><b>Pohyb</b><span>ML Kit Pose, Health Connect</span></div>
+    <div class="card"><i>04</i><b>AI</b><span>Gemini: plán vs. video, ověření úkolů</span></div>
+    <div class="card"><i>05</i><b>Hra</b><span>Room, XP, série, Zrcadlo</span></div>
+  </div>
+  <div class="team" id="team"></div>
+  <div class="road"><b>Dál:</b> vlastní zóny · předpověď kritické hodiny · Parťák hlídá výpadek aplikace · další typy obsahu</div>
+</section>
+
+<!-- 16 POINTA -->
+<section class="sl" id="s16" data-title="Pointa">
+  <svg class="blade2" viewBox="0 0 1400 300" aria-hidden="true">
+    <defs><linearGradient id="bl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFDF6"/><stop offset=".5" stop-color="#E2DBCD"/><stop offset="1" stop-color="#A9A090"/></linearGradient>
+      <filter id="gl2" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <circle cx="70" cy="150" r="24" fill="#D49B27"/><circle cx="70" cy="150" r="8" fill="#2E7D5B"/>
+    <rect x="94" y="137" width="140" height="26" rx="8" fill="#4a3a2a"/>
+    <path d="M234 86 Q246 70 256 96 L256 204 Q246 230 234 214Z" fill="#D49B27"/>
+    <path d="M256 128 L1280 137 L1360 150 L1280 163 L256 172Z" fill="url(#bl2)"/>
+    <g filter="url(#gl2)" fill="none" stroke="#F2C14E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path class="seamd" d="M700 129 L688 141 L712 150 L692 161 L706 172"/>
+      <path class="seamd" d="M1010 133 L1022 143 L1000 152 L1018 166"/>
+    </g>
+  </svg>
+  <div class="lines"><div class="l1">Venku vás necháme žít.</div><div class="l2">Doma vám připomeneme, kým chcete být.</div><div class="l3">NARSIL</div></div>
+</section>
+
+<!-- 17 OTÁZKY -->
+<section class="sl" id="s17" data-title="Otázky">
+  <div class="kick">Děkujeme</div>
+  <h2 class="t">Vaše <em>otázky</em></h2>
+  <div class="faq"><div>Služba přístupnosti vidí obrazovku – proč vám věřit?</div><div>Čím se lišíte od one sec nebo Opalu?</div><div>Co je postavené a co nasimulované?</div><div>Proč jen Android?</div></div>
+  <div class="team">%TEAMBR%</div>
+</section>
+
+<div id="prog"></div><div id="no"></div><div id="clock">00:00</div><div id="liveDot"></div>
+<div id="notes"><h5>POZNÁMKY ŘEČNÍKA</h5><div id="notes-t"></div></div>
+<div id="ov"></div>
+<div id="setup">
+  <h3>Příprava živého přenosu</h3>
+  <p class="sm">Udělej před pitchem. Během prezentace se už nic neklikne – slide Demo ukáže živý telefon a záložní slidy s maketami se přeskočí.</p>
+  <ol><li>Telefon na USB, spustit zrcadlení:</li></ol>
+  <pre>ADB=~/Android/Sdk/platform-tools/adb ~/.local/opt/scrcpy/scrcpy --window-title=Narsil-live --no-audio --no-control --max-size=1600</pre>
+  <ol start="2"><li>„Sdílet okno telefonu“ → vybrat okno <b>Narsil-live</b>.</li><li>Zavřít tento panel klávesou <b>S</b> a přepnout na celou obrazovku (<b>F</b>).</li></ol>
+  <button class="sbtn solid" id="lvWin">Sdílet okno telefonu</button><button class="sbtn" id="lvStop">Zastavit přenos</button><button class="sbtn" id="lvClose">Zavřít (S)</button>
+  <div id="live-st">Přenos neběží – prezentace použije záložní slidy s maketami.</div>
+  <div id="relay-st" class="sm" style="margin-top:6px"></div>
+  <h3 style="margin-top:28px;font-size:30px">Demo most (telefon ↔ prezentace)</h3>
+  <p class="sm">Prezentaci spusť přes <b>python3 scripts/demo-most.py --scrcpy</b> (místo http.server). Slide Demo pak posouvá scény podle telefonu, ukazuje počítadlo dřepů a scény Venku/Doma přepnou telefon samy. Záloha na slidu Demo z klávesnice: <b>E</b> Ozvěna hned, <b>X</b> +500 XP, <b>H</b> doma, <b>V</b> venku.</p>
+  <div class="mrow"><button class="sbtn solid" data-cmd="prepare">Připravit demo v telefonu</button><button class="sbtn" data-cmd="away">Venku</button><button class="sbtn" data-cmd="home">Doma</button><button class="sbtn" data-cmd="echo">Ozvěna hned</button><button class="sbtn" data-cmd="xp">+500 XP</button><button class="sbtn" data-cmd="state">Stav</button></div>
+  <div id="most-st">Most neběží – demo funguje i bez něj, jen se scény posouvají klikem.</div>
+</div>
+<div id="black"></div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const CONFIG={
+  team:['Marek','Šimon','Jan','Štěpán','Nikolas'],   // jména na titulu, v týmu a na posledním slidu
+  roles:['jádro, detekce, Ozvěna','pohyb, dřepy, gamifikace','obrazovky a design','pitch, data, grafika','ověření úkolů, AI'],
+  date:'Hackathon · listopad 2026',
+  targetMin:5,        // časomíra zčervená po tolika minutách (T = zobrazit)
+  echoSeconds:6,      // za kolik sekund maketa feedu dojede k Ozvěně
+  // demo most (161): scéna slidu Demo → příkaz do telefonu (smaž řádek = nic neposílat)
+  sceneCmds:{2:'away',3:'home'},
+  squatsTarget:20     // cíl na počítadle dřepů v prezentaci
+};
+(()=>{
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stage=$('#stage');
+const n=CONFIG.team.length, word=n===1?'člověk':n<5?'lidé':'lidí';
+$$('.sl',stage).forEach(s=>{s.innerHTML=s.innerHTML.replaceAll('%TEAMBR%',CONFIG.team.join('<br>')).replaceAll('%TEAM%',CONFIG.team.join(' · '))
+  .replaceAll('%DATE%',CONFIG.date).replaceAll('%NPEOPLE%',`${n} ${word}`)});
+$('#team').innerHTML=CONFIG.team.map((t,i)=>`<div class="card"><b>${t}</b><span>${CONFIG.roles[i]||''}</span></div>`).join('');
+
+function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform=`translate(-50%,-50%) scale(${s})`}
+addEventListener('resize',fit);fit();
+
+/* časovače vázané na aktuální slide */
+let token=0;const timers=new Set();
+const later=(ms,f)=>{const t=token;const id=setTimeout(()=>{timers.delete(id);if(t===token)f()},ms);timers.add(id)};
+const every=(ms,f)=>{const t=token;const id=setInterval(()=>{if(t!==token){clearInterval(id);return}f()},ms);timers.add(id)};
+function clearT(){timers.forEach(id=>{clearTimeout(id);clearInterval(id)});timers.clear()}
+function tween(ms,f,done){const t=token,t0=performance.now();const k=now=>{if(t!==token)return;const p=Math.min(1,(now-t0)/ms);f(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2,p);if(p<1)requestAnimationFrame(k);else done&&done()};requestAnimationFrame(k)}
+
+/* ===================== MEČ – ukazatel postupu ===================== */
+const SH=[{d:'M118 52 L196 50 L204 58 L196 66 L118 70 Z',x:-6,y:20,r:-8},{d:'M196 50 L262 52 L270 58 L262 64 L196 66 L204 58 Z',x:14,y:-24,r:10},
+  {d:'M262 52 L320 55 L326 58 L320 61 L262 64 L270 58 Z',x:30,y:22,r:-14},{d:'M320 55 L350 57 L368 58 L350 59 L320 61 L326 58 Z',x:44,y:-12,r:22}];
+$('#sword').innerHTML=`<defs><linearGradient id="sb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#B3AA9A"/></linearGradient></defs>
+  <circle cx="22" cy="58" r="9" fill="#D49B27"/><rect x="31" y="52" width="56" height="12" rx="4" fill="#4a3a2a"/>
+  <path d="M87 32 Q96 26 100 36 L100 80 Q96 90 87 84 Z" fill="#D49B27"/><path d="M100 52 L118 52 L118 70 L100 64 Z" fill="url(#sb)" stroke="#8a8170" stroke-width="1.5"/>`+
+  SH.map((h,i)=>`<g class="sh" id="sh${i}" style="transform-origin:230px 58px"><path d="${h.d}" fill="url(#sb)" stroke="#8a8170" stroke-width="1.5" stroke-linejoin="round"/></g>`).join('')+
+  `<g class="seam" stroke="#F2C14E" stroke-width="3" fill="none" stroke-linecap="round"><path d="M118 52 L122 58 L118 70"/><path d="M196 50 L204 58 L196 66"/><path d="M262 52 L270 58 L262 64"/><path d="M320 55 L326 58 L320 61"/></g>`;
+function sword(p){SH.forEach((h,i)=>{const q=Math.max(0,1-Math.min(1,p*1.15+(i===0?.2:0)));$('#sh'+i).style.transform=`translate(${h.x*q}px,${h.y*q}px) rotate(${h.r*q}deg)`});$('#sword').classList.toggle('whole',p>=.999)}
+
+/* ===================== MAKETY ===================== */
+// smlouva
+function cw(p){$$('#cw .cw-pane').forEach(x=>x.classList.toggle('on',+x.dataset.p===p));
+  $$('#cw .cw-steps i').forEach((x,i)=>x.classList.toggle('on',i<Math.min(p,4)));$('#cwStep').textContent=`Krok ${Math.min(p,4)} ze 4`;
+  $('#cwFoot').style.display=p>=5?'none':'flex';const nx=$('#cwNext');nx.textContent=p===4?'Podepsat smlouvu':'Další krok';nx.className='a-btn '+(p===4?'sage':'tw');
+  $$('#cwPts div').forEach((d,i)=>d.classList.toggle('dim',p<5&&i!==p-1));
+  const rec=$('#cwRec');rec.style.cssText='background:#663209;border-color:#663209;color:#FFE5D0';$('#cwCam').style.borderColor='';
+  if(p===4){let k=3;rec.textContent='Nahrávám 3/15 s';every(300,()=>{if(k<14){k++;rec.textContent=`Nahrávám ${k}/15 s`}else{rec.textContent='Uloženo (14 s)';rec.style.cssText='background:#175139;border-color:#175139;color:#D2EFE0';$('#cwCam').style.borderColor='#5CC497'}})}}
+// Ozvěna
+const POSTS=[['#ff5f6d','#ffc371','@kocici.raj','kočka vs. okurka #fyp'],['#2b5876','#4e4376','@gym.bro.cz','den 214 bez přestávky'],['#11998e','#38ef7d','@recepty_za_minutu','těstoviny za 60 s'],['#c94b4b','#4b134f','@dramaticky_pes','počkej na konec…'],['#f7971e','#ffd200','@lifehacky','tohle jsi nevěděl'],['#3a1c71','#d76d77','@tanecni.vyzva','zkus to taky']];
+$('#fStrip').innerHTML=POSTS.map(([a,b,u,t],i)=>`<div class="post" style="background:linear-gradient(${150+i*20}deg,${a},${b})"><svg style="position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);opacity:.3" width="160" height="160"><circle cx="80" cy="80" r="60" fill="#fff"/></svg><div class="who">${u}<small>${t}</small></div><div class="rail"><div><i></i>${12+i*7}k</div><div><i></i>${300+i*41}</div><div><i></i>Sdílet</div></div></div>`).join('');
+const OZ={enter(){$('#echo').classList.remove('in');$('#fStrip').style.transform='';$('#fTimer').style.width='0';this.feel(false);
+    const T=CONFIG.echoSeconds*1000,t0=performance.now();let k=0;
+    every(1200,()=>{k=(k+1)%POSTS.length;$('#fStrip').style.transform=`translateY(${-k*828}px)`});
+    every(100,()=>{const p=Math.min(1,(performance.now()-t0)/T);$('#fTimer').style.width=p*100+'%';if(p>=1&&!$('#echo').classList.contains('in'))$('#echo').classList.add('in')})},
+  feel(on){$$('#feel .a-chip')[1].classList.toggle('on',on);$('#chSq').classList.toggle('pick',on);if(on)$('#echo').classList.add('in')}};
+// dřepy
+const SQ={n:0,fig(d){const A={x:194,y:345},L=92,T=110,R=Math.PI/180,a1=34*d*R,a2=88*d*R,a3=38*d*R,b=82*d*R;
+    const K={x:A.x+L*Math.sin(a1),y:A.y-L*Math.cos(a1)},H={x:K.x-L*Math.sin(a2),y:K.y-L*Math.cos(a2)},S={x:H.x+T*Math.sin(a3),y:H.y-T*Math.cos(a3)};
+    const Hd={x:S.x+14*Math.sin(a3),y:S.y-34},W={x:S.x+84*Math.sin(b),y:S.y+84*Math.cos(b)},ang=Math.round(180-(a1+a2)/R);
+    const ln=(p,q,c,w)=>`<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`,dot=p=>`<circle cx="${p.x}" cy="${p.y}" r="7" fill="#F2A359" stroke="#121110" stroke-width="2"/>`;
+    $('#sqSvg').innerHTML=`<rect width="388" height="470" fill="#26231F"/><rect y="345" width="388" height="125" fill="#2E2A24"/><g opacity=".55">${ln(A,K,'#C1B7AA',26)}${ln(K,H,'#C1B7AA',28)}${ln(H,S,'#C1B7AA',34)}${ln(S,W,'#C1B7AA',16)}<circle cx="${Hd.x}" cy="${Hd.y}" r="24" fill="#C1B7AA"/></g>`+
+      ln(A,K,'#5CC497',4)+ln(K,H,'#5CC497',4)+ln(H,S,'#5CC497',4)+ln(S,W,'#5CC497',4)+dot(A)+dot(K)+dot(H)+dot(S)+dot(W)+
+      `<g transform="translate(${K.x+16} ${K.y-8})"><rect y="-18" width="104" height="28" rx="14" fill="rgba(18,17,16,.85)"/><text x="52" y="1" text-anchor="middle" font-size="13" font-weight="800" fill="#F2A359">koleno ${ang}°</text></g>`},
+  ui(){const n=this.n,done=n>=20;$('#sqN').textContent=`${n} / 20`;$('#sqBar').style.width=n*5+'%';$('#sqBar').style.background=done?'#5CC497':'#F2A359';
+    ['#sqCnt','#sqCam','#sqFb'].forEach(s=>$(s).classList.toggle('done',done));
+    $('#sqFb').textContent=done?'Skvělá práce! Přesunul ses z hlavy do těla.':n?`Výborně! Zbývá ${20-n} dřepů.`:'Kamera počítá hloubku dřepu podle úhlu v koleni.'},
+  enter(){this.n=0;this.fig(0);this.ui();$('#sqTip').textContent='Postav se před kameru a začni první dřep';$('#rw9').classList.remove('in');later(900,()=>this.rep())},
+  rep(){if(this.n>=20)return;const ms=RM?120:560;$('#sqTip').textContent='Jdeš dolů – drž rovná záda';
+    tween(ms/2,e=>this.fig(e),()=>{$('#sqTip').textContent='Skvěle! Nahoru a další opakování';this.n++;this.ui();
+      tween(ms/2,e=>this.fig(1-e),()=>{if(this.n<20)later(60,()=>this.rep());else{$('#sqTip').textContent='Hotovo! Odemykám čas a připisuji odměnu';
+        later(700,()=>{$('#rw9').classList.add('in');tween(550,(e,p)=>$('#rw9n').textContent='+'+Math.round(20*p))})}})})}};
+// hodnocení
+const RTC=['1 · Spíš ztráta času','2 · Slabší přínos','3 · Průměrné video','4 · Přínosné a hodnotné','5 · Skvělá hodnota'];
+function rt(st){const un=st>=1;$('#rtT').textContent=un?'Top 10 funny moments kompilace':'Divoká příroda Šumavy – dokument';$('#rtC').textContent=un?'Daily Shorts':'Příroda zblízka';
+  const v=un?2:5;$$('#rtTiles span').forEach((s,i)=>s.classList.toggle('on',i===v-1));$('#rtCap').textContent=RTC[v-1];$('#rtI1').classList.toggle('on',!un);$('#rtI4').classList.toggle('on',un)}
+// zrcadlo
+$('#wk').innerHTML=[[1,160,340],[2,275,220],[3,345,142]].map(([w,a,b])=>`<div class="wk"><div class="a-row"><span>Týden ${w}</span><span class="sp">${a} min pro tebe · ${b} min feed</span></div><div class="bars"><i style="flex:${a};background:#5CC497"></i><i style="flex:${b};background:#B5A5C9"></i></div></div>`).join('');
+function mi(st){$('#mt1').classList.toggle('on',!st);$('#mt2').classList.toggle('on',!!st);$('#mp1').classList.toggle('on',!st);$('#mp2').classList.toggle('on',!!st)}
+// parťák
+const ICONS=[['Telefon','#2E7D5B'],['Zprávy','#5465B8'],['Fotoaparát','#474139'],['Kalendář','#C86D2D'],['Instagram','linear-gradient(45deg,#f09433,#dc2743,#bc1888)'],['TikTok','#000'],['YouTube','#e52d27'],['Firefox','linear-gradient(135deg,#ff9500,#e31587)'],['Mapy','#2b8a6e'],['Narsil','nar'],['Hudba','#7B6B8D'],['Nastavení','#5A5248']];
+$('#icons').innerHTML=ICONS.map(([n,c])=>c==='nar'?`<div class="ic" id="nar"><i style="background:#121110;box-shadow:0 0 0 1px #3a332a"><svg viewBox="0 0 62 62" width="62" height="62"><circle cx="31" cy="31" r="22" fill="none" stroke="#9FA8DA" stroke-width="2" opacity=".55"/><path d="M29 10 L33 10 L33.5 30 L28.5 30Z" fill="#F3EFE9"/><path d="M28.5 33 L33.5 33 L33 44 L29 44Z" fill="#D7CEC0"/><path d="M27 31.5 L35 31 M24 45 H38" stroke="#F2A359" stroke-width="2.5"/><circle cx="31" cy="50" r="2.5" fill="#5CC497"/></svg></i>${n}</div>`:`<div class="ic"><i style="background:${c}"></i>${n}</div>`).join('');
+function pt(st){$('#ctx').classList.toggle('in',st===1);$('#nar').classList.toggle('gone',st>=2);$('#nt').classList.remove('in');if(st>=2)later(900,()=>$('#nt').classList.add('in'))}
+// problém – hodiny
+function clock3(){const el=$('#clk3');el.classList.remove('late');let m=21*60+40;el.textContent='21:40';later(500,()=>every(RM?5:24,()=>{if(m>=24*60+30)return;m++;el.textContent=`${String(Math.floor(m/60)%24).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;if(m>=23*60)el.classList.add('late')}))}
+
+/* ===================== NAVIGACE ===================== */
+const slides=$$('.sl',stage);let cur=0,step=0;
+const HOOK={
+  s03:{enter:clock3},
+  s06:{enter(){MOST.hud(null)},step(k){$$('#scenes div').forEach((d,i)=>{d.classList.toggle('cur',i===k-1);d.classList.toggle('done',i<k-1)});MOST.scene(k)}},
+  s07:{step(k){cw(k+1)}},
+  s08:{enter(){OZ.enter()},step(k){if(k)OZ.feel(true)}},
+  s09:{enter(){SQ.enter()}},
+  s10:{step(k){rt(k)}},
+  s11:{step(k){mi(k)}},
+  s12:{step(k){pt(k)}},
+  s13:{enter(){$$('#s13 .xpr i').forEach(i=>i.style.width='0');later(250,()=>$$('#s13 .xpr i').forEach(i=>i.style.width=i.dataset.w+'%'))}},
+};
+const skip=i=>(stream||remoteLive)&&slides[i]&&slides[i].dataset.backup;   // živý přenos běží → záložní slidy přeskočit
+function go(i,st){i=Math.max(0,Math.min(slides.length-1,i));const changed=i!==cur||!slides[i].classList.contains('on');
+  if(changed)slides[cur].classList.remove('on');
+  const s=slides[i],nst=+(s.dataset.steps||0);cur=i;step=st<0?nst:Math.min(st,nst);
+  if(changed){token++;clearT();s.classList.add('on');HOOK[s.id]&&HOOK[s.id].enter&&HOOK[s.id].enter()}
+  $$('[data-s]',s).forEach(e=>e.classList.toggle('in',+e.dataset.s<=step));HOOK[s.id]&&HOOK[s.id].step&&HOOK[s.id].step(step);
+  stage.classList.toggle('nosword',i===0||s.id==='s12'||s.id==='s16');
+  const vis=slides.map((x,j)=>j).filter(j=>!skip(j)),pos=Math.max(0,vis.indexOf(i));
+  sword(pos/(vis.length-1));$('#prog').style.width=(pos+(nst?step/(nst+1):0))/(vis.length-1)*100+'%';
+  $('#no').textContent=i===0?'':`${pos+1} / ${vis.length}`;
+  $('#notes-t').textContent=NOTES[s.id]||'';history.replaceState(null,'','#'+s.id);applyLive()}
+function next(){const nst=+(slides[cur].dataset.steps||0);if(step<nst){go(cur,step+1);return}let j=cur+1;while(skip(j))j++;if(j<slides.length)go(j,0)}
+function prev(){if(step>0){go(cur,step-1);return}let j=cur-1;while(j>0&&skip(j))j--;if(j>=0)go(j,-1)}
+// přehled
+let ov=false;function overview(on){ov=on;const o=$('#ov');o.classList.toggle('on',on);if(!on)return;
+  o.innerHTML='<h3>Přehled</h3>'+slides.map((s,i)=>`<button class="ovc ${s.dataset.backup?'bk':''} ${i===cur?'cur':''}" data-i="${i}"><small>${String(i+1).padStart(2,'0')}${s.dataset.backup?' · záloha':''}</small><span>${s.dataset.title}</span></button>`).join('');
+  $$('.ovc',o).forEach(b=>b.onclick=()=>{overview(false);go(+b.dataset.i,0)})}
+// časomíra
+let t0=null;const clk=$('#clock');
+setInterval(()=>{if(!t0)return;const s=Math.floor((Date.now()-t0)/1000);clk.textContent=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;clk.classList.toggle('late',s>=CONFIG.targetMin*60)},500);
+// klávesy (prezentér posílá PageDown/PageUp, šipky, F5, Esc, B nebo .)
+addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key;
+  if($('#setup').classList.contains('on')&&k!=='s'&&k!=='S'&&k!=='Escape')return;
+  if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(k)){e.preventDefault();if(!t0)t0=Date.now();next()}
+  else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(k)){e.preventDefault();prev()}
+  else if(k==='Home')go(0,0);else if(k==='End')go(slides.length-1,0);
+  else if(k==='F5'){e.preventDefault();document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  else if(k==='f'||k==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  else if(k==='b'||k==='B'||k==='.'){$('#black').classList.toggle('on')}
+  else if(k==='n'||k==='N')$('#notes').classList.toggle('on');
+  else if(k==='o'||k==='O')overview(!ov);
+  else if(k==='Escape'){overview(false);$('#setup').classList.remove('on')}
+  else if(k==='t'||k==='T')clk.classList.toggle('on');
+  else if(k==='s'||k==='S')$('#setup').classList.toggle('on')});
+// klik myší do slidu = další (kromě panelů)
+stage.addEventListener('click',e=>{if(e.target.closest('#setup,#ov,#notes,button'))return;if(!t0)t0=Date.now();next()});
+let mt;addEventListener('mousemove',()=>{document.body.classList.remove('hidecur');clearTimeout(mt);mt=setTimeout(()=>document.body.classList.add('hidecur'),2000)});
+
+/* ===================== ŽIVÝ PŘENOS ===================== */
+let stream=null,remoteLive=false;   // remoteLive: obraz telefonu přeposílá most (jiná záložka / jiný počítač sdílí okno)
+function st(t,c){const e=$('#live-st');e.textContent=t;e.className=c||''}
+function applyLive(){$$('.phone[data-live]').forEach(p=>{const own=!!stream,rem=!own&&remoteLive;let v=$('video.livev',p),im=$('img.livev',p);
+  if(own&&!v){v=document.createElement('video');v.className='livev';v.muted=true;v.autoplay=true;v.playsInline=true;$('.scr',p).appendChild(v)}
+  if(v){if(own&&v.srcObject!==stream){v.srcObject=stream;v.play().catch(()=>{})}if(!own){v.remove()}}
+  if(rem&&!im){im=document.createElement('img');im.className='livev';im.alt='';im.src='/demo/live.mjpg?'+Date.now();$('.scr',p).appendChild(im)}
+  if(!rem&&im)im.remove();
+  p.classList.toggle('live',own||rem)});
+  $('#liveDot').classList.toggle('on',!!stream&&$('#setup').classList.contains('on'))}
+// Sdílí-li tahle záložka okno a běží most, posílá snímky telefonu ostatním prezentacím (http://IP:8000).
+// Takt dává Worker, takže přeposílá i záložka v pozadí.
+const RELAY={on:false,busy:0,v:null,c:null,sent:0,
+  start(){if(this.on||!/^https?:/.test(location.protocol))return;this.on=true;
+    this.v=document.createElement('video');this.v.muted=true;this.v.playsInline=true;this.c=document.createElement('canvas');
+    // takt z Workeru: časovače skryté záložky Firefox brzdí na 1/s, zprávy z Workeru ne
+    try{const w=new Worker(URL.createObjectURL(new Blob(['setInterval(()=>postMessage(0),100)'],{type:'text/javascript'})));w.onmessage=()=>this.tick()}
+    catch(e){setInterval(()=>this.tick(),100)}
+    setInterval(()=>{$('#relay-st').textContent=stream?(MOST.local?`Do sítě posláno ${this.sent} snímků (prezentace na http://IP:8000 ukáže telefon).`:'Do sítě se posílá jen ze záložky na localhostu.'):''},1000)},
+  tick(){if(!stream||this.busy>1||!MOST.local)return;const v=this.v;if(v.srcObject!==stream){v.srcObject=stream;v.play().catch(()=>{})}
+    if(!v.videoWidth)return;const k=Math.min(1,1280/v.videoHeight),c=this.c;c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);
+    c.getContext('2d').drawImage(v,0,0,c.width,c.height);this.busy++;
+    c.toBlob(b=>{if(!b){this.busy--;return}fetch('/demo/frame',{method:'POST',body:b}).then(r=>{if(r.ok)this.sent++}).catch(()=>{}).finally(()=>this.busy--)},'image/jpeg',.72)}};
+function stop(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}applyLive();go(cur,step);st('Přenos neběží – prezentace použije záložní slidy s maketami.')}
+$('#lvWin').onclick=async()=>{if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){st(remoteLive?'Obraz telefonu sem posílá most – sdílet tady není potřeba.':'Tady sdílení okna nejde – sdílej na notebooku s telefonem v http://localhost:8000, obraz se sem pošle sám.',remoteLive?'ok':'err');return}
+  try{const s=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:30}},audio:false});if(stream)stream.getTracks().forEach(t=>t.stop());stream=s;
+    s.getVideoTracks().forEach(t=>t.addEventListener('ended',()=>{if(stream===s){stream=null;applyLive();go(cur,step);st('Přenos skončil (výpadek USB?) – spusť zrcadlení a sdílej znovu.','err')}}));
+    applyLive();go(cur,step);RELAY.start();st('Přenos běží. Slide Demo ukáže živý telefon, záložní slidy se přeskočí.'+(MOST.local?' Obraz jde i na http://IP:8000.':''),'ok')}
+  catch(e){st('Sdílení zrušeno ('+e.name+').','err')}};
+$('#lvStop').onclick=stop;$('#lvClose').onclick=()=>$('#setup').classList.remove('on');
+
+/* ===================== DEMO MOST (161) ===================== */
+// Události z telefonu přes scripts/demo-most.py (SSE /demo/events), příkazy POST /demo/cmd/<c>.
+// Bez mostu (soubor, http.server) se nic nemění: scény se posouvají jen klikem.
+const MOST=window.MOST=(()=>{
+  let up=false,phone=false,local=false,lastScene=0,hudT=null,mode=null,lvl=null,xp=null,where=null;
+  const ms=(t,c)=>{const e=$('#most-st');e.textContent=t;e.className=c||''};
+  const onDemo=()=>slides[cur]&&slides[cur].id==='s06';
+  const restart=(el,cls)=>{el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)};
+  function cmd(c){if(!up)return Promise.resolve(false);return fetch('/demo/cmd/'+c,{method:'POST'}).then(r=>r.ok).catch(()=>false)}
+  // scény se podle telefonu jen posouvají dopředu, klik prezentérem má vždy přednost
+  function advance(k){if(onDemo()&&step<k)go(cur,k)}
+  function chips(){$('#dlive').classList.toggle('on',up&&phone);
+    $('#dlWhere').innerHTML=where?`<b>${where==='home'?'Doma':'Venku'}</b>`:'–';
+    $('#dlLvl').innerHTML=lvl?`Úroveň <b>${lvl}</b>${xp!=null?' · '+xp.toLocaleString('cs-CZ')+' XP':''}`:'–'}
+  function flash(id){const e=$(id);restart(e,'flash');setTimeout(()=>e.classList.remove('flash'),1600)}
+  function hud(m,o){const s=$('#s06'),h=$('#dhud'),num=$('#dhNum');clearTimeout(hudT);mode=m;
+    if(!m){s.classList.remove('hud');h.classList.remove('lvl');$('#dhMsg').textContent='';return}
+    s.classList.add('hud');
+    const later=t=>{hudT=setTimeout(()=>hud(null),t)};
+    if(m==='squats'){h.classList.remove('lvl');const t=o.target||CONFIG.squatsTarget;$('#dhLab').textContent='Kamera počítá dřepy';
+      num.innerHTML=`${o.n}<small> / ${t}</small>`;num.classList.remove("lvlin");restart(num,"pop");$('#dhBar').style.width=Math.min(100,o.n/t*100)+'%';
+      $('#dhMsg').textContent=o.n>=t?'Hotovo!':''}
+    else if(m==='unlocked'){h.classList.remove('lvl');$('#dhLab').textContent='Zaplaceno pohybem';
+      num.innerHTML=`${o.min}<small> min</small>`;$('#dhBar').style.width='100%';$('#dhMsg').textContent='Feed je odemčený';later(6000)}
+    else if(m==='task'){h.classList.remove('lvl');const ok=o.status==='VERIFIED',bad=o.status==='REJECTED';
+      $('#dhLab').textContent=ok?'Úkol ověřený':bad?'Úkol zamítnutý – zkus znovu':'Úkol odevzdaný';num.innerHTML=ok?'✓':bad?'✗':'…';
+      $('#dhBar').style.width=ok?'100%':'0';$('#dhMsg').textContent=o.title+(ok?' · minuty připsané':'');later(6000)}
+    else if(m==='level'){h.classList.add('lvl');$('#dhLab').textContent='Nová úroveň – za pohyb';
+      num.innerHTML=`${o.level}<small>. úroveň</small>`;restart(num,'lvlin');later(6000)}}
+  function onEvent(d){
+    switch(d.e){
+      case 'live':setRemote(d.on);break;
+      case 'bridge':phone=!!d.adb;ms(phone?`Most běží, telefon ${d.device} připojený.`:'Most běží, telefon není připojený (USB?).',phone?'ok':'err');break;
+      case 'state':where=d.where;lvl=d.level;xp=d.xp;$('#dlEcho').style.display=d.echo?'':'none';break;
+      case 'context':where=d.where;flash('#dlWhere');break;
+      case 'echo':$('#dlEcho').style.display='';flash('#dlEcho');advance(3);break;
+      case 'echo_end':$('#dlEcho').style.display='none';break;
+      case 'squats':advance(4);if(onDemo())hud('squats',d);break;
+      case 'unlocked':advance(4);if(onDemo()){if(mode==='squats'){$('#dhMsg').textContent=`Hotovo! Feed odemčený na ${d.min} min`;clearTimeout(hudT);hudT=setTimeout(()=>hud(null),6000)}else hud('unlocked',d)}break;
+      case 'xp':xp=d.xp;break;
+      case 'level':lvl=d.level;flash('#dlLvl');advance(4);if(onDemo()){const msg=$('#dhMsg').textContent;hud('level',d);$('#dhMsg').textContent=msg}break;
+      case 'task':if(d.status!=='PENDING'){advance(5);if(onDemo())hud('task',d)}break;
+      case 'rated':advance(6);break;
+      case 'ack':ms(`Telefon: ${d.cmd} ${d.ok?'✓':'– nepovedlo se'}`,d.ok?'ok':'err');break;
+    }
+    chips()}
+  function setRemote(on){if(remoteLive===!!on)return;remoteLive=!!on;applyLive();go(cur,step)}
+  function connect(){if(!/^https?:/.test(location.protocol)||!window.EventSource)return;
+    fetch('/demo/status').then(r=>r.ok?r.json():null).then(j=>{if(!j||j.e!=='bridge')return;local=!!j.local;setRemote(j.live);
+      const es=new EventSource('/demo/events');
+      es.onopen=()=>{up=true;chips()};
+      es.onmessage=m=>{try{onEvent(JSON.parse(m.data))}catch(e){}};
+      es.onerror=()=>{up=false;chips();ms('Most se odpojil – zkouším znovu…','err')}}).catch(()=>{})}
+  $$('#setup [data-cmd]').forEach(b=>b.onclick=()=>cmd(b.dataset.cmd).then(ok=>{if(!ok)ms('Příkaz neprošel – běží most a je telefon na USB?','err')}));
+  // záloha během dema z klávesnice notebooku (prezentér tyhle klávesy neposílá)
+  addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey||!onDemo())return;
+    if($('#setup').classList.contains('on')||$('#ov').classList.contains('on'))return;
+    const c={e:'echo',x:'xp',h:'home',v:'away'}[e.key.toLowerCase()];if(c){e.preventDefault();cmd(c)}});
+  connect();
+  return{cmd,hud,sim:onEvent,get local(){return local},
+    scene(k){if(k===lastScene)return;lastScene=k;const c=(CONFIG.sceneCmds||{})[k];if(c)cmd(c)}};
+})();
+
+/* ===================== POZNÁMKY ===================== */
+const NOTES={
+s01:`(Štěpán) Dobrý den, jsme Narsil. Narsil je meč, který se zlomil a znovu ho ukovali – přesně o tom je naše aplikace: o dnech, kdy to nevyjde, a o návratu.`,
+s02:`(Štěpán, 0:25) Každá antiprokrastinační aplikace prohrává stejnou válku: staví zeď proti člověku. A člověk se naučí přelézat.
+→ prohlížeč → „ještě 15 minut“ → reinstalace.
+→ My jsme zeď nepostavili. Postavili jsme zrcadlo.`,
+s03:`(Štěpán, 0:25) Šimon Sketa otevře TikTok „na chvilku“ – a hodiny utečou do půl jedné.
+→ Neprokrastinujeme, protože jsme líní. Utíkáme před pocitem – a feed je nejrychlejší únik.
+→ Proto zákazy nefungují. A otravují i tam, kde nemusí – venku, ve zprávách.`,
+s04:`(Štěpán) Narsil zasahuje jen tam, kde prokrastinace vzniká: doma, u nekonečného obsahu, po pěti minutách.
+Venku, ve zprávách a u plánovaného obsahu mlčí.`,
+s05:`(Štěpán, 0:40) Plánované je zdarma, neplánované se platí pohybem. Čtyři části:
+večerní smlouva, Ozvěna, cena pohybem, Parťák.
+→ Ukážeme vám to naživo.`,
+s06:`DEMO 2:00 – Šimon ovládá telefon, Štěpán komentuje, každým klikem další scéna:
+1 smlouva (6000 kroků, dokument o přírodě, video) · 2 venku Reels + zpráva – mlčí · 3 doma, 0 minut a nic splněno: ukazatel se naplní za 5 s a TikTok zablokuje – žádných 5 minut tolerance · 4 únava → 20 dřepů, feed na 10 min, nová úroveň · 5 odevzdání úkolu (fotka, AI ověří, připíšou se minuty) · 6 dokument o přírodě projde zdarma · 7 Zrcadlo – past · 8 Parťák: poprosit o 10 min (Marek zvedne Redmi).
+Bez živého přenosu následuje 6 záložních slidů s maketami.
+S mostem (scripts/demo-most.py): scéna 2 přepne telefon na Venku, scéna 3 na Doma; Ozvěna, dřepy, odevzdaný úkol a hodnocení videa posunou scény samy, dřepy běží velkým počítadlem. Záloha z klávesnice: E Ozvěna hned, X +500 XP, H doma, V venku.`,
+s07:`(Záloha) Večer si Šimon dvě minuty sedne sám se sebou. Šest tisíc kroků, v plánu dokument o přírodě – a krátké video pro sebe na zítra.`,
+s08:`(Záloha) Večer doma. Jen na chvilku TikTok… (Ozvěna) Tohle je jeho vlastní video. A otázka: Čemu se teď vyhýbáš? → Únava, 20 dřepů.`,
+s09:`(Záloha) Pokračovat může vždycky – jen to něco stojí. Dvacet dřepů, kamera je počítá… a feed je na deset minut odemčený. A nová úroveň – za pohyb.`,
+s10:`(Záloha) Dokument o přírodě je v plánu, projde zdarma – plán s názvem videa páruje AI. Neplánované video stojí kroky, třetí v řadě spustí Ozvěnu. A každé video ohodnotí…`,
+s11:`(Záloha) …takže po třech týdnech vidí, co dokoukává, ale hodnotí na jedničku. To je jeho past.`,
+s12:`(Záloha) A když aplikaci smaže? Nedozví se to server. Dozví se to kamarád. Kód se dá obejít, lidi ne.
+Poctivě: v MVP ukázková notifikace, hlídání odinstalace je v roadmapě.`,
+s13:`(Štěpán, 0:30) Nejvíc bodů je za to, že od feedu odejdeš sám. Nic ti body nebere, série má žolíky – relaps není konec. Proto Narsil.
+→ Co XP mění: každých 500 XP nová úroveň s titulem – od Začátku cesty po Mistra klidu. Utratit se nedají: minuty na feed dává jen pohyb a úkoly, takže se čas nedá vyfarmit.`,
+s14:`(Štěpán, 0:20) Aplikace, která vidí obrazovku, musí být důvěryhodná. Chaty nesledujeme vůbec, videa zůstávají v telefonu, do AI jde jen název videa a plán.`,
+s15:`(Marek, 0:20) Nativní Android: detekce přes službu přístupnosti, domov podle Wi-Fi, dřepy přes ML Kit, plán s videem páruje Gemini. Za 20 hodin s týmem AI agentů – každý měl svůj balíček a úkoly.`,
+s16:`(Štěpán, 0:15) Venku vás necháme žít. Doma vám připomeneme, kým chcete být. Narsil. Děkujeme.`,
+s17:`Otázky – technické Marek, ostatní Štěpán. Odpovědi: pitch/otazky.md.`
+};
+
+addEventListener('hashchange',()=>{const i=slides.findIndex(s=>'#'+s.id===location.hash);if(i>=0&&i!==cur)go(i,/full/.test(location.search)?-1:0)});
+const start=Math.max(0,slides.findIndex(s=>'#'+s.id===location.hash));
+go(start,/full/.test(location.search)?-1:0);
+})();
+</script>
+</body>
+</html>

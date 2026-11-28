@@ -28,12 +28,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cz.narsil.ui.components.AeroBlueOrb
 import cz.narsil.ui.components.NeuHeader
 import cz.narsil.ui.components.NeuIcons
 import cz.narsil.ui.components.NeuLabel
@@ -44,6 +46,9 @@ import cz.narsil.ui.components.NeuSegmented
 import cz.narsil.ui.components.NeuSmallButton
 import cz.narsil.ui.components.NeuText
 import cz.narsil.ui.components.NeuTextField
+import cz.narsil.ui.components.OnGlass
+import cz.narsil.ui.theme.AeroStyle
+import cz.narsil.ui.theme.aeroSurface
 import cz.narsil.ui.theme.NarsilTheme
 import cz.narsil.ui.theme.NeuColors
 import cz.narsil.ui.theme.NeuDepth
@@ -73,7 +78,13 @@ fun VerifyTaskScreen(
     onSelectTask: (Long) -> Unit = {},
 ) {
     NeuScreen(modifier, gap = 14.dp) {
-        NeuHeader(title = "Ověření úkolu", onBack = onBack, backDescription = "Zpět")
+        NeuHeader(
+            title = "Ověření úkolu",
+            subtitle = "Vyber důkaz a získej odměnu.",
+            onBack = onBack,
+            backDescription = "Zpět",
+            trailing = { AeroBlueOrb(NeuIcons.Check, size = 52.dp) },
+        )
 
         val tabs = state.tasks.filter { it.canVerify || it.id == state.selectedTaskId }
         if (tabs.size > 1) {
@@ -216,6 +227,7 @@ private fun ColumnScope.PendingSection(
 
     if (state.proofMode.isPhoto) {
         Box(Modifier.weight(1f).fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp)).clip(RoundedCornerShape(28.dp))) {
+          OnGlass {
             if (state.photoCaptured) {
                 Box(Modifier.fillMaxSize()) { cameraPreviewSlot() }
                 Column(
@@ -229,11 +241,15 @@ private fun ColumnScope.PendingSection(
                 }
             } else {
                 Column(
-                    Modifier.fillMaxSize().padding(20.dp),
+                    Modifier
+                        .fillMaxSize()
+                        .padding(14.dp)
+                        .dashedBorder(NeuColors.Dashed, 22.dp)
+                        .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterVertically),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    StatusIcon { Icon(NeuIcons.Camera, null, tint = NeuColors.Accent, modifier = Modifier.size(34.dp)) }
+                    AeroBlueOrb(NeuIcons.Camera, size = 76.dp)
                     NeuText(
                         state.proofMode.hint,
                         Modifier.widthIn(max = 280.dp),
@@ -245,6 +261,7 @@ private fun ColumnScope.PendingSection(
                     )
                 }
             }
+          }
         }
         if (state.photoCaptured) {
             NeuPrimaryButton("Odeslat k ověření", onClick = onSubmitProof, enabled = state.canSubmit)
@@ -282,13 +299,14 @@ private fun ColumnScope.StatusPanel(content: @Composable ColumnScope.() -> Unit)
         Modifier.weight(1f).fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp)).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
-        content = content,
-    )
+    ) {
+        OnGlass { content() }
+    }
 }
 
 @Composable
 private fun StatusIcon(content: @Composable () -> Unit) {
-    Box(Modifier.size(84.dp).neuInset(NeuDepth.Deep, CircleShape), contentAlignment = Alignment.Center) { content() }
+    Box(Modifier.size(84.dp).aeroSurface(AeroStyle.Frost, CircleShape), contentAlignment = Alignment.Center) { content() }
 }
 
 @Composable
@@ -310,8 +328,9 @@ private fun ColumnScope.VerifiedPanel(state: VerifyTaskUiState, animateOnStart: 
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.size(72.dp).clip(CircleShape).background(NeuColors.Success), contentAlignment = Alignment.Center) {
-            Icon(NeuIcons.Check, null, tint = NeuColors.OnSuccess, modifier = Modifier.size(34.dp))
+      OnGlass {
+        Box(Modifier.size(80.dp).aeroSurface(AeroStyle.GreenOrb, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(NeuIcons.Check, null, tint = NeuColors.OnAccent, modifier = Modifier.size(36.dp))
         }
         NeuText(
             if (state.rewardXp > 0) "+${state.rewardMinutes} min · +${state.rewardXp} XP" else "+${state.rewardMinutes} min",
@@ -328,8 +347,25 @@ private fun ColumnScope.VerifiedPanel(state: VerifyTaskUiState, animateOnStart: 
             align = TextAlign.Center,
             lineHeight = 19.sp,
         )
+      }
     }
 }
+
+/** Čárkovaný rámeček (`.camera-placeholder`). */
+private fun Modifier.dashedBorder(color: androidx.compose.ui.graphics.Color, radius: androidx.compose.ui.unit.Dp): Modifier =
+    drawBehind {
+        val stroke = 2.dp.toPx()
+        drawRoundRect(
+            color = color,
+            topLeft = androidx.compose.ui.geometry.Offset(stroke / 2, stroke / 2),
+            size = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(radius.toPx()),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(
+                width = stroke,
+                pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10.dp.toPx(), 7.dp.toPx())),
+            ),
+        )
+    }
 
 @Composable
 private fun DefaultVerifyCameraPlaceholder(@Suppress("UNUSED_PARAMETER") state: VerifyTaskUiState) {

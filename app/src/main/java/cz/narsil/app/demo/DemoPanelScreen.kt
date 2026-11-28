@@ -2,11 +2,14 @@ package cz.narsil.app.demo
 
 import android.provider.Settings as AndroidSettings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,23 +17,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,10 +35,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cz.narsil.app.EchoOverlayStarter
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
@@ -56,6 +53,18 @@ import cz.narsil.detection.accessibility.AccessibilityEvents
 import cz.narsil.detection.accessibility.AccessibilityTriggerSource
 import cz.narsil.ui.components.ChoiceCard
 import cz.narsil.ui.components.ChoiceCardTone
+import cz.narsil.ui.components.NeuDivider
+import cz.narsil.ui.components.NeuHeader
+import cz.narsil.ui.components.NeuLabel
+import cz.narsil.ui.components.NeuPanel
+import cz.narsil.ui.components.NeuSegmented
+import cz.narsil.ui.components.NeuSmallButton
+import cz.narsil.ui.components.NeuText
+import cz.narsil.ui.components.OnGlass
+import cz.narsil.ui.components.OnSky
+import cz.narsil.ui.theme.AeroStyle
+import cz.narsil.ui.theme.NeuColors
+import cz.narsil.ui.theme.aeroSurface
 import cz.narsil.ui.theme.NarsilTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -69,8 +78,6 @@ import kotlinx.coroutines.launch
 fun DemoPanelScreen(onBack: () -> Unit) {
     NarsilTheme {
         val sl = ServiceLocator
-        val colors = NarsilTheme.colors
-        val spacing = NarsilTheme.spacing
         val scope = rememberCoroutineScope()
         val snackbar = remember { SnackbarHostState() }
         val context = LocalContext.current
@@ -103,28 +110,23 @@ fun DemoPanelScreen(onBack: () -> Unit) {
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbar) },
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = Color.Transparent,
         ) { padding ->
+          OnSky {
             Column(
                 Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = spacing.md, vertical = spacing.sm),
-                verticalArrangement = Arrangement.spacedBy(spacing.md),
+                    .padding(horizontal = 18.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 // Hlavička
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Demo panel", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                        Text(
-                            "Příprava dema. Porota ho nevidí.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    TextButton(onClick = onBack) { Text("Zpět") }
-                }
+                NeuHeader(
+                    title = "Demo panel",
+                    subtitle = "Příprava dema. Porota ho nevidí.",
+                    onBack = onBack,
+                )
 
                 // Stav
                 Section("Stav") {
@@ -179,15 +181,12 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                 // Kontext
                 Section("Kde jsem") {
                     val options = listOf(ComfortContext.HOME to "Doma", ComfortContext.AWAY to "Venku", null to "Automaticky")
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        options.forEachIndexed { i, (c, label) ->
-                            SegmentedButton(
-                                selected = manual == c,
-                                onClick = { act("Kontext: $label") { DemoActions.setContext(c); true } },
-                                shape = SegmentedButtonDefaults.itemShape(i, options.size),
-                            ) { Text(label) }
-                        }
-                    }
+                    NeuSegmented(
+                        options = options,
+                        selected = options.firstOrNull { it.first == manual },
+                        label = { it.second },
+                        onSelect = { (c, label) -> act("Kontext: $label") { DemoActions.setContext(c); true } },
+                    )
                     Hint("Ruční volba platí do 4:00. Automaticky = podle domácí Wi-Fi.")
                 }
 
@@ -196,85 +195,73 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                     ToggleRow("Krátký práh", "Ozvěna po 20 s místo 5 min", settings.demoThresholdSec != null) { on ->
                         act(if (on) "Práh 20 s" else "Práh 5 min") { DemoActions.setShortThreshold(on); true }
                     }
-                    HorizontalDivider()
+                    NeuDivider()
                     ToggleRow("Smlouva platí hned", "Večerní smlouva se uloží na dnešek", settings.demoContractToday) { on ->
                         act("Smlouva ${if (on) "na dnešek" else "na zítřek"}") { DemoActions.setContractToday(on); true }
                     }
-                    HorizontalDivider()
-                    Text("Cvik v Ozvěně", style = MaterialTheme.typography.bodyLarge)
-                    val exercises = Exercise.entries
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        exercises.forEachIndexed { i, e ->
-                            SegmentedButton(
-                                selected = settings.exercise == e,
-                                onClick = { act("Cvik: ${ExerciseText.label(e)}") { DemoActions.setExercise(e); true } },
-                                shape = SegmentedButtonDefaults.itemShape(i, exercises.size),
-                            ) { Text(ExerciseText.label(e)) }
-                        }
-                    }
+                    NeuDivider()
+                    NeuText("Cvik v Ozvěně", size = 14.sp, weight = FontWeight.Bold)
+                    NeuSegmented(
+                        options = Exercise.entries,
+                        selected = settings.exercise,
+                        label = { ExerciseText.label(it) },
+                        onSelect = { e -> act("Cvik: ${ExerciseText.label(e)}") { DemoActions.setExercise(e); true } },
+                    )
                     Hint("Dřepy: 20 opakování, telefon opřený naproti. Kliky: 10 opakování, telefon leží na zemi pod hrudníkem displejem nahoru.")
-                    HorizontalDivider()
-                    Text("AI pro ověření úkolů", style = MaterialTheme.typography.bodyLarge)
-                    val providers = LlmProvider.entries
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        providers.forEachIndexed { i, p ->
-                            SegmentedButton(
-                                selected = settings.llmProvider == p,
-                                onClick = { act("AI: ${p.label()}") { DemoActions.setLlmProvider(p); true } },
-                                shape = SegmentedButtonDefaults.itemShape(i, providers.size),
-                            ) { Text(p.label()) }
-                        }
-                    }
+                    NeuDivider()
+                    NeuText("AI pro ověření úkolů", size = 14.sp, weight = FontWeight.Bold)
+                    NeuSegmented(
+                        options = LlmProvider.entries,
+                        selected = settings.llmProvider,
+                        label = { it.label() },
+                        onSelect = { p -> act("AI: ${p.label()}") { DemoActions.setLlmProvider(p); true } },
+                    )
                     Hint("Bez klíče v local.properties se ověření odloží na později. Pro demo bez klíče zapni „vždy ANO“ níže.")
                 }
 
                 // Pohyb a gamifikace
                 Section("Pohyb a XP") {
-                    Row(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
-                        OutlinedButton(onClick = { act("+1 000 kroků") { DemoActions.addSteps() } }, modifier = Modifier.weight(1f)) {
-                            Text("+1 000 kroků")
-                        }
-                        OutlinedButton(onClick = { act("+500 XP") { DemoActions.addXp() } }, modifier = Modifier.weight(1f)) {
-                            Text("+500 XP")
-                        }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NeuSmallButton("+1 000 kroků", { act("+1 000 kroků") { DemoActions.addSteps() } }, Modifier.weight(1f), height = 42.dp)
+                        NeuSmallButton("+500 XP", { act("+500 XP") { DemoActions.addXp() } }, Modifier.weight(1f), height = 42.dp)
                     }
-                    Text("Postava", style = MaterialTheme.typography.labelLarge)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                    NeuLabel("Postava")
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         AvatarState.entries.forEach { a ->
-                            FilterChip(
-                                selected = game.avatar == a,
-                                onClick = { act("Postava: ${a.label()}") { DemoActions.setAvatar(a) } },
-                                label = { Text(a.label()) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = colors.positiveContainer,
-                                    selectedLabelColor = colors.onPositiveContainer,
-                                ),
-                            )
+                            DemoChip(a.label(), selected = game.avatar == a) {
+                                act("Postava: ${a.label()}") { DemoActions.setAvatar(a) }
+                            }
                         }
                     }
                 }
 
                 // Nebezpečné
-                Surface(
-                    color = colors.debtContainer,
-                    contentColor = colors.onDebtContainer,
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(Modifier.padding(spacing.md)) {
+                OnGlass {
+                    val shape = RoundedCornerShape(22.dp)
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .aeroSurface(AeroStyle.Glass, shape)
+                            .border(2.dp, Color(0x99C2412F), shape)
+                            .padding(16.dp),
+                    ) {
                         ToggleRow(
                             "Ověření úkolů vždy ANO",
                             "Jen pro demo. Nikdy nenechat zapnuté.",
                             settings.demoAlwaysYes,
+                            danger = true,
                         ) { on -> act("Vždy ANO ${if (on) "zapnuto" else "vypnuto"}") { DemoActions.setAlwaysYes(on); true } }
                     }
                 }
 
-                OutlinedButton(
+                NeuSmallButton(
+                    "Reset dne",
                     onClick = { act("Den resetován") { DemoActions.resetDay(); true } },
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("Reset dne") }
-                OutlinedButton(
+                    height = 46.dp,
+                )
+                NeuSmallButton(
+                    "Nahrát mock data (21 dní historie)",
                     onClick = {
                         scope.launch {
                             val msg = DemoActions.loadMockData()
@@ -283,70 +270,79 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("Nahrát mock data (21 dní historie)") }
+                    height = 46.dp,
+                )
                 Hint("Smaže historii a nahraje znovu: zásahy, minuty feedu, XP a série za 21 dní + hodnocení videí. Smlouva na dnes zůstane.")
             }
+          }
         }
     }
 }
 
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {
-    val spacing = NarsilTheme.spacing
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 1.dp,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(spacing.md), verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            content()
-        }
+    NeuPanel(Modifier.fillMaxWidth(), radius = 22.dp, padding = PaddingValues(16.dp), gap = 10.dp) {
+        NeuText(title, size = 16.sp, weight = FontWeight.ExtraBold)
+        content()
     }
 }
 
 @Composable
 private fun StatusRow(label: String, value: String, ok: Boolean? = null) {
-    val colors = NarsilTheme.colors
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         if (ok != null) {
             Box(
                 Modifier
                     .size(8.dp)
-                    .background(if (ok) colors.positive else colors.debt, CircleShape),
+                    .background(if (ok) Color(0xFF36C246) else NeuColors.Error, CircleShape),
             )
             Box(Modifier.size(8.dp))
         }
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-            color = if (ok == false) colors.debt else Color.Unspecified,
-        )
+        NeuText(label, Modifier.weight(1f), size = 13.sp, weight = FontWeight.Medium, color = NeuColors.Muted)
+        NeuText(value, size = 13.sp, weight = FontWeight.Bold, color = if (ok == false) NeuColors.Error else NeuColors.Text)
     }
 }
 
 @Composable
-private fun ToggleRow(title: String, description: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+private fun ToggleRow(title: String, description: String, checked: Boolean, danger: Boolean = false, onChange: (Boolean) -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            NeuText(title, size = 14.sp, weight = FontWeight.Bold, color = if (danger) NeuColors.Error else NeuColors.Text)
+            NeuText(description, size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted, lineHeight = 17.sp)
         }
-        Switch(checked = checked, onCheckedChange = onChange)
+        Switch(
+            checked = checked,
+            onCheckedChange = onChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = if (danger) NeuColors.Error else Color(0xFF36C246),
+                checkedBorderColor = if (danger) NeuColors.Error else Color(0xFF1E9E3A),
+                uncheckedThumbColor = Color(0xFF7FA3B0),
+                uncheckedTrackColor = Color(0xFFD6E6EE),
+                uncheckedBorderColor = Color(0x520078B5),
+            ),
+        )
+    }
+}
+
+/** Volba postavy: vybraná bílo-zelená bublina, ostatní matné sklo. */
+@Composable
+private fun DemoChip(text: String, selected: Boolean, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(12.dp)
+    Box(
+        Modifier
+            .aeroSurface(if (selected) AeroStyle.GreenBubble else AeroStyle.Frost, shape)
+            .clip(shape)
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        NeuText(text, size = 12.sp, weight = FontWeight.ExtraBold, color = if (selected) NeuColors.OnAccent else NeuColors.Label, maxLines = 1)
     }
 }
 
 @Composable
 private fun Hint(text: String) {
-    Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    NeuText(text, size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted, lineHeight = 17.sp)
 }
 
 private fun AvatarState.label() = when (this) {

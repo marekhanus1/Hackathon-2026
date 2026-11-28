@@ -96,6 +96,7 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit, onVerify: (Long?) -> Unit = {})
         onPickTask = { onVerify(null) },
         exerciseLabel = ExerciseText.label(exercise),
         onOpenExercise = { onNavigate(NarsilRoute.Squat) },
+        onOpenSettings = { onNavigate(NarsilRoute.Settings) },
     )
 }
 
@@ -135,7 +136,7 @@ fun MirrorRoute() {
 
 /** Odznaky a žebříček (323 + 140): odznaky a „Ty“ ze skutečných dat, kamarádi v MVP ukázkoví. */
 @Composable
-fun BadgesRoute(onOpenMirror: () -> Unit = {}) {
+fun BadgesRoute(onOpenMirror: (() -> Unit)? = null) {
     val sl = ServiceLocator
     val vm: BadgesViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {

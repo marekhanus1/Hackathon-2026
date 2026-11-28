@@ -17,7 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -43,7 +47,12 @@ fun EchoVideoPlayer(uri: String?, fallbackText: String?, modifier: Modifier = Mo
         Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = fallbackText ?: "Čemu se teď vyhýbáš?",
-                style = MaterialTheme.typography.titleMedium,
+                // Aero: bílý text se stínem v tmavém rámu videa.
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    shadow = Shadow(Color(0xCC00578E), Offset(0f, 2f), 6f),
+                ),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(16.dp),
             )

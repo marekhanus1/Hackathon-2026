@@ -36,6 +36,8 @@ import cz.narsil.ui.components.NeuPanel
 import cz.narsil.ui.components.NeuPrimaryButton
 import cz.narsil.ui.components.NeuScreen
 import cz.narsil.ui.components.NeuText
+import cz.narsil.ui.components.OnGlass
+import androidx.compose.ui.graphics.Color
 import cz.narsil.ui.theme.NarsilTheme
 import cz.narsil.ui.theme.NeuColors
 import cz.narsil.ui.theme.NeuDepth
@@ -98,8 +100,9 @@ fun TaskPickerScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 NeuLabel("Hotovo", Modifier.padding(horizontal = 4.dp))
                 done.take(3).forEach { task ->
+                  OnGlass {
                     Row(
-                        Modifier.fillMaxWidth().neuInset(NeuDepth.Shallow, RoundedCornerShape(18.dp)).padding(horizontal = 16.dp, vertical = 12.dp),
+                        Modifier.fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(18.dp)).padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
@@ -120,6 +123,7 @@ fun TaskPickerScreen(
                             color = if (task.isDone) NeuColors.Success else NeuColors.Muted,
                         )
                     }
+                  }
                 }
             }
         }
@@ -149,7 +153,7 @@ private fun PickerRow(task: TaskItem, selected: Boolean, onClick: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .neuInset(if (selected) NeuDepth.Deep else NeuDepth.Flat, shape)
-            .then(if (selected) Modifier.border(2.dp, NeuColors.Accent, shape) else Modifier)
+            .then(if (selected) Modifier.border(1.5.dp, Color(0xE6FFFFFF), shape) else Modifier)
             .clip(shape)
             .clickable(role = Role.RadioButton, onClick = onClick)
             .padding(14.dp),

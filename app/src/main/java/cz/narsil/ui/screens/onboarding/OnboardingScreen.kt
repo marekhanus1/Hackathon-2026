@@ -2,39 +2,45 @@ package cz.narsil.ui.screens.onboarding
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cz.narsil.ui.components.NeuPanel
+import cz.narsil.ui.components.NeuPrimaryButton
+import cz.narsil.ui.components.NeuSmallButton
+import cz.narsil.ui.components.NeuText
+import cz.narsil.ui.components.OnSky
+import cz.narsil.ui.theme.AeroBackdrop
+import cz.narsil.ui.theme.AeroStyle
 import cz.narsil.ui.theme.NarsilTheme
+import cz.narsil.ui.theme.NeuColors
+import cz.narsil.ui.theme.NeuDepth
+import cz.narsil.ui.theme.aeroSurface
+import cz.narsil.ui.theme.neuInset
 
 /**
  * Onboarding flow for Home Wi-Fi setup, one-sentence permissions, and MIUI/Redmi steps.
- * Logic wiring is handled in task 122.
+ * Logic wiring is handled in task 122. Vzhled Frutiger Aero: nadpisy na nebi, karty ve skle.
  */
 @Composable
 fun OnboardingScreen(
@@ -51,119 +57,56 @@ fun OnboardingScreen(
     onVideoButton: () -> Unit = {},
     videoCameraSlot: @Composable () -> Unit = {},
 ) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
-    ) {
+    OnSky {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .systemBarsPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.md)
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text(
-                text = "Nastavení Narsilu",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Narsil tě chrání jen doma, kdy chceš mít klid. Venku a ve zprávách mlčí.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            NeuText("Nastavení Narsilu", size = 30.sp, weight = FontWeight.Bold, letterSpacing = (-0.8).sp, lineHeight = 34.sp)
+            NeuText(
+                "Narsil tě chrání jen doma, kdy chceš mít klid. Venku a ve zprávách mlčí.",
+                size = 14.sp,
+                weight = FontWeight.Medium,
+                color = NeuColors.Muted,
+                lineHeight = 19.sp,
             )
 
             // Privacy reassurance banner
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                color = colors.echoContainer,
-                contentColor = colors.onEchoContainer
-            ) {
-                Text(
-                    text = "Soukromí: Zprávy a chaty nikdy nečteme. Všechna videa zůstávají jen v telefonu.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(spacing.md)
+            NeuPanel(Modifier.fillMaxWidth(), radius = 18.dp, depth = NeuDepth.Deep, padding = androidx.compose.foundation.layout.PaddingValues(14.dp)) {
+                NeuText(
+                    "Soukromí: Zprávy a chaty nikdy nečteme. Všechna videa zůstávají jen v telefonu.",
+                    size = 13.sp,
+                    weight = FontWeight.SemiBold,
+                    color = NeuColors.OnAccent,
+                    lineHeight = 18.sp,
                 )
             }
 
             // Home Wi-Fi card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = if (state.homeWifiSsid != null) colors.positive else MaterialTheme.colorScheme.outlineVariant
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(spacing.md),
-                    verticalArrangement = Arrangement.spacedBy(spacing.sm)
+            NeuPanel(Modifier.fillMaxWidth(), gap = 10.dp) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Domácí Wi-Fi",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        if (state.homeWifiSsid != null) {
-                            Surface(
-                                shape = CircleShape,
-                                color = colors.positiveContainer,
-                                contentColor = colors.onPositiveContainer
-                            ) {
-                                Text(
-                                    text = "Nastaveno",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
-                                )
-                            }
-                        }
-                    }
-
-                    Text(
-                        text = state.homeWifiStatusText,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Button(
-                        onClick = onConfirmHomeWifi,
-                        enabled = !state.isOnHomeWifi,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (state.homeWifiSsid != null) colors.positive else colors.ember,
-                            contentColor = if (state.homeWifiSsid != null) colors.onPositive else colors.onEmber
-                        )
-                    ) {
-                        Text(text = state.homeWifiButtonLabel)
-                    }
+                    NeuText("Domácí Wi-Fi", size = 16.sp, weight = FontWeight.Bold)
+                    if (state.homeWifiSsid != null) StatusPill("Nastaveno")
                 }
+                NeuText(state.homeWifiStatusText, size = 13.sp, weight = FontWeight.Medium, color = NeuColors.Muted, lineHeight = 18.sp)
+                NeuPrimaryButton(state.homeWifiButtonLabel, onClick = onConfirmHomeWifi, enabled = !state.isOnHomeWifi)
             }
 
             // Permissions list (1 sentence each)
-            Text(
-                text = "Potřebná oprávnění",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            NeuText("Potřebná oprávnění", size = 18.sp, weight = FontWeight.Bold)
 
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
-                state.permissions.forEach { permission ->
-                    PermissionRowCard(
+            NeuPanel(Modifier.fillMaxWidth(), padding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 6.dp), gap = 0.dp) {
+                state.permissions.forEachIndexed { index, permission ->
+                    if (index > 0) cz.narsil.ui.components.NeuDivider()
+                    PermissionRow(
                         item = permission,
                         onRequest = { onRequestPermission(permission.type) }
                     )
@@ -172,68 +115,53 @@ fun OnboardingScreen(
 
             // MIUI / Redmi specific steps
             if (state.isMiuiDevice) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.large,
-                    colors = CardDefaults.cardColors(
-                        containerColor = colors.emberContainer,
-                        contentColor = colors.onEmberContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(spacing.md),
-                        verticalArrangement = Arrangement.spacedBy(spacing.xs)
+                NeuPanel(Modifier.fillMaxWidth(), gap = 6.dp) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Kroky pro Xiaomi / MIUI (Redmi)",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.weight(1f)
-                            )
-                            TextButton(onClick = onToggleMiuiExpanded) {
-                                Text(if (state.miuiStepsExpanded) "Skrýt" else "Zobrazit")
-                            }
-                        }
+                        NeuText("Kroky pro Xiaomi / MIUI (Redmi)", Modifier.weight(1f), size = 16.sp, weight = FontWeight.Bold)
+                        NeuSmallButton(if (state.miuiStepsExpanded) "Skrýt" else "Zobrazit", onToggleMiuiExpanded)
+                    }
 
-                        AnimatedVisibility(visible = state.miuiStepsExpanded) {
-                            Column(verticalArrangement = Arrangement.spacedBy(spacing.xxs)) {
-                                Text(
-                                    text = "Xiaomi jinak Narsil po chvíli vypne a hlídání přestane fungovat. Klepnutím otevřeš správné nastavení:",
-                                    style = MaterialTheme.typography.bodySmall
+                    AnimatedVisibility(visible = state.miuiStepsExpanded) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            NeuText(
+                                "Xiaomi jinak Narsil po chvíli vypne a hlídání přestane fungovat. Klepnutím otevřeš správné nastavení:",
+                                size = 12.sp,
+                                weight = FontWeight.Medium,
+                                color = NeuColors.Muted,
+                                lineHeight = 17.sp,
+                            )
+                            MiuiCheckRow(
+                                checked = state.miuiAutoStartDone,
+                                label = "Povolit automatické spouštění",
+                                onToggle = onToggleMiuiAutoStart
+                            )
+                            MiuiCheckRow(
+                                checked = state.miuiBatteryDone,
+                                label = "Vypnout spořič baterie (bez omezení)",
+                                onToggle = onToggleMiuiBattery
+                            )
+                            MiuiCheckRow(
+                                checked = state.miuiBackgroundPopupDone,
+                                label = "Povolit vyskakovací okna na pozadí",
+                                onToggle = onToggleMiuiBackgroundPopup
+                            )
+                            MiuiCheckRow(
+                                checked = state.miuiLockDone,
+                                label = "Zamknout Narsil v posledních aplikacích",
+                                onToggle = onToggleMiuiLock
+                            )
+                            if (!state.miuiLockDone) {
+                                NeuText(
+                                    "Otevři přehled aplikací (přejeď zdola nahoru a podrž), podrž kartu Narsil a klepni na zámek.",
+                                    size = 12.sp,
+                                    weight = FontWeight.Medium,
+                                    color = NeuColors.Muted,
+                                    lineHeight = 17.sp,
                                 )
-                                MiuiCheckRow(
-                                    checked = state.miuiAutoStartDone,
-                                    label = "Povolit automatické spouštění",
-                                    onToggle = onToggleMiuiAutoStart
-                                )
-                                MiuiCheckRow(
-                                    checked = state.miuiBatteryDone,
-                                    label = "Vypnout spořič baterie (bez omezení)",
-                                    onToggle = onToggleMiuiBattery
-                                )
-                                MiuiCheckRow(
-                                    checked = state.miuiBackgroundPopupDone,
-                                    label = "Povolit vyskakovací okna na pozadí",
-                                    onToggle = onToggleMiuiBackgroundPopup
-                                )
-                                MiuiCheckRow(
-                                    checked = state.miuiLockDone,
-                                    label = "Zamknout Narsil v posledních aplikacích",
-                                    onToggle = onToggleMiuiLock
-                                )
-                                if (!state.miuiLockDone) {
-                                    Text(
-                                        text = "Otevři přehled aplikací (přejeď zdola nahoru a podrž), podrž kartu Narsil a klepni na zámek.",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
                             }
                         }
                     }
@@ -242,23 +170,19 @@ fun OnboardingScreen(
 
             OnboardingVideoCard(state = state.video, onVideoButton = onVideoButton, cameraSlot = videoCameraSlot)
 
-            Button(
+            NeuPrimaryButton(
+                if (state.allRequiredGranted) "Dokončit nastavení" else "Pokračovat na hlavní obrazovku",
                 onClick = onFinishOnboarding,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.positive,
-                    contentColor = colors.onPositive
-                )
-            ) {
-                Text(
-                    text = if (state.allRequiredGranted) {
-                        "Dokončit nastavení"
-                    } else {
-                        "Pokračovat na hlavní obrazovku"
-                    }
-                )
-            }
+            )
         }
+    }
+}
+
+/** Zelená bublina se stavem („Nastaveno“, „Uloženo“, „Povoleno“). */
+@Composable
+private fun StatusPill(text: String) {
+    Box(Modifier.neuInset(NeuDepth.Deep, RoundedCornerShape(12.dp)).padding(horizontal = 10.dp, vertical = 5.dp)) {
+        NeuText(text, size = 12.sp, weight = FontWeight.Bold, color = NeuColors.OnAccent, maxLines = 1)
     }
 }
 
@@ -269,120 +193,65 @@ private fun OnboardingVideoCard(
     onVideoButton: () -> Unit,
     cameraSlot: @Composable () -> Unit
 ) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, if (state.hasVideo) colors.positive else MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm)
+    NeuPanel(Modifier.fillMaxWidth(), gap = 10.dp) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            NeuText("Video pro Ozvěnu", size = 16.sp, weight = FontWeight.Bold)
+            if (state.hasVideo) StatusPill("Uloženo")
+        }
+        NeuText(
+            "Nepovinné. Řekni do ${state.maxSeconds} s, proč chceš mít večer klid od feedu. " +
+                "Ozvěna ti to přehraje, než natočíš video ve večerní smlouvě.",
+            size = 13.sp,
+            weight = FontWeight.Medium,
+            color = NeuColors.Muted,
+            lineHeight = 18.sp,
+        )
+        if (state.cameraOpen) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(3f / 4f)
+                    .aeroSurface(AeroStyle.Frost, RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(20.dp))
             ) {
-                Text(text = "Video pro Ozvěnu", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                if (state.hasVideo) {
-                    Surface(shape = CircleShape, color = colors.positiveContainer, contentColor = colors.onPositiveContainer) {
-                        Text(
-                            text = "Uloženo",
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
-                        )
-                    }
-                }
-            }
-            Text(
-                text = "Nepovinné. Řekni do ${state.maxSeconds} s, proč chceš mít večer klid od feedu. " +
-                    "Ozvěna ti to přehraje, než natočíš video ve večerní smlouvě.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (state.cameraOpen) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(3f / 4f),
-                    shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    cameraSlot()
-                }
-            }
-            state.error?.let {
-                Text(text = it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-            }
-            OutlinedButton(onClick = onVideoButton, modifier = Modifier.fillMaxWidth()) {
-                Text(state.buttonLabel)
+                cameraSlot()
             }
         }
+        state.error?.let {
+            NeuText(it, size = 12.sp, weight = FontWeight.Bold, color = NeuColors.Error)
+        }
+        NeuSmallButton(state.buttonLabel, onVideoButton, Modifier.fillMaxWidth(), height = 44.dp)
     }
 }
 
 @Composable
-private fun PermissionRowCard(
+private fun PermissionRow(
     item: PermissionItem,
     onRequest: () -> Unit
 ) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(
-            width = 1.dp,
-            color = if (item.isGranted) colors.positive.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant
-        )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.md),
-            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(spacing.xxs)
-            ) {
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = item.oneSentenceReason,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            NeuText(item.title, size = 14.sp, weight = FontWeight.Bold)
+            NeuText(item.oneSentenceReason, size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted, lineHeight = 16.sp)
+        }
 
-            if (item.isGranted) {
-                Surface(
-                    shape = CircleShape,
-                    color = colors.positiveContainer,
-                    contentColor = colors.onPositiveContainer
-                ) {
-                    Text(
-                        text = "Povoleno",
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xs)
-                    )
-                }
-            } else {
-                OutlinedButton(onClick = onRequest) {
-                    Text("Povolit")
-                }
-            }
+        if (item.isGranted) {
+            StatusPill("Povoleno")
+        } else {
+            NeuSmallButton("Povolit", onRequest)
         }
     }
 }
@@ -397,19 +266,23 @@ private fun MiuiCheckRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(checked = checked, onCheckedChange = { onToggle() })
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { onToggle() },
+            colors = CheckboxDefaults.colors(
+                checkedColor = NeuColors.Success,
+                uncheckedColor = NeuColors.Label,
+                checkmarkColor = Color.White,
+            ),
         )
+        NeuText(label, Modifier.weight(1f), size = 14.sp, weight = FontWeight.SemiBold)
     }
 }
 
 @Preview(name = "Onboarding – Světlý režim", showBackground = true)
 @Composable
 private fun OnboardingLightPreview() {
-    NarsilTheme(darkTheme = false) {
+    NarsilTheme(darkTheme = false) { AeroBackdrop {
         OnboardingScreen(
             state = OnboardingUiState(),
             onConfirmHomeWifi = {},
@@ -420,7 +293,7 @@ private fun OnboardingLightPreview() {
             onToggleMiuiBackgroundPopup = {},
             onFinishOnboarding = {}
         )
-    }
+    } }
 }
 
 @Preview(
@@ -430,7 +303,7 @@ private fun OnboardingLightPreview() {
 )
 @Composable
 private fun OnboardingDarkPreview() {
-    NarsilTheme(darkTheme = true) {
+    NarsilTheme(darkTheme = true) { AeroBackdrop {
         OnboardingScreen(
             state = OnboardingUiState(
                 homeWifiSsid = "Domov_5G",
@@ -445,5 +318,5 @@ private fun OnboardingDarkPreview() {
             onToggleMiuiBackgroundPopup = {},
             onFinishOnboarding = {}
         )
-    }
+    } }
 }

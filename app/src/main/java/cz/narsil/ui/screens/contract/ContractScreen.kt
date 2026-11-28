@@ -51,6 +51,12 @@ import cz.narsil.ui.components.NeuSegmented
 import cz.narsil.ui.components.NeuSmallButton
 import cz.narsil.ui.components.NeuText
 import cz.narsil.ui.components.NeuTextField
+import cz.narsil.ui.components.OnGlass
+import cz.narsil.ui.theme.AeroBackdrop
+import cz.narsil.ui.theme.AeroStyle
+import cz.narsil.ui.theme.aeroSurface
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import cz.narsil.ui.theme.NarsilTheme
 import cz.narsil.ui.theme.NeuColors
 import cz.narsil.ui.theme.NeuDepth
@@ -98,8 +104,10 @@ fun ContractScreen(
                 onBack = onBackToHome,
                 backDescription = "Zpět domů",
                 trailing = {
-                    Box(Modifier.neuInset(NeuDepth.Deep, RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 8.dp)) {
-                        NeuText(if (state.targetIsToday) "Na dnes" else "Na zítra", size = 12.sp, weight = FontWeight.ExtraBold, color = NeuColors.Accent)
+                    OnGlass {
+                        Box(Modifier.neuInset(NeuDepth.Deep, RoundedCornerShape(13.dp)).padding(horizontal = 12.dp, vertical = 8.dp)) {
+                            NeuText(if (state.targetIsToday) "Na dnes" else "Na zítra", size = 12.sp, weight = FontWeight.ExtraBold, color = NeuColors.OnAccent)
+                        }
                     }
                 },
             )
@@ -161,12 +169,12 @@ private fun GoalPanel(state: ContractUiState, onAdjust: (Int) -> Unit) {
             Column(Modifier.weight(1f)) {
                 NeuLabel("Pohybový cíl")
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    NeuText(formatNumber(state.goalAmount), size = 20.sp, weight = FontWeight.ExtraBold)
+                    NeuText(formatNumber(state.goalAmount), size = 22.sp, weight = FontWeight.ExtraBold, color = NeuColors.Accent)
                     NeuText(state.goalType.unit, Modifier.padding(bottom = 2.dp), size = 13.sp, weight = FontWeight.Bold, color = NeuColors.Muted)
                 }
             }
-            StepButton("−", "Snížit cíl o $delta", NeuColors.Text) { onAdjust(-delta) }
-            StepButton("+", "Zvýšit cíl o $delta", NeuColors.Accent) { onAdjust(delta) }
+            StepButton("−", "Snížit cíl o $delta", NeuColors.OnAccent) { onAdjust(-delta) }
+            StepButton("+", "Zvýšit cíl o $delta", NeuColors.OnAccent) { onAdjust(delta) }
         }
     }
 }
@@ -177,7 +185,7 @@ private fun StepButton(text: String, description: String, color: androidx.compos
     Box(
         Modifier
             .size(44.dp)
-            .neuInset(NeuDepth.Deep, shape)
+            .aeroSurface(AeroStyle.GreenBubble, shape)
             .clip(shape)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = description },
@@ -226,13 +234,14 @@ private fun TasksPanel(state: ContractUiState, onRemove: (TaskDraft) -> Unit, on
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             NeuText(task.title, size = 14.sp, weight = FontWeight.Bold, maxLines = 1)
                             NeuText(
-                                "${task.type.label} · +${task.rewardMinutes} min · fotka nebo popis",
+                                "${task.type.label} · fotka nebo popis",
                                 size = 11.sp,
                                 weight = FontWeight.SemiBold,
                                 color = NeuColors.Muted,
                                 maxLines = 1,
                             )
                         }
+                        NeuText("+${task.rewardMinutes} min", size = 13.sp, weight = FontWeight.ExtraBold, color = NeuColors.Success, maxLines = 1)
                         Box(
                             Modifier
                                 .size(36.dp)
@@ -271,8 +280,8 @@ private fun PlannedContentPanel(state: ContractUiState, onRemove: (String) -> Un
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    NeuText(item, size = 12.sp, weight = FontWeight.Bold, maxLines = 1)
-                    Icon(NeuIcons.Close, contentDescription = "Odebrat $item", tint = NeuColors.Muted, modifier = Modifier.size(12.dp))
+                    NeuText(item, size = 12.sp, weight = FontWeight.Bold, color = NeuColors.OnAccent, maxLines = 1)
+                    Icon(NeuIcons.Close, contentDescription = "Odebrat $item", tint = NeuColors.OnAccent, modifier = Modifier.size(12.dp))
                 }
             }
             if (state.plannedItems.size < PlanRules.MAX_PLANNED_CONTENT) {
@@ -291,7 +300,7 @@ private fun PlannedContentPanel(state: ContractUiState, onRemove: (String) -> Un
 }
 
 @Composable
-private fun VideoRow(state: ContractUiState, onOpen: () -> Unit) {
+private fun VideoRow(state: ContractUiState, onOpen: () -> Unit) = OnGlass {
     Row(
         Modifier
             .fillMaxWidth()
@@ -302,13 +311,11 @@ private fun VideoRow(state: ContractUiState, onOpen: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(Modifier.size(40.dp).neuInset(NeuDepth.Deep, CircleShape), contentAlignment = Alignment.Center) {
-            Icon(
-                NeuIcons.Video,
-                contentDescription = null,
-                tint = if (state.hasRecordedVideo) NeuColors.Success else NeuColors.Accent,
-                modifier = Modifier.size(18.dp),
-            )
+        Box(
+            Modifier.size(42.dp).aeroSurface(if (state.hasRecordedVideo) AeroStyle.GreenOrb else AeroStyle.BlueOrb, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(NeuIcons.Video, contentDescription = null, tint = Color.White, modifier = Modifier.size(19.dp))
         }
         Column(Modifier.weight(1f)) {
             NeuText("Tvoje 15s Ozvěna", size = 14.sp, weight = FontWeight.Bold)
@@ -335,7 +342,8 @@ private fun RecorderOverlay(
     cameraPreviewSlot: @Composable () -> Unit,
 ) {
     BackHandler(onBack = onClose)
-    NeuScreen(Modifier.clickable(enabled = false) {}, gap = 14.dp) {
+    AeroBackdrop(Modifier.clickable(enabled = false) {}) {
+    NeuScreen(gap = 14.dp) {
         NeuHeader(title = "Tvoje 15s Ozvěna", onBack = onClose, backDescription = "Zavřít nahrávání")
         NeuText(
             if (state.targetIsToday) "Nahraj krátké 15s video pro sebe v pokušení: jak se teď cítíš a proč chceš mít dnes klid."
@@ -348,25 +356,26 @@ private fun RecorderOverlay(
         )
         Box(Modifier.weight(1f).fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp)).padding(10.dp)) {
             Box(Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(NeuColors.Deep)) {
+              OnGlass {
                 cameraPreviewSlot()
                 if (state.isRecordingVideo || state.hasRecordedVideo) {
                     Box(
                         Modifier
                             .align(Alignment.TopEnd)
                             .padding(10.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(if (state.isRecordingVideo) NeuColors.Accent else NeuColors.Success)
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                            .aeroSurface(if (state.isRecordingVideo) AeroStyle.RedGloss else AeroStyle.GreenBubble, RoundedCornerShape(11.dp))
+                            .padding(horizontal = 10.dp, vertical = 5.dp),
                     ) {
                         NeuText(
                             if (state.isRecordingVideo) "Nahrávám ${state.recordedSeconds}/${state.maxVideoSeconds} s"
                             else if (state.recordedSeconds > 0) "Uloženo (${state.recordedSeconds} s)" else "Uloženo",
                             size = 12.sp,
                             weight = FontWeight.ExtraBold,
-                            color = if (state.isRecordingVideo) NeuColors.OnAccent else NeuColors.OnSuccess,
+                            color = if (state.isRecordingVideo) Color.White else NeuColors.OnAccent,
                         )
                     }
                 }
+              }
             }
         }
         state.videoError?.let { NeuText(it, size = 12.sp, weight = FontWeight.Bold, color = NeuColors.Error) }
@@ -381,6 +390,7 @@ private fun RecorderOverlay(
         if (state.hasRecordedVideo && !state.isRecordingVideo) {
             NeuSmallButton("Hotovo", onClose, Modifier.fillMaxWidth(), color = NeuColors.Success, height = 44.dp)
         }
+    }
     }
 }
 
@@ -470,8 +480,14 @@ private fun AddContentDialog(
 @Composable
 private fun NeuDialog(title: String, onDismiss: () -> Unit, content: @Composable () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
+      OnGlass {
         Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(NeuColors.Base).padding(18.dp),
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(Brush.linearGradient(listOf(Color(0xF7FFFFFF), Color(0xF2E4F8FF))))
+                .border(1.dp, Color.White, RoundedCornerShape(28.dp))
+                .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -483,18 +499,20 @@ private fun NeuDialog(title: String, onDismiss: () -> Unit, content: @Composable
             }
             content()
         }
+      }
     }
 }
 
 @Composable
 private fun SubmittedPanel(state: ContractUiState, onBackToHome: () -> Unit) {
+  OnGlass {
     Column(
         Modifier.fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp)).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.size(72.dp).clip(CircleShape).background(NeuColors.Success), contentAlignment = Alignment.Center) {
-            Icon(NeuIcons.Check, null, tint = NeuColors.OnSuccess, modifier = Modifier.size(34.dp))
+        Box(Modifier.size(80.dp).aeroSurface(AeroStyle.GreenOrb, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(NeuIcons.Check, null, tint = NeuColors.OnAccent, modifier = Modifier.size(36.dp))
         }
         NeuText("Smlouva podepsaná!", size = 18.sp, weight = FontWeight.ExtraBold)
         NeuText(
@@ -507,6 +525,7 @@ private fun SubmittedPanel(state: ContractUiState, onBackToHome: () -> Unit) {
             lineHeight = 19.sp,
         )
     }
+  }
     NeuPrimaryButton("Zpět na hlavní obrazovku", onClick = onBackToHome, color = NeuColors.Success, contentColor = NeuColors.OnSuccess)
 }
 

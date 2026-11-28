@@ -2,6 +2,7 @@ package cz.narsil.ui.screens.rating
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,19 +14,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cz.narsil.ui.components.NeuSmallButton
+import cz.narsil.ui.components.NeuText
+import cz.narsil.ui.components.OnGlass
+import cz.narsil.ui.theme.AeroStyle
 import cz.narsil.ui.theme.NarsilTheme
+import cz.narsil.ui.theme.NeuColors
+import cz.narsil.ui.theme.aeroSurface
 
 /**
  * Spodní panel „Co ti to video dalo?“ (156): pět odpovědí, jedno ťuknutí. Po odpovědi jen poděkuje.
@@ -38,20 +46,26 @@ fun VideoRatingSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
+    val shape = RoundedCornerShape(26.dp)
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        color = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        tonalElevation = 4.dp,
-        shadowElevation = 12.dp,
-    ) {
+    // Aero: neprůhledný skleněný panel (pod ním je cizí aplikace, ne nebe) s bílým okrajem a leskem nahoře.
+    OnGlass {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+                .shadow(14.dp, shape, ambientColor = Color(0xFF004270), spotColor = Color(0xFF004270))
+                .clip(shape)
+                .background(Brush.verticalGradient(listOf(Color(0xFFFFFFFF), Color(0xFFE3F6FF), Color(0xFFCDEFFC))))
+                .drawWithContent {
+                    drawContent()
+                    drawRect(
+                        Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.9f), Color.Transparent), 0f, 6.dp.toPx()),
+                        size = Size(size.width, 6.dp.toPx()),
+                    )
+                }
+                .border(1.5.dp, Color.White, shape)
                 .padding(spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
@@ -61,67 +75,70 @@ fun VideoRatingSheet(
                     .width(40.dp)
                     .height(4.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.outlineVariant),
+                    .background(NeuColors.Dashed),
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = state.question,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f),
+                NeuText(
+                    state.question,
+                    Modifier.weight(1f),
+                    size = 20.sp,
+                    weight = FontWeight.Bold,
+                    lineHeight = 25.sp,
                 )
                 if (state.earnedXp > 0) {
-                    Surface(shape = CircleShape, color = colors.positiveContainer, contentColor = colors.onPositiveContainer) {
-                        Text(
-                            text = "+${state.earnedXp} XP",
-                            style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs),
-                        )
+                    Box(
+                        Modifier
+                            .aeroSurface(AeroStyle.GreenBubble, CircleShape)
+                            .padding(horizontal = spacing.sm, vertical = spacing.xxs),
+                    ) {
+                        NeuText("+${state.earnedXp} XP", size = 13.sp, weight = FontWeight.Bold, color = NeuColors.OnAccent, maxLines = 1)
                     }
                 }
             }
-            Text(
-                text = state.videoTitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            NeuText(
+                state.videoTitle,
+                size = 13.sp,
+                weight = FontWeight.Medium,
+                color = NeuColors.Muted,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
             )
 
             val answered = state.answered
             if (answered != null) {
-                Text(
-                    text = "${answered.emoji} Díky. Zapsáno do tvé mapy hodnoty.",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = spacing.sm),
+                NeuText(
+                    "${answered.emoji} Díky. Zapsáno do tvé mapy hodnoty.",
+                    Modifier.padding(vertical = spacing.sm),
+                    size = 16.sp,
+                    weight = FontWeight.Bold,
+                    color = NeuColors.Success,
                 )
             } else {
                 VideoValue.entries.forEach { value ->
-                    Surface(
+                    val rowShape = RoundedCornerShape(16.dp)
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.medium)
-                            .clickable { onAnswer(value) },
-                        shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                            .aeroSurface(AeroStyle.Frost, rowShape)
+                            .clip(rowShape)
+                            .clickable { onAnswer(value) }
+                            .padding(horizontal = spacing.md, vertical = spacing.sm),
+                        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = spacing.md, vertical = spacing.sm),
-                            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(text = value.emoji, style = MaterialTheme.typography.titleMedium)
-                            Text(text = value.label, style = MaterialTheme.typography.titleMedium)
-                        }
+                        NeuText(value.emoji, size = 16.sp)
+                        NeuText(value.label, size = 15.sp, weight = FontWeight.Bold)
                     }
                 }
-                TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
-                    Text("Teď ne")
-                }
+                NeuSmallButton(
+                    "Teď ne",
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End),
+                    color = NeuColors.Muted,
+                )
             }
         }
     }

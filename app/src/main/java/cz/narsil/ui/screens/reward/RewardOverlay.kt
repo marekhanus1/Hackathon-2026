@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,12 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,15 +25,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cz.narsil.ui.components.LevelBadge
+import cz.narsil.ui.components.NeuPrimaryButton
+import cz.narsil.ui.components.NeuText
+import cz.narsil.ui.components.OnGlass
 import cz.narsil.ui.components.XpProgressBar
+import cz.narsil.ui.theme.AeroBackdrop
+import cz.narsil.ui.theme.AeroStyle
 import cz.narsil.ui.theme.NarsilTheme
+import cz.narsil.ui.theme.NeuColors
+import cz.narsil.ui.theme.NeuDepth
+import cz.narsil.ui.theme.aeroSurface
+import cz.narsil.ui.theme.neuInset
 
 /**
  * Lightweight, Redmi-smooth spring celebration card for XP rewards and level-ups.
@@ -51,7 +58,6 @@ fun RewardOverlay(
     modifier: Modifier = Modifier,
     animateOnStart: Boolean = true
 ) {
-    val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
 
     var appeared by remember { mutableStateOf(!animateOnStart) }
@@ -74,100 +80,84 @@ fun RewardOverlay(
         label = "xpCountUp"
     )
 
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background.copy(alpha = 0.94f)
+    // Aero: průhledné (pozadí kreslí AeroBackdrop okna), jemné ztmavení a skleněná karta s bílým okrajem.
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color(0x2600305A))
+            .padding(spacing.lg),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(spacing.lg),
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
+        OnGlass {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .graphicsLayer {
                         scaleX = cardScale
                         scaleY = cardScale
-                    },
-                shape = MaterialTheme.shapes.extraLarge,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(
-                    width = 2.dp,
-                    color = if (state.leveledUp) colors.goldAccent else colors.positive
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                    }
+                    .neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp))
+                    .padding(spacing.lg),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(spacing.md)
             ) {
-                Column(
+                // Zelená (úroveň: jantarová) lesklá koule s bílým počtem XP.
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(spacing.lg),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing.md)
+                        .size(84.dp)
+                        .aeroSurface(if (state.leveledUp) AeroStyle.AmberGloss else AeroStyle.GreenOrb, CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(if (state.leveledUp) colors.emberContainer else colors.positiveContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "+$displayedXp",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (state.leveledUp) colors.onEmberContainer else colors.onPositiveContainer
-                        )
-                    }
-
-                    if (state.leveledUp) {
-                        Surface(
-                            shape = CircleShape,
-                            color = colors.goldAccent.copy(alpha = 0.2f)
-                        ) {
-                            Text(
-                                text = "Nová úroveň!",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = colors.ember,
-                                modifier = Modifier.padding(horizontal = spacing.md, vertical = spacing.xxs)
+                    Text(
+                        text = "+$displayedXp",
+                        style = TextStyle(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                            shadow = Shadow(
+                                if (state.leveledUp) Color(0xAA8A4B00) else Color(0xAA08722A),
+                                Offset(0f, 2f),
+                                5f
                             )
-                        }
-                    }
-
-                    Text(
-                        text = state.reasonTitle,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Text(
-                        text = state.encouragingSubtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
-
-                    LevelBadge(
-                        level = state.newLevel,
-                        title = state.newLevelTitle
-                    )
-
-                    XpProgressBar(currentXp = state.totalXpAfter)
-
-                    Button(
-                        onClick = onContinue,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colors.positive,
-                            contentColor = colors.onPositive
                         )
+                    )
+                }
+
+                if (state.leveledUp) {
+                    Box(
+                        Modifier
+                            .aeroSurface(AeroStyle.GreenBubble, CircleShape)
+                            .padding(horizontal = spacing.md, vertical = spacing.xxs)
                     ) {
-                        Text("Pokračovat")
+                        NeuText("Nová úroveň!", size = 14.sp, weight = FontWeight.Bold, color = NeuColors.OnAccent)
                     }
                 }
+
+                NeuText(
+                    state.reasonTitle,
+                    size = 22.sp,
+                    weight = FontWeight.Bold,
+                    align = TextAlign.Center,
+                    lineHeight = 27.sp
+                )
+
+                NeuText(
+                    state.encouragingSubtitle,
+                    size = 14.sp,
+                    weight = FontWeight.Medium,
+                    color = NeuColors.Muted,
+                    align = TextAlign.Center,
+                    lineHeight = 19.sp
+                )
+
+                LevelBadge(
+                    level = state.newLevel,
+                    title = state.newLevelTitle
+                )
+
+                XpProgressBar(currentXp = state.totalXpAfter)
+
+                NeuPrimaryButton("Pokračovat", onClick = onContinue)
             }
         }
     }
@@ -176,13 +166,13 @@ fun RewardOverlay(
 @Preview(name = "Odměna – Nová úroveň (Světlý)", showBackground = true)
 @Composable
 private fun RewardLevelUpLightPreview() {
-    NarsilTheme(darkTheme = false) {
+    NarsilTheme(darkTheme = false) { AeroBackdrop {
         RewardOverlay(
             state = RewardUiState(),
             onContinue = {},
             animateOnStart = false
         )
-    }
+    } }
 }
 
 @Preview(
@@ -192,7 +182,7 @@ private fun RewardLevelUpLightPreview() {
 )
 @Composable
 private fun RewardXpDarkPreview() {
-    NarsilTheme(darkTheme = true) {
+    NarsilTheme(darkTheme = true) { AeroBackdrop {
         RewardOverlay(
             state = RewardUiState(
                 gainedXp = 20,
@@ -206,5 +196,5 @@ private fun RewardXpDarkPreview() {
             onContinue = {},
             animateOnStart = false
         )
-    }
+    } }
 }

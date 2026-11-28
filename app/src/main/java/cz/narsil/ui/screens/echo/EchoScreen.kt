@@ -1,5 +1,6 @@
 package cz.narsil.ui.screens.echo
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,13 +38,18 @@ import cz.narsil.ui.components.NeuPrimaryButton
 import cz.narsil.ui.components.NeuScreen
 import cz.narsil.ui.components.NeuSegmented
 import cz.narsil.ui.components.NeuText
+import cz.narsil.ui.components.OnGlass
+import cz.narsil.ui.components.OnSky
+import cz.narsil.ui.theme.AeroBackdrop
+import cz.narsil.ui.theme.AeroStyle
+import cz.narsil.ui.theme.aeroSurface
 import cz.narsil.ui.theme.NarsilTheme
 import cz.narsil.ui.theme.NeuColors
 import cz.narsil.ui.theme.NeuDepth
 import cz.narsil.ui.theme.neuInset
 
 /**
- * Ozvěna ve stylu E (334, dříve 310): video ze včerejší smlouvy, pojmenování pocitu a volby
+ * Ozvěna ve stylu Frutiger Aero (dříve E/334, 310): video ze včerejší smlouvy, pojmenování pocitu a volby
  * (pohyb, kroky, Parťák) ve vnořené vaně; hlavní akce „Zavřít feed“. Okno se neposouvá,
  * při malé výšce se posouvá jen vana s volbami.
  */
@@ -60,17 +68,26 @@ fun EchoScreen(
     NeuScreen(modifier.systemBarsPadding(), gap = 14.dp) {
         NeuHeader(title = "Ozvěna · ${state.sourceAppName}")
 
-        Column(
-            Modifier.fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp)).padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Box(
-                Modifier.fillMaxWidth().height(170.dp).neuInset(NeuDepth.Deep, RoundedCornerShape(20.dp)).clip(RoundedCornerShape(20.dp)),
-                contentAlignment = Alignment.Center,
-            ) { videoSlot() }
-            Column(Modifier.padding(start = 6.dp, end = 6.dp, bottom = 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                NeuLabel("Tvoje včerejší Ozvěna")
-                NeuText(state.videoCaption, size = 14.sp, weight = FontWeight.Bold, lineHeight = 19.sp, maxLines = 3)
+        // Skleněná karta s videem: na skle tmavý text (OnGlass), video v tmavém rámu s bílým okrajem.
+        OnGlass {
+            Column(
+                Modifier.fillMaxWidth().neuInset(NeuDepth.Normal, RoundedCornerShape(24.dp)).padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                val videoShape = RoundedCornerShape(18.dp)
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(170.dp)
+                        .clip(videoShape)
+                        .background(Brush.linearGradient(listOf(Color(0xFF0B5C8E), Color(0xFF06324F))))
+                        .border(2.dp, Color(0xE6FFFFFF), videoShape),
+                    contentAlignment = Alignment.Center,
+                ) { OnSky { videoSlot() } }
+                Column(Modifier.padding(start = 6.dp, end = 6.dp, bottom = 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    NeuLabel("Tvoje včerejší Ozvěna")
+                    NeuText(state.videoCaption, size = 14.sp, weight = FontWeight.Bold, lineHeight = 19.sp, maxLines = 3)
+                }
             }
         }
 
@@ -88,11 +105,12 @@ fun EchoScreen(
             )
         }
 
-        Column(
+        // Volby ve skle; text tmavě modrý (OnGlass), jinak by byl bílý na bílém skle.
+        OnGlass { Column(
             Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .neuInset(NeuDepth.Normal, RoundedCornerShape(28.dp))
+                .neuInset(NeuDepth.Normal, RoundedCornerShape(24.dp))
                 .padding(horizontal = 14.dp, vertical = 6.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
@@ -135,7 +153,7 @@ fun EchoScreen(
                 enabled = state.canBorrow && state.friendRequest == FriendRequest.IDLE,
                 onClick = onBorrow,
             )
-        }
+        } }
 
         NeuPrimaryButton("Zavřít feed · +50 XP", onClick = onCloseFeed)
     }
@@ -165,14 +183,14 @@ private fun EchoOption(short: String, title: String, subtitle: String, xp: Strin
 @Composable
 private fun DefaultEchoVideoPlaceholder(state: EchoUiState) {
     Box(
-        Modifier.size(64.dp).border(2.dp, NeuColors.Accent, CircleShape),
+        Modifier.size(64.dp).aeroSurface(AeroStyle.BlueOrb, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
             if (state.isVideoPlaying) NeuIcons.Pause else NeuIcons.Play,
             contentDescription = null,
-            tint = NeuColors.Accent,
-            modifier = Modifier.size(22.dp),
+            tint = Color.White,
+            modifier = Modifier.size(24.dp),
         )
     }
 }
@@ -180,7 +198,7 @@ private fun DefaultEchoVideoPlaceholder(state: EchoUiState) {
 @Preview(name = "Ozvěna – koncept E", widthDp = 390, heightDp = 844)
 @Composable
 private fun EchoScreenPreview() {
-    NarsilTheme {
+    NarsilTheme { AeroBackdrop {
         EchoScreen(
             state = EchoUiState(selectedFeeling = EchoFeeling.UNAVA),
             onSelectFeeling = {},
@@ -189,13 +207,13 @@ private fun EchoScreenPreview() {
             onPayWithSteps = {},
             onBorrow = {}
         )
-    }
+    } }
 }
 
 @Preview(name = "Ozvěna – bez kroků, s dluhem", widthDp = 390, heightDp = 760)
 @Composable
 private fun EchoScreenDebtPreview() {
-    NarsilTheme {
+    NarsilTheme { AeroBackdrop {
         EchoScreen(
             state = EchoUiState(sourceAppName = "Instagram Reels", availableSteps = 620, currentDebtMinutes = 30, canBorrow = false),
             onSelectFeeling = {},
@@ -204,5 +222,5 @@ private fun EchoScreenDebtPreview() {
             onPayWithSteps = {},
             onBorrow = {}
         )
-    }
+    } }
 }

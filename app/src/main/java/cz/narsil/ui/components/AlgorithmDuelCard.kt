@@ -1,33 +1,35 @@
 package cz.narsil.ui.components
 
-import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cz.narsil.ui.theme.AeroBackdrop
+import cz.narsil.ui.theme.AeroStyle
 import cz.narsil.ui.theme.NarsilTheme
+import cz.narsil.ui.theme.NeuColors
+import cz.narsil.ui.theme.aeroSurface
 
 /**
- * Daily score card comparing minutes reclaimed by the user vs. minutes spent in passive feeds.
+ * Denní souboj ve skle: získaný čas (zeleně) proti času ve feedu (modře), lesklý dělený pruh a stav souboje.
  */
 @Composable
 fun AlgorithmDuelCard(
@@ -36,9 +38,6 @@ fun AlgorithmDuelCard(
     wonDaysCount: Int,
     modifier: Modifier = Modifier
 ) {
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
     val safeReclaimed = reclaimedMinutes.coerceAtLeast(0)
     val safeFeed = feedMinutes.coerceAtLeast(0)
     val total = (safeReclaimed + safeFeed).coerceAtLeast(1)
@@ -53,143 +52,69 @@ fun AlgorithmDuelCard(
         safeReclaimed == safeFeed -> "Vyrovnaný souboj"
         else -> "Algoritmus má náskok"
     }
-    val statusContainer = if (safeReclaimed >= safeFeed) {
-        colors.positiveContainer
-    } else {
-        colors.echoContainer
-    }
-    val statusContent = if (safeReclaimed >= safeFeed) {
-        colors.onPositiveContainer
-    } else {
-        colors.onEchoContainer
-    }
+    val leading = safeReclaimed >= safeFeed
 
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Column(
+    NeuPanel(modifier.fillMaxWidth(), radius = 22.dp, padding = PaddingValues(16.dp), gap = 10.dp) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            NeuText("Souboj s algoritmem", Modifier.weight(1f), size = 15.sp, weight = FontWeight.Bold, maxLines = 1)
+            Box(
+                Modifier
+                    .aeroSurface(if (leading) AeroStyle.GreenBubble else AeroStyle.BlueGlass, RoundedCornerShape(50))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+            ) {
+                NeuText(statusText, size = 11.sp, weight = FontWeight.ExtraBold, color = if (leading) NeuColors.OnAccent else NeuColors.Text, maxLines = 1)
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                NeuText("$safeReclaimed min", size = 24.sp, weight = FontWeight.Bold, color = Color(0xFF0C8731))
+                NeuText("Získaný čas", size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted)
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                NeuText("$safeFeed min", size = 24.sp, weight = FontWeight.Bold, color = Color(0xFF087FB0))
+                NeuText("Čas ve feedu", size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted)
+            }
+        }
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm)
+                .height(12.dp)
+                .clip(CircleShape)
+                .background(Color(0x24005B96))
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Souboj s algoritmem",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Surface(
-                    shape = CircleShape,
-                    color = statusContainer,
-                    contentColor = statusContent
-                ) {
-                    Text(
-                        text = statusText,
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "$safeReclaimed min",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.positive
-                    )
-                    Text(
-                        text = "Získaný čas",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "$safeFeed min",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.algorithm
-                    )
-                    Text(
-                        text = "Čas ve feedu",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Row(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(12.dp)
-                    .clip(CircleShape)
-                    .background(colors.algorithmContainer)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(reclaimedShare)
-                        .fillMaxHeight()
-                        .background(colors.positive)
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f - reclaimedShare)
-                        .fillMaxHeight()
-                        .background(colors.algorithm)
-                )
-            }
-
-            Text(
-                text = "Vyhrané dny celkem: $wonDaysCount",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                    .weight(reclaimedShare)
+                    .fillMaxHeight()
+                    .background(Brush.verticalGradient(listOf(Color(0xFFADF87A), Color(0xFF22AF42))))
+            ) { Box(Modifier.fillMaxWidth().height(4.dp).background(Color(0x99FFFFFF))) }
+            Box(
+                modifier = Modifier
+                    .weight(1f - reclaimedShare)
+                    .fillMaxHeight()
+                    .background(Brush.verticalGradient(listOf(Color(0xFF9EE3FF), Color(0xFF1C8FD0))))
+            ) { Box(Modifier.fillMaxWidth().height(4.dp).background(Color(0x80FFFFFF))) }
         }
+
+        NeuText("Vyhrané dny celkem: $wonDaysCount", size = 12.sp, weight = FontWeight.Bold, color = NeuColors.Label)
     }
 }
 
-@Preview(name = "AlgorithmDuelCard – Světlý", showBackground = true)
+@Preview(name = "AlgorithmDuelCard – Aero", widthDp = 390, heightDp = 220)
 @Composable
-private fun AlgorithmDuelCardLightPreview() {
-    NarsilTheme(darkTheme = false) {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            AlgorithmDuelCard(
-                reclaimedMinutes = 45,
-                feedMinutes = 18,
-                wonDaysCount = 12
-            )
-        }
-    }
-}
-
-@Preview(
-    name = "AlgorithmDuelCard – Tmavý",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun AlgorithmDuelCardDarkPreview() {
-    NarsilTheme(darkTheme = true) {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            AlgorithmDuelCard(
-                reclaimedMinutes = 15,
-                feedMinutes = 28,
-                wonDaysCount = 12
-            )
+private fun AlgorithmDuelCardPreview() {
+    NarsilTheme {
+        AeroBackdrop {
+            AlgorithmDuelCard(reclaimedMinutes = 45, feedMinutes = 18, wonDaysCount = 12, modifier = Modifier.padding(16.dp))
         }
     }
 }

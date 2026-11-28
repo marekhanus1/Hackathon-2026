@@ -4,7 +4,6 @@ import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +24,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -62,6 +60,11 @@ import cz.narsil.ui.components.NeuScreen
 import cz.narsil.ui.components.NeuSegmented
 import cz.narsil.ui.components.NeuSmallButton
 import cz.narsil.ui.components.NeuText
+import cz.narsil.ui.components.OnGlass
+import cz.narsil.ui.theme.AeroBackdrop
+import cz.narsil.ui.theme.AeroStyle
+import cz.narsil.ui.theme.aeroSurface
+import androidx.compose.ui.graphics.Color
 import cz.narsil.ui.components.StatusPill
 import cz.narsil.ui.theme.NarsilTheme
 import cz.narsil.ui.theme.NeuColors
@@ -154,7 +157,11 @@ private fun SettingsOverview(
     val s = state.settings
     val paused = state.isProtectionPaused
     NeuScreen(modifier, gap = 14.dp) {
-        NeuHeader(title = "Nastavení", subtitle = "Narsil nic tvrdě neblokuje, jen přeruší a nabídne volbu.")
+        NeuHeader(
+            title = "Nastavení",
+            subtitle = "Narsil nic tvrdě neblokuje, jen přeruší a nabídne volbu.",
+            onBack = actions.onBack,
+        )
 
         NeuPanel(Modifier.fillMaxWidth(), padding = PaddingValues(horizontal = 16.dp, vertical = 14.dp), gap = 12.dp) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -190,9 +197,6 @@ private fun SettingsOverview(
                     height = 34.dp,
                     outerRadius = 14.dp,
                     innerRadius = 10.dp,
-                    outerDepth = NeuDepth.Deep,
-                    selectedDepth = NeuDepth.Shallow,
-                    ring = true,
                 )
             }
         }
@@ -205,6 +209,7 @@ private fun SettingsOverview(
                 .padding(horizontal = 16.dp, vertical = 6.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
+          OnGlass {
             SettingsPage.entries.forEachIndexed { i, p ->
                 if (i > 0) NeuDivider()
                 val (sub, warn) = pageSummary(p, state)
@@ -231,6 +236,7 @@ private fun SettingsOverview(
                     .combinedClickable(onClick = {}, onLongClick = actions.onOpenDemoPanel)
                     .padding(vertical = 14.dp),
             )
+          }
         }
     }
 }
@@ -533,11 +539,14 @@ private fun FixedRulesCard() {
     }
 }
 
+/** Neprůhledné světlé sklo dialogu (NeuColors.Base je průhledná). */
+private val DialogGlass = Color(0xF7F4FCFF)
+
 @Composable
 private fun PendingChangeDialog(pending: PendingChange, onConfirm: () -> Unit, onCancel: () -> Unit) {
     AlertDialog(
         onDismissRequest = onCancel,
-        containerColor = NeuColors.Base,
+        containerColor = DialogGlass,
         titleContentColor = NeuColors.Text,
         textContentColor = NeuColors.Text,
         title = { Text(pending.title) },
@@ -604,19 +613,18 @@ private fun CardText(text: String) {
     NeuText(text, size = 12.sp, weight = FontWeight.Medium, color = NeuColors.Muted, lineHeight = 17.sp)
 }
 
-/** Volba ze seznamu: vybraná zamáčknutá hlouběji s jantarovým rámečkem. */
+/** Volba ze seznamu: vybraná je bílo-zelená bublina, ostatní matné sklo. */
 @Composable
 private fun NeuChip(text: String, selected: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(12.dp)
     Box(
         Modifier
-            .neuInset(if (selected) NeuDepth.Deep else NeuDepth.Shallow, shape)
-            .then(if (selected) Modifier.border(1.dp, NeuColors.Accent, shape) else Modifier)
+            .aeroSurface(if (selected) AeroStyle.GreenBubble else AeroStyle.Frost, shape)
             .clip(shape)
             .clickable(role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
-        NeuText(text, size = 12.sp, weight = FontWeight.ExtraBold, color = if (selected) NeuColors.Accent else NeuColors.Muted, maxLines = 1)
+        NeuText(text, size = 12.sp, weight = FontWeight.ExtraBold, color = if (selected) NeuColors.OnAccent else NeuColors.Label, maxLines = 1)
     }
 }
 
@@ -661,11 +669,12 @@ private fun SwitchRow(title: String, subtitle: String?, checked: Boolean, onChec
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = NeuColors.OnAccent,
-                checkedTrackColor = NeuColors.Accent,
-                uncheckedThumbColor = NeuColors.Muted,
-                uncheckedTrackColor = NeuColors.Deep,
-                uncheckedBorderColor = NeuColors.Divider,
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Color(0xFF36C246),
+                checkedBorderColor = Color(0xFF1E9E3A),
+                uncheckedThumbColor = Color(0xFF7FA3B0),
+                uncheckedTrackColor = Color(0xFFD6E6EE),
+                uncheckedBorderColor = Color(0x520078B5),
             )
         )
     }
@@ -701,51 +710,38 @@ private fun StravaCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Strava (nepovinné)",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(1f)
-            )
+            NeuText("Strava (nepovinné)", Modifier.weight(1f), size = 16.sp, weight = FontWeight.ExtraBold)
             when {
                 state.connected && state.demo -> StatusPill("Demo", colors.echoContainer, colors.onEchoContainer)
                 state.connected -> StatusPill("Připojeno", colors.positiveContainer, colors.onPositiveContainer)
                 !state.configured -> StatusPill(
                     "Nenastaveno",
-                    MaterialTheme.colorScheme.surfaceVariant,
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                    Color(0xC7F3FDFF),
+                    NeuColors.Muted
                 )
             }
         }
-        Text(
-            text = when {
+        CardText(
+            when {
                 state.connected && state.demo ->
                     "Demo režim · ukázková aktivita (běh 28 min), ne skutečná data ze Stravy."
                 state.connected -> "Připojeno · sportovní aktivity ověří pohybové úkoly automaticky."
                 !state.configured ->
                     "Strava není nastavená. Připojení zatím nejde, pohybový úkol můžeš doložit fotkou nebo vyzkoušet demo."
                 else -> "Nepřipojeno · pohybový úkol můžeš vždy doložit i fotkou."
-            },
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            }
         )
         state.message?.takeIf { !state.connected }?.let { message ->
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
+            NeuText(message, size = 12.sp, weight = FontWeight.SemiBold, color = NeuColors.Error, lineHeight = 17.sp)
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(spacing.xs, Alignment.End)
         ) {
             when {
-                state.connected -> TextButton(onClick = onDisconnect) {
-                    Text(if (state.demo) "Ukončit demo" else "Odpojit")
-                }
-                !state.configured -> OutlinedButton(onClick = onStartDemo) { Text("Vyzkoušet demo") }
-                else -> OutlinedButton(onClick = onConnect) { Text("Připojit") }
+                state.connected -> NeuSmallButton(if (state.demo) "Ukončit demo" else "Odpojit", onDisconnect, color = NeuColors.Muted)
+                !state.configured -> NeuSmallButton("Vyzkoušet demo", onStartDemo)
+                else -> NeuSmallButton("Připojit", onConnect)
             }
         }
     }
@@ -767,6 +763,7 @@ private fun ContextStatusBadge(context: ComfortContext) {
 @Composable
 private fun SettingsLightPreview() {
     NarsilTheme {
+      AeroBackdrop {
         SettingsScreen(
             state = SettingsUiState(
                 permissions = defaultSettingsPermissions(
@@ -780,6 +777,7 @@ private fun SettingsLightPreview() {
             ),
             actions = SettingsActions()
         )
+      }
     }
 }
 
@@ -792,6 +790,7 @@ private fun SettingsLightPreview() {
 @Composable
 private fun SettingsDarkPreview() {
     NarsilTheme(darkTheme = true) {
+      AeroBackdrop {
         SettingsScreen(
             state = SettingsUiState(
                 comfortContext = ComfortContext.AWAY,
@@ -803,5 +802,6 @@ private fun SettingsDarkPreview() {
             ),
             actions = SettingsActions()
         )
+      }
     }
 }

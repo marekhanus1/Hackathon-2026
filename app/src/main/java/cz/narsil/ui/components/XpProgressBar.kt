@@ -1,27 +1,27 @@
 package cz.narsil.ui.components
 
-import android.content.res.Configuration
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cz.narsil.ui.theme.AeroBackdrop
 import cz.narsil.ui.theme.NarsilTheme
+import cz.narsil.ui.theme.NeuColors
 
 /**
- * Displays XP progress within the current level (default 500 XP per level).
+ * XP v rámci aktuální úrovně (výchozí 500 XP na úroveň): modré číslo, tlumený zbytek a zelený lesk.
+ * Barvy textu se řídí podkladem ([OnSky] / [OnGlass]).
  */
 @Composable
 fun XpProgressBar(
@@ -38,59 +38,33 @@ fun XpProgressBar(
         label = "xpProgress"
     )
 
-    val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
-
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(spacing.xs)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "$xpInLevel / $safeThreshold XP",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "Zbývá $remainingXp XP do další úrovně",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            NeuText("$xpInLevel / $safeThreshold XP", size = 13.sp, weight = FontWeight.Bold, color = NeuColors.Accent, maxLines = 1)
+            NeuText("Zbývá $remainingXp XP do další úrovně", size = 11.sp, weight = FontWeight.Medium, color = NeuColors.Muted, maxLines = 1)
         }
 
         NarsilProgressBar(
             progress = animatedFraction,
-            fillColor = colors.xpFill,
+            fillColor = Color(0xFF22AF42),
             height = 12.dp
         )
     }
 }
 
-@Preview(name = "XpProgressBar – Světlý", showBackground = true)
+@Preview(name = "XpProgressBar – Aero", widthDp = 360, heightDp = 100)
 @Composable
-private fun XpProgressBarLightPreview() {
-    NarsilTheme(darkTheme = false) {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            XpProgressBar(currentXp = 1360)
-        }
-    }
-}
-
-@Preview(
-    name = "XpProgressBar – Tmavý",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun XpProgressBarDarkPreview() {
-    NarsilTheme(darkTheme = true) {
-        Surface(modifier = Modifier.padding(16.dp)) {
-            XpProgressBar(currentXp = 1360)
+private fun XpProgressBarPreview() {
+    NarsilTheme {
+        AeroBackdrop {
+            NeuPanel(Modifier.padding(16.dp)) { XpProgressBar(currentXp = 1360) }
         }
     }
 }

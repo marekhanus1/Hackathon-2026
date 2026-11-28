@@ -13,10 +13,15 @@ object ScrollProgressColors {
         100 to 0xFFFF1744.toInt(), // červená
     )
 
-    /** Podklad (stopa) a obrys: tmavé, ať je pruh vidět na světlém i tmavém obsahu. */
-    const val TRACK = 0x8C000000.toInt()
-    const val OUTLINE = 0xCC000000.toInt()
+    /** Podklad (stopa) a obrys: tmavě modré (Aero), ať je pruh vidět na světlém i tmavém obsahu. */
+    const val TRACK = 0x99042A45.toInt()
+    const val OUTLINE = 0xD9031F33.toInt()
     const val LABEL_TEXT = 0xFFFFFFFF.toInt()
+    /** Lesk (Frutiger Aero): bílý odlesk v horní polovině pruhu a bílý vnitřní okraj. */
+    const val GLOSS = 0xB3FFFFFF.toInt()
+    const val RIM = 0x8CFFFFFF.toInt()
+    /** Štítek jako toast: tmavě modrá průsvitná pilulka s bílým textem. */
+    const val LABEL_BG = 0xE0063B5C.toInt()
 
     fun color(percent: Int): Int {
         val p = percent.coerceIn(0, 100)
