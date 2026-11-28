@@ -21,11 +21,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.DailyContract
+import cz.narsil.core.LlmProvider
+import cz.narsil.core.TaskStatus
 import cz.narsil.core.data.DayKey
+import cz.narsil.llm.client.BuildConfigLlmKeys
+import cz.narsil.llm.client.LlmKeys
+import cz.narsil.llm.client.LlmRequest
+import cz.narsil.llm.client.MultiProviderLlmClient
 import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.RewardBuilder
 import cz.narsil.ui.screens.badges.BadgesScreen
@@ -38,7 +46,16 @@ import cz.narsil.ui.screens.home.HomeUiState
 import cz.narsil.ui.screens.home.ZoneStatus
 import cz.narsil.ui.screens.mirror.MirrorScreen
 import cz.narsil.ui.screens.mirror.MirrorViewModel
+import cz.narsil.ui.screens.pet.PetApiResult
+import cz.narsil.ui.screens.pet.PetBubble
+import cz.narsil.ui.screens.pet.PetChatScreen
+import cz.narsil.ui.screens.pet.PetContext
+import cz.narsil.ui.screens.pet.PetRateLimiter
+import cz.narsil.ui.screens.pet.PetSpeechPolicy
+import cz.narsil.ui.screens.pet.PetViewModel
+import cz.narsil.ui.screens.pet.SharedPrefsPetMemoryStore
 import cz.narsil.ui.components.AvatarState as UiAvatar
+import kotlinx.coroutines.flow.combine
 
 // Janovy obrazovky (312, 313, 322, 323, 324) v navigaci (124). Domov a odznaky ze skutečného
 // stavu (pohyb, gamifikace, smlouva, kontext); ostatní zatím přes Janovy ViewModely s ukázkovými daty.
@@ -59,6 +76,11 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
     val movement by sl.movementRepository.state.collectAsState()
     val contract by sl.contractRepository.today.collectAsState()
     val comfort by sl.contextRepository.context.collectAsState()
+    val petVm: PetViewModel = viewModel(
+        key = "pet",
+        factory = viewModelFactory { initializer { createPetViewModel() } },
+    )
+    val petState by petVm.uiState.collectAsState()
     val state = HomeUiState(
         level = game.level,
         levelTitle = RewardBuilder.levelTitle(game.level),
@@ -91,6 +113,7 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
         ) {
             val exercise = ServiceLocator.settingsRepository.settings.collectAsState().value.exercise
+            TextButton(onClick = { onNavigate(NarsilRoute.Pet) }) { Text("Sova") }
             TextButton(onClick = { onNavigate(NarsilRoute.Squat) }) { Text(ExerciseText.label(exercise)) }
             TextButton(onClick = { onNavigate(NarsilRoute.Verify) }) { Text("Ověřit úkol") }
             IconButton(onClick = { onNavigate(NarsilRoute.Settings) }) {
@@ -102,6 +125,17 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
             onOpenContract = { onNavigate(NarsilRoute.Contract) },
             onOpenMirror = { onNavigate(NarsilRoute.Mirror) },
             onOpenBadges = { onNavigate(NarsilRoute.Badges) },
+            topSlot = {
+                val bubbleText = petState.bubbleText
+                if (petState.bubbleVisible && bubbleText != null) {
+                    PetBubble(
+                        mood = petState.mood,
+                        text = bubbleText,
+                        onOpenChat = { onNavigate(NarsilRoute.Pet) },
+                        onDismiss = petVm::muteToday,
+                    )
+                }
+            },
             modifier = Modifier.weight(1f),
         )
     }
@@ -160,3 +194,74 @@ fun BadgesRoute() {
         ),
     )
 }
+
+@Composable
+fun PetRoute(onBack: () -> Unit) {
+    val vm: PetViewModel = viewModel(
+        key = "pet",
+        factory = viewModelFactory { initializer { createPetViewModel() } },
+    )
+    val state by vm.uiState.collectAsState()
+    PetChatScreen(
+        state = state,
+        onInputChange = vm::onInputChange,
+        onSend = { vm.send(state.input) },
+        onQuickReply = vm::send,
+        onMuteToday = vm::muteToday,
+        onBack = onBack,
+    )
+}
+
+private fun createPetViewModel(): PetViewModel {
+    val sl = ServiceLocator
+    val contextFlow = combine(
+        sl.gamificationEngine.state,
+        sl.movementRepository.state,
+        sl.contractRepository.today,
+    ) { game, movement, contract ->
+        val pendingTasks = contract?.tasks
+            ?.filter { it.status != TaskStatus.VERIFIED }
+            ?.map { it.title }
+            .orEmpty()
+        val planned = (pendingTasks + contract?.plannedContent.orEmpty()).distinct()
+        PetContext(
+            avatar = game.avatar,
+            streakDays = game.streakDays,
+            reclaimedMinutes = game.today.reclaimedMinutes,
+            feedMinutes = game.today.feedMinutes,
+            debtMinutes = movement.debtMinutes,
+            stepsToday = movement.stepsToday,
+            plannedTasks = planned,
+        )
+    }
+    val store = SharedPrefsPetMemoryStore(sl.appContext)
+    val policy = PetSpeechPolicy(store)
+    val rateLimiter = PetRateLimiter(store)
+    val llmClient = MultiProviderLlmClient(
+        provider = { LlmProvider.GEMINI },
+        keys = LlmKeys {
+            buildConfigKey("PET_GEMINI_API_KEY") ?: BuildConfigLlmKeys.keyFor(LlmProvider.GEMINI)
+        },
+    )
+    return PetViewModel(
+        context = contextFlow,
+        replier = { prompt ->
+            val resp = llmClient.complete(
+                LlmRequest(prompt = prompt, maxTokens = 160, timeoutMillis = 5_000L),
+            )
+            val text = resp.text
+            when {
+                text != null -> PetApiResult.Success(text)
+                resp.error?.startsWith("HTTP 429") == true -> PetApiResult.RateLimited
+                else -> PetApiResult.Unavailable
+            }
+        },
+        policy = policy,
+        rateLimiter = rateLimiter,
+    )
+}
+
+private fun buildConfigKey(field: String): String? =
+    runCatching { Class.forName("cz.narsil.BuildConfig").getField(field).get(null) as? String }
+        .getOrNull()
+        ?.takeIf { it.isNotBlank() }

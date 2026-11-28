@@ -24,7 +24,7 @@ android {
         versionCode = 1
         versionName = "0.1"
         // Klíče jen v local.properties (nikdy v gitu). Chybějící = prázdný řetězec = poskytovatel vypnutý.
-        listOf("CLAUDE_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY", "STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET").forEach { key ->
+        listOf("CLAUDE_API_KEY", "GEMINI_API_KEY", "PET_GEMINI_API_KEY", "OPENAI_API_KEY", "STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET").forEach { key ->
             buildConfigField("String", key, "\"${localProps.getProperty(key, "")}\"")
         }
     }

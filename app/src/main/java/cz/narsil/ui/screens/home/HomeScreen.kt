@@ -43,6 +43,7 @@ fun HomeScreen(
     onOpenContract: () -> Unit,
     onOpenMirror: () -> Unit = {},
     onOpenBadges: () -> Unit = {},
+    topSlot: @Composable () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val colors = NarsilTheme.colors
@@ -89,6 +90,8 @@ fun HomeScreen(
             }
 
             XpProgressBar(currentXp = state.currentXp)
+
+            topSlot()
 
             AvatarCard(
                 state = state.avatarState,
