@@ -1,5 +1,5 @@
 ---
-status: review      # todo | in-progress | review | done
+status: done        # todo | in-progress | review | done
 owner: jan          # jméno člověka
 agent: gemini       # claude | gemini | human
 branch: jan/gemini/313-vecerni-smlouva

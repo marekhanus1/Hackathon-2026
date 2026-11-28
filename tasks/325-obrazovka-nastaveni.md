@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: jan
 agent: gemini
 branch: jan/gemini/325-obrazovka-nastaveni
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/65
 ---
 
 # 325 – Obrazovka nastavení

@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: jan
 agent: gemini
 branch: jan/gemini/330-sjednoceni-vzhledu
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/67
 ---
 
 # 330 – Sjednocení vzhledu
