@@ -157,5 +157,137 @@ class SquatRepCounterTest {
         counter.reset()
         assertEquals(0, counter.count)
         assertNull(counter.standingThighRatio)
+        assertNull(counter.standingShinRatio)
+    }
+
+    @Test
+    fun frontalSquatWithForwardTorsoLeanCounts() {
+        // Čelem ke kameře s 40% předklonem trupu dole (rameno klesá k úrovni kyčlí): holenní poměr i úhel stále počítají 10/10.
+        fun frontalWithLean(depth: Double): PoseFrame {
+            val kneeY = 600f
+            val thigh = 200f * (1 - depth.toFloat() * 0.85f)
+            val hipY = kneeY - thigh
+            val torsoHeight = 220f * (1 - depth.toFloat() * 0.40f)
+            val shoulderY = hipY - torsoHeight
+            fun j(x: Float, y: Float) = Joint(x, y, 0.9f)
+            return PoseFrame(
+                leftShoulder = j(180f, shoulderY), rightShoulder = j(300f, shoulderY),
+                leftHip = j(200f, hipY), rightHip = j(280f, hipY),
+                leftKnee = j(200f, kneeY), rightKnee = j(280f, kneeY),
+                leftAnkle = j(200f, 800f), rightAnkle = j(280f, 800f),
+            )
+        }
+        val counter = SquatRepCounter()
+        var t = 0L
+        repeat(10) {
+            for (d in frontalSquat) {
+                counter.onFrame(frontalWithLean(d), t)
+                t += 100
+            }
+        }
+        assertEquals(10, counter.count)
+    }
+
+    @Test
+    fun frontalSquatWithForwardLeanAndNoAnklesCounts() {
+        // Bez kotníků a s předklonem 35 % při dřepu: paměť stoje udrží referenci trupu.
+        fun frontalLeanNoAnkles(depth: Double): PoseFrame {
+            val kneeY = 600f
+            val thigh = 200f * (1 - depth.toFloat() * 0.85f)
+            val hipY = kneeY - thigh
+            val torsoHeight = 220f * (1 - depth.toFloat() * 0.35f)
+            val shoulderY = hipY - torsoHeight
+            fun j(x: Float, y: Float) = Joint(x, y, 0.9f)
+            return PoseFrame(
+                leftShoulder = j(180f, shoulderY), rightShoulder = j(300f, shoulderY),
+                leftHip = j(200f, hipY), rightHip = j(280f, hipY),
+                leftKnee = j(200f, kneeY), rightKnee = j(280f, kneeY),
+            )
+        }
+        val counter = SquatRepCounter()
+        var t = 0L
+        repeat(5) {
+            for (d in frontalSquat) {
+                counter.onFrame(frontalLeanNoAnkles(d), t)
+                t += 100
+            }
+        }
+        assertEquals(5, counter.count)
+    }
+
+    @Test
+    fun sideSquatWithOccludedFarLegCounts() {
+        // Z boku: bližší noha (0.95) jde 170° -> 95° -> 170°, zakrytá vzdálenější (0.50) visí na 165° -> nesmí rozředit úhel.
+        fun sideFrame(nearKneeX: Float, nearHipY: Float): PoseFrame = PoseFrame(
+            leftShoulder = Joint(200f, nearHipY - 220f, 0.95f),
+            rightShoulder = Joint(205f, nearHipY - 220f, 0.50f),
+            leftHip = Joint(200f, nearHipY, 0.95f),
+            leftKnee = Joint(nearKneeX, 600f, 0.95f),
+            leftAnkle = Joint(200f, 800f, 0.95f),
+            rightHip = Joint(205f, 400f, 0.50f),
+            rightKnee = Joint(215f, 600f, 0.50f),
+            rightAnkle = Joint(205f, 800f, 0.50f),
+        )
+        val standing = List(5) { sideFrame(nearKneeX = 210f, nearHipY = 400f) }
+        val squatDown = List(6) { sideFrame(nearKneeX = 370f, nearHipY = 580f) }
+        val counter = SquatRepCounter()
+        var t = 0L
+        repeat(10) {
+            for (f in standing + squatDown + standing) {
+                counter.onFrame(f, t)
+                t += 100
+            }
+        }
+        assertEquals(10, counter.count)
+    }
+
+    @Test
+    fun diagonal45DegreeSquatCounts() {
+        // Šikmo (45°): mírnější pokles úhlu (~135°) + pokles kyčlí -> počítá 10/10.
+        fun diagFrame(down: Boolean): PoseFrame {
+            val hipY = if (down) 545f else 400f
+            val kneeX = if (down) 265f else 210f
+            return PoseFrame(
+                leftShoulder = Joint(190f, hipY - 210f, 0.9f),
+                rightShoulder = Joint(250f, hipY - 210f, 0.85f),
+                leftHip = Joint(200f, hipY, 0.9f),
+                rightHip = Joint(240f, hipY, 0.85f),
+                leftKnee = Joint(kneeX, 600f, 0.9f),
+                rightKnee = Joint(kneeX + 40f, 600f, 0.85f),
+                leftAnkle = Joint(205f, 800f, 0.9f),
+                rightAnkle = Joint(245f, 800f, 0.85f),
+            )
+        }
+        val rep = List(5) { diagFrame(false) } + List(6) { diagFrame(true) } + List(5) { diagFrame(false) }
+        val counter = SquatRepCounter()
+        var t = 0L
+        repeat(10) {
+            for (f in rep) {
+                counter.onFrame(f, t)
+                t += 100
+            }
+        }
+        assertEquals(10, counter.count)
+    }
+
+    @Test
+    fun bendingOverGlitchDoesNotPoisonCalibration() {
+        // Jednorázový šum / předklon s nereálně vysokým poměrem před stáním nesmí rozbít další počítání.
+        val glitch = PoseFrame(
+            leftShoulder = Joint(180f, 380f, 0.9f), rightShoulder = Joint(300f, 380f, 0.9f),
+            leftHip = Joint(200f, 400f, 0.9f), rightHip = Joint(280f, 400f, 0.9f),
+            leftKnee = Joint(200f, 600f, 0.9f), rightKnee = Joint(280f, 600f, 0.9f),
+            leftAnkle = Joint(200f, 800f, 0.9f), rightAnkle = Joint(280f, 800f, 0.9f),
+        )
+        val counter = SquatRepCounter()
+        var t = 0L
+        repeat(2) {
+            counter.onFrame(glitch, t)
+            t += 100
+        }
+        repeat(5) {
+            t = counter.feedFrames(frontalSquat, t)
+        }
+        assertEquals(5, counter.count)
     }
 }

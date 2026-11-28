@@ -155,6 +155,6 @@ class PoseSquatCounter(
     }
 
     private companion object {
-        const val VISIBLE_LIKELIHOOD = 0.4f
+        const val VISIBLE_LIKELIHOOD = 0.35f
     }
 }
