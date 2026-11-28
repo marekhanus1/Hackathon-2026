@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/159-ozvena-neukazana-pujcka
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/126
 ---
 
 # 159 – Neukázaná Ozvěna a Půjčit nad limitem
@@ -21,3 +21,5 @@ pr:
 - app/src/test/java/cz/narsil/overlay/ (testy)
 
 ## Poznámky
+- Sahá do ui/screens/echo (Jan): jen pole `canBorrow`/`debtLimitMinutes` a `enabled` u tlačítka.
+- Neukázaná Ozvěna se zkouší znovu každý tik (5 s), dokud se oprávnění nevrátí.
