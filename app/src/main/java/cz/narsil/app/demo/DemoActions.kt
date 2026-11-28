@@ -47,8 +47,9 @@ object DemoActions {
     /** Nahraje mockdata/ do databáze (SPEC 10) a přepočítá gamifikaci. Vrací popis výsledku. */
     suspend fun loadMockData(): String {
         val r = runCatching { MockDataLoader.load(sl.appContext) }.getOrElse { return "Mock data nejdou načíst: ${it.message}" }
-        if (r.alreadyLoaded) return "Mock data už jsou nahraná"
-        (sl.gamificationEngine as? RulesGamificationEngine)?.let { runCatching { it.refresh() } }
+        // Historie se vyměnila celá → gamifikace i pohyb (ledger) znovu z databáze, Domov se překreslí bez restartu.
+        (sl.gamificationEngine as? RulesGamificationEngine)?.let { runCatching { it.reload() } }
+        runCatching { sl.movementRepository.refresh() }
         return "Nahráno: ${r.days} dní, ${r.interventions} zásahů, ${r.ratings} hodnocení"
     }
 
