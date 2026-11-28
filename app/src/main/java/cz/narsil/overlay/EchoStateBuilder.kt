@@ -23,6 +23,17 @@ object EchoStateBuilder {
         "com.ss.android.ugc.aweme" to "TikTok",
         "com.google.android.youtube" to "YouTube",
         "org.mozilla.firefox" to "Firefox",
+        // 149
+        "com.twitter.android" to "X",
+        "com.reddit.frontpage" to "Reddit",
+        "com.facebook.katana" to "Facebook",
+        "com.facebook.lite" to "Facebook",
+        "com.instagram.barcelona" to "Threads",
+        "com.pinterest" to "Pinterest",
+        "com.ninegag.android.app" to "9GAG",
+        "com.tumblr" to "Tumblr",
+        "com.linkedin.android" to "LinkedIn",
+        "xyz.blueskyweb.app" to "Bluesky",
     )
 
     fun appName(packageName: String): String = APP_NAMES[packageName] ?: packageName.substringAfterLast('.')

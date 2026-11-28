@@ -27,7 +27,19 @@ object SettingsGuard {
         TrackedApp.TIKTOK -> "TikTok"
         TrackedApp.YOUTUBE -> "YouTube"
         TrackedApp.FIREFOX -> "Web ve Firefoxu"
+        TrackedApp.X -> "X (Twitter)"
+        TrackedApp.REDDIT -> "Reddit"
+        TrackedApp.FACEBOOK -> "Facebook"
+        TrackedApp.THREADS -> "Threads"
+        TrackedApp.PINTEREST -> "Pinterest"
+        TrackedApp.NINEGAG -> "9GAG"
+        TrackedApp.TUMBLR -> "Tumblr"
+        TrackedApp.LINKEDIN -> "LinkedIn"
+        TrackedApp.BLUESKY -> "Bluesky"
     }
+
+    /** Aplikace s vlastními pravidly; ostatní mají obecnou detekci podle scrollu (149). */
+    val CORE_APPS = setOf(TrackedApp.INSTAGRAM, TrackedApp.TIKTOK, TrackedApp.YOUTUBE, TrackedApp.FIREFOX)
 
     /** Česky popsaná uvolnění mezi [old] a [new]; prázdné = změna je neutrální nebo přísnější. */
     fun loosenings(old: Settings, new: Settings): List<String> = buildList {
@@ -50,6 +62,9 @@ object SettingsGuard {
         if (removed.isNotEmpty()) {
             add("Narsil přestane sledovat: ${removed.sortedBy { it.ordinal }.joinToString { appLabel(it) }}.")
         }
+        if (old.trackOtherFeedApps && !new.trackOtherFeedApps) {
+            add("Narsil přestane hlídat další aplikace s nekonečným feedem.")
+        }
         val oldPause = old.protectionPausedUntilMillis ?: 0L
         val newPause = new.protectionPausedUntilMillis ?: 0L
         if (newPause > oldPause) add("Ochrana se pozastaví do 4:00 ráno. Ozvěna do té doby nepřijde.")
@@ -67,7 +82,7 @@ object SettingsGuard {
                 videoChainLimit = d.videoChainLimit,
                 showScrollProgress = d.showScrollProgress,
             )
-            SettingsSection.APPS -> current.copy(trackedApps = d.trackedApps)
+            SettingsSection.APPS -> current.copy(trackedApps = d.trackedApps, trackOtherFeedApps = d.trackOtherFeedApps)
             SettingsSection.MOVEMENT -> current.copy(
                 exercise = d.exercise,
                 squatsPerUnlock = d.squatsPerUnlock,

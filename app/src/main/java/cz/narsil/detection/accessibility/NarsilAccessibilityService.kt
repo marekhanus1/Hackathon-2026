@@ -50,7 +50,9 @@ class NarsilAccessibilityService : AccessibilityService() {
             lastPackage = pkg
         }
         val now = System.currentTimeMillis()
-        val app = WatchedApp.of(pkg)
+        // 149: neznámá aplikace jako OTHER jen se zapnutou volbou „Další aplikace s nekonečným feedem“.
+        val app = WatchedApp.of(pkg) ?: WatchedApp.OTHER.takeIf { trackOtherApps && WatchedApp.isOtherCandidate(pkg, packageName) }
+        val scroll = if (kind == SnapshotKind.SCROLLED) scrollSample(event) else null
         if (app != WatchedApp.FIREFOX && kind == SnapshotKind.WINDOW_CHANGED) lastFirefoxUrl = null
 
         if (app == null) {
@@ -68,8 +70,8 @@ class NarsilAccessibilityService : AccessibilityService() {
             if (kind == SnapshotKind.SCROLLED) {
                 val prev = AccessibilityEvents.latest.value
                 AccessibilityEvents.emit(
-                    if (prev != null && prev.packageName == pkg) prev.copy(kind = kind, atMillis = now)
-                    else ForegroundSnapshot(pkg, app, kind, now, lastClassName),
+                    if (prev != null && prev.packageName == pkg) prev.copy(kind = kind, atMillis = now, scroll = scroll)
+                    else ForegroundSnapshot(pkg, app, kind, now, lastClassName, scroll = scroll),
                 )
             }
             return
@@ -97,6 +99,8 @@ class NarsilAccessibilityService : AccessibilityService() {
             texts = result?.texts.orEmpty(),
             selectedTab = result?.selectedTab,
             video = result?.let { videoOf(app, it, now) },
+            editFields = result?.editFields.orEmpty(),
+            scroll = scroll,
         )
         AccessibilityEvents.emit(snapshot)
         snapshot.video?.takeIf { it.ended || it.durationMillis != null || kind == SnapshotKind.WINDOW_CHANGED }?.let { Log.d(TAG, "video: $it") }
@@ -113,6 +117,16 @@ class NarsilAccessibilityService : AccessibilityService() {
         }
         else -> null
     }
+
+    /** Scroll bez obsahu (149): třída prvku, posun, indexy položek. */
+    private fun scrollSample(e: AccessibilityEvent) = ScrollSample(
+        className = e.className?.toString(),
+        deltaX = e.scrollDeltaX,
+        deltaY = e.scrollDeltaY,
+        fromIndex = e.fromIndex,
+        toIndex = e.toIndex,
+        itemCount = e.itemCount,
+    )
 
     override fun onInterrupt() = Unit
 
@@ -132,6 +146,10 @@ class NarsilAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val TAG = "NarsilA11y"
+
+        /** „Další aplikace s nekonečným feedem“ (149), nastavuje `EchoOverlayStarter` podle `Settings`. */
+        @Volatile
+        var trackOtherApps: Boolean = false
 
         /** Vypisovat strom okna do logu (ladění ID prvků pro 111). Vypnout pro demo. */
         @Volatile

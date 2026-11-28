@@ -48,6 +48,7 @@ class AccessibilityTriggerSource(
 ) : InterventionTriggerSource {
     private val tracker = ScrollSessionTracker()
     private val chain = VideoChainTracker()
+    private val feedBehavior = FeedBehavior()
     private val lock = Mutex()
     private var last: ForegroundSnapshot? = null
 
@@ -83,7 +84,14 @@ class AccessibilityTriggerSource(
         val now = snapshot.atMillis
         val prefs = settings.settings.value
         val active = snapshot.app?.let { prefs.isTracked(it.name) } == true && prefs.isProtectionActive(now)
-        val surface = if (active) SurfaceClassifier.classify(snapshot) else null
+        val generic = snapshot.app?.generic == true
+        // 149: obecné aplikace – feed podle chování scrollu; zprávy a hledání rozhodne snímek.
+        if (active && generic && scrolled) snapshot.scroll?.let { feedBehavior.onScroll(snapshot.packageName, it, now) }
+        val surface = when {
+            !active -> null
+            generic -> SurfaceClassifier.classify(snapshot) ?: feedBehavior.surface(snapshot.packageName, now)
+            else -> SurfaceClassifier.classify(snapshot)
+        }
         val context = contextRepository.context.value
         val threshold = prefs.toleranceMillis()
         val hit = tracker.observe(

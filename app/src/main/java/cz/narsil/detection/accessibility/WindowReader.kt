@@ -10,6 +10,7 @@ internal object WindowReader {
     private const val MAX_NODES = 400
     private const val MAX_TEXTS = 20
     private const val MAX_TEXT_LEN = 120
+    private const val MAX_EDIT_FIELDS = 5
 
     /** Přehrávač YouTube ve Firefoxu (134): kolik uzlů stránky projít a jaké texty brát (krátké = ovládání). */
     private const val MAX_WEB_NODES = 300
@@ -43,6 +44,8 @@ internal object WindowReader {
         val playerTexts: List<String> = emptyList(),
         /** Text uzlu WebView ve Firefoxu = titulek stránky (137). */
         val pageTitle: String? = null,
+        /** Viditelná editovatelná pole „id|nápověda“ malými písmeny (149); text pole se nečte. */
+        val editFields: List<String> = emptyList(),
     )
 
     /**
@@ -57,6 +60,9 @@ internal object WindowReader {
         var visited = 0
         val webViews = mutableListOf<AccessibilityNodeInfo>()
         var pageTitle: String? = null
+        val editFields = mutableListOf<String>()
+        // Obecné aplikace (149): jen ID a nápovědy polí, žádné texty ani výpis stromu (soukromí).
+        val generic = app?.generic == true
         val stack = ArrayDeque<Pair<AccessibilityNodeInfo, Int>>()
         stack.addLast(root to 0)
         while (stack.isNotEmpty() && visited < MAX_NODES) {
@@ -72,6 +78,13 @@ internal object WindowReader {
             val text = (node.text ?: node.contentDescription)?.toString()?.trim()?.take(MAX_TEXT_LEN)
             if (app == WatchedApp.FIREFOX && url == null && id != null && FIREFOX_URL_IDS.any { id == it || id.endsWith(":id/$it") }) {
                 url = extractUrl(node.text?.toString()) ?: extractUrl(node.contentDescription?.toString())
+            }
+            if (node.isEditable && editFields.size < MAX_EDIT_FIELDS) {
+                editFields += "${id?.substringAfter(":id/").orEmpty()}|${node.hintText?.toString().orEmpty()}".lowercase().take(MAX_TEXT_LEN)
+            }
+            if (generic) {
+                for (i in node.childCount - 1 downTo 0) node.getChild(i)?.let { stack.addLast(it to depth + 1) }
+                continue
             }
             if (!text.isNullOrEmpty() && texts.size < MAX_TEXTS) texts += text
             if (dumpToLog) {
@@ -91,7 +104,7 @@ internal object WindowReader {
         if (app == WatchedApp.FIREFOX && url == null) url = fallbackUrl
         // Výjimka (134): na stránce jednoho videa YouTube přečíst ovládání přehrávače (čas, „Přehrát znovu“).
         val playerTexts = if (YouTubePlayback.videoIdFromUrl(url) != null) readPlayerTexts(webViews) else emptyList()
-        return Result(ids, texts, url, selectedTab, playerTexts, pageTitle)
+        return Result(ids, texts, url, selectedTab, playerTexts, pageTitle, editFields)
     }
 
     /** Krátké texty viditelných uzlů stránky (ovládání přehrávače je nahoře, stačí omezený průchod). */

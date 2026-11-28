@@ -17,6 +17,9 @@ enum class SnapshotKind { WINDOW_CHANGED, SCROLLED, CONTENT_CHANGED }
  * @param texts krátké texty a contentDescription vybraných prvků (název videa YouTube pro 120); u chatů prázdné
  * @param selectedTab ID (bez balíčku) vybrané záložky ve spodní liště, např. "feed_tab", "clips_tab"; null = nezjištěno
  * @param video stav přehrávače YouTube (134): aplikace YouTube, nebo video na youtube.com ve Firefoxu; jinak null
+ * @param editFields viditelná editovatelná pole jako „id|nápověda“ malými písmeny (149: pole pro zprávu / hledání);
+ *   text, který uživatel píše, se nečte
+ * @param scroll údaje ze scroll události (149, obecná detekce feedu); null u jiných událostí
  */
 data class ForegroundSnapshot(
     val packageName: String,
@@ -29,6 +32,21 @@ data class ForegroundSnapshot(
     val texts: List<String> = emptyList(),
     val selectedTab: String? = null,
     val video: VideoPlayback? = null,
+    val editFields: List<String> = emptyList(),
+    val scroll: ScrollSample? = null,
 ) {
     val isWatched: Boolean get() = app != null
 }
+
+/**
+ * Jedna scroll událost bez obsahu (149): třída posouvaného prvku, posun a indexy položek.
+ * [deltaX]/[deltaY] v px (0 = neznámé), indexy −1 = neznámé.
+ */
+data class ScrollSample(
+    val className: String?,
+    val deltaX: Int = 0,
+    val deltaY: Int = 0,
+    val fromIndex: Int = -1,
+    val toIndex: Int = -1,
+    val itemCount: Int = -1,
+)

@@ -9,6 +9,7 @@ import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.fake.FakeInterventionTriggerSource
 import cz.narsil.detection.accessibility.AccessibilityEvents
 import cz.narsil.detection.accessibility.AccessibilityTriggerSource
+import cz.narsil.detection.accessibility.NarsilAccessibilityService
 import cz.narsil.overlay.EchoOutcomeHandler
 import cz.narsil.overlay.EchoOverlayController
 import cz.narsil.overlay.EchoOverlayWindow
@@ -57,6 +58,10 @@ object EchoOverlayStarter {
         // Úseky spotřeby z detekce → Room (121): souboj s algoritmem a Zrcadlo ze skutečných minut.
         (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.let { source ->
             ConsumptionRecorder(NarsilDatabase.get(sl.appContext).consumptionDao()).start(source.current, sl.appScope)
+        }
+        // 149: „Další aplikace s nekonečným feedem“ – služba čte neznámé aplikace jen se zapnutou volbou.
+        sl.appScope.launch {
+            sl.settingsRepository.settings.collect { NarsilAccessibilityService.trackOtherApps = it.trackOtherFeedApps }
         }
         sl.appScope.launch {
             // Sleduje instanci služby: nová instance (přeinstalace) dostane nové okno i ovladač.

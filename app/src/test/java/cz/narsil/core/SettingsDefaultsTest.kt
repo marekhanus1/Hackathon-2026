@@ -58,7 +58,7 @@ class SettingsDefaultsTest {
     @Test
     fun trackedAppNamesMatchDetection() {
         assertEquals(
-            cz.narsil.detection.accessibility.WatchedApp.entries.map { it.name }.toSet(),
+            cz.narsil.detection.accessibility.WatchedApp.entries.map { it.name }.toSet() - cz.narsil.core.OTHER_APPS, // OTHER má vlastní přepínač (149)
             TrackedApp.entries.map { it.name }.toSet(),
         )
     }
