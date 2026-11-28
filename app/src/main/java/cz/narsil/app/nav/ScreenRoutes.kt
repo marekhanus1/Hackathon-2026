@@ -26,6 +26,7 @@ import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.DailyContract
 import cz.narsil.core.data.DayKey
+import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.RewardBuilder
 import cz.narsil.ui.screens.badges.BadgesScreen
 import cz.narsil.ui.screens.badges.BadgesUiState
@@ -89,7 +90,8 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
         ) {
-            TextButton(onClick = { onNavigate(NarsilRoute.Squat) }) { Text("Dřepy") }
+            val exercise = ServiceLocator.settingsRepository.settings.collectAsState().value.exercise
+            TextButton(onClick = { onNavigate(NarsilRoute.Squat) }) { Text(ExerciseText.label(exercise)) }
             TextButton(onClick = { onNavigate(NarsilRoute.Verify) }) { Text("Ověřit úkol") }
             IconButton(onClick = { onNavigate(NarsilRoute.Settings) }) {
                 Icon(Icons.Filled.Settings, contentDescription = "Nastavení", tint = MaterialTheme.colorScheme.onBackground)

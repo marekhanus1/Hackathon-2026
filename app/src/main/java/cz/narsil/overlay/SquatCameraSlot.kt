@@ -31,6 +31,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import cz.narsil.core.SquatCounter
+import cz.narsil.movement.pushup.CameraPushupCounter
+import cz.narsil.movement.pushup.PushupCameraPreview
 import cz.narsil.movement.squat.PoseSquatCounter
 import cz.narsil.movement.squat.SquatCameraPreview
 import cz.narsil.movement.squat.SquatTuningOverlay
@@ -50,7 +52,7 @@ fun SquatCameraSlot(
 ) {
     val context = LocalContext.current
     // Fake počítadlo kameru nepotřebuje.
-    val needsCamera = counter is PoseSquatCounter
+    val needsCamera = counter is PoseSquatCounter || counter is CameraPushupCounter
     var granted by remember { mutableStateOf(!needsCamera || hasCamera(context)) }
     // Po návratu z dialogu / nastavení oprávnění znovu zkontrolovat.
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -65,7 +67,8 @@ fun SquatCameraSlot(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                "Dřepy počítá kamera. Obraz zůstává jen v telefonu.",
+                if (counter is CameraPushupCounter) "Kliky počítá přední kamera. Obraz zůstává jen v telefonu."
+                else "Dřepy počítá kamera. Obraz zůstává jen v telefonu.",
                 color = Color.White,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleMedium,
@@ -77,7 +80,8 @@ fun SquatCameraSlot(
         return
     }
     Box(Modifier.fillMaxSize()) {
-        SquatCameraPreview(counter, Modifier.fillMaxSize())
+        if (counter is CameraPushupCounter) PushupCameraPreview(counter, Modifier.fillMaxSize())
+        else SquatCameraPreview(counter, Modifier.fillMaxSize())
         if (demoMode && counter is PoseSquatCounter) {
             // Nahoře je Janova bublina s instrukcí, dole počítadlo: ukazatel mezi ně, nad počítadlo.
             SquatTuningOverlay(

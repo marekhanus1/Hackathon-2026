@@ -64,6 +64,8 @@ object EchoOverlayStarter {
                     scope = sl.appScope,
                     choiceHandler = handler,
                     squatCounter = sl.squatCounter,
+                    pushupCounter = sl.pushupCounter,
+                    exercise = { sl.settingsRepository.settings.value.exercise },
                     demoMode = { sl.settingsRepository.settings.value.demoMode },
                     gamification = sl.gamificationEngine,
                     onExtraSquats = { n -> (sl.gamificationEngine as? RulesGamificationEngine)?.onExtraSquats(n) },

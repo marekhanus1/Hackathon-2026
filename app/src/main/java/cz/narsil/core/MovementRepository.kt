@@ -10,6 +10,9 @@ object MovementRates {
     /** Kolik dřepů odemkne [MINUTES_PER_UNLOCK] minut. */
     const val SQUATS_PER_UNLOCK = 20
 
+    /** Kolik kliků odemkne [MINUTES_PER_UNLOCK] minut (232; kliky jsou náročnější). */
+    const val PUSHUPS_PER_UNLOCK = 10
+
     /** Kolik minut dá jedna platba v Ozvěně (kroky, dřepy i půjčka). */
     const val MINUTES_PER_UNLOCK = 10
 

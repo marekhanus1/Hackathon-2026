@@ -27,6 +27,9 @@ import cz.narsil.core.InterventionTriggerSource
 import cz.narsil.core.MovementRepository
 import cz.narsil.core.SettingsRepository
 import cz.narsil.core.SquatCounter
+import cz.narsil.core.Exercise
+import cz.narsil.core.MovementRates
+import cz.narsil.movement.pushup.CameraPushupCounter
 import cz.narsil.core.data.DataStoreSettingsRepository
 import cz.narsil.core.fake.FakeContextRepository
 import cz.narsil.core.fake.FakeContractRepository
@@ -205,6 +208,17 @@ object ServiceLocator {
         get() = cached("squats") {
             if (useFakes) FakeSquatCounter(appScope, intervalMillis = 1_000) else PoseSquatCounter(appContext)
         }
+
+    /** Kliky na podlaze (232): přední kamera, přiblížení a polohové senzory. */
+    val pushupCounter: SquatCounter
+        get() = cached("pushups") {
+            if (useFakes) FakeSquatCounter(appScope, intervalMillis = 1_000, target = MovementRates.PUSHUPS_PER_UNLOCK)
+            else CameraPushupCounter(appContext)
+        }
+
+    /** Počítadlo zvoleného cviku (232). */
+    fun exerciseCounter(exercise: Exercise): SquatCounter =
+        if (exercise == Exercise.PUSHUPS) pushupCounter else squatCounter
 
     val unlockTimer: UnlockTimer
         get() = cached("unlockTimer") { UnlockTimer() }

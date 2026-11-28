@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.MovementRates
 import cz.narsil.gamification.RulesGamificationEngine
+import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.SquatOverlayContent
 import cz.narsil.overlay.hasCamera
 import kotlinx.coroutines.launch
@@ -30,18 +31,22 @@ fun SquatRoute(onBack: () -> Unit) {
     LaunchedEffect(Unit) {
         if (!hasCamera(context)) permission.launch(Manifest.permission.CAMERA)
     }
+    val exercise = settings.exercise
     SquatOverlayContent(
-        counter = sl.squatCounter,
+        counter = sl.exerciseCounter(exercise),
         onCancel = onBack,
         onDone = { count ->
             scope.launch {
-                runCatching { sl.movementRepository.recordSquats(count) }
+                // Pohyb a gamifikace počítají v dřepech; kliky se převedou (10 kliků = 20 dřepů).
+                val squats = ExerciseText.squatEquivalent(exercise, count)
+                runCatching { sl.movementRepository.recordSquats(squats) }
                 (sl.gamificationEngine as? RulesGamificationEngine)
-                    ?.let { runCatching { it.onExtraSquats(count - MovementRates.SQUATS_PER_UNLOCK) } }
+                    ?.let { runCatching { it.onExtraSquats(squats - MovementRates.SQUATS_PER_UNLOCK) } }
                 onBack()
             }
         },
         demoMode = settings.demoMode,
         onRequestPermission = { permission.launch(Manifest.permission.CAMERA) },
+        exercise = exercise,
     )
 }

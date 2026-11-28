@@ -2,6 +2,7 @@ package cz.narsil.overlay
 
 import cz.narsil.core.DailyContract
 import cz.narsil.core.EchoVideo
+import cz.narsil.core.Exercise
 import cz.narsil.core.InterventionTrigger
 import cz.narsil.core.MovementRates
 import cz.narsil.core.MovementState
@@ -31,6 +32,7 @@ object EchoStateBuilder {
         movement: MovementState,
         contract: DailyContract?,
         video: EchoVideo?,
+        exercise: Exercise = Exercise.SQUATS,
     ): EchoContent {
         val firstTask = contract?.tasks?.firstOrNull()?.title ?: contract?.plannedContent?.firstOrNull()
         val fallback = firstTask?.let { "Dnes jsi chtěl: $it" }
@@ -43,6 +45,7 @@ object EchoStateBuilder {
             stepCostForTenMin = MovementRates.MINUTES_PER_UNLOCK * MovementRates.STEPS_PER_MINUTE,
             currentDebtMinutes = movement.debtMinutes,
             isVideoPlaying = video != null,
+            exerciseOptionTitle = ExerciseText.echoOption(exercise),
         )
         return EchoContent(ui, video?.uri, fallback)
     }

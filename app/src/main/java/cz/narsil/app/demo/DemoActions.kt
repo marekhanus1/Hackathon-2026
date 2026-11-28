@@ -4,6 +4,7 @@ import cz.narsil.app.EchoOverlayStarter
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.Exercise
 import cz.narsil.core.InterventionOutcome
 import cz.narsil.core.LlmProvider
 import cz.narsil.core.data.DayKey
@@ -26,6 +27,8 @@ object DemoActions {
         sl.settingsRepository.update { it.copy(demoMode = on, demoThresholdSec = if (on) DEMO_THRESHOLD_SEC else null) }
 
     suspend fun setContractToday(on: Boolean) = sl.settingsRepository.update { it.copy(demoContractToday = on) }
+
+    suspend fun setExercise(exercise: Exercise) = sl.settingsRepository.update { it.copy(exercise = exercise) }
 
     suspend fun setLlmProvider(provider: LlmProvider) = sl.settingsRepository.update { it.copy(llmProvider = provider) }
 

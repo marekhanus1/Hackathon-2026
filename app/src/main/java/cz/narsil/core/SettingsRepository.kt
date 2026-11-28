@@ -17,7 +17,12 @@ data class Settings(
     val demoThresholdSec: Int? = null,
     val demoContractToday: Boolean = false,
     val demoAlwaysYes: Boolean = false,
+    /** Cvik v Ozvěně a na obrazovce pohybu (232): dřepy, nebo kliky na podlaze. */
+    val exercise: Exercise = Exercise.SQUATS,
 )
+
+/** Cvik, kterým se odemyká čas (232). Počet na odemčení viz [MovementRates]. */
+enum class Exercise { SQUATS, PUSHUPS }
 
 /** Nastavení (105). Implementace `cz.narsil.core.data.DataStoreSettingsRepository`. */
 interface SettingsRepository {

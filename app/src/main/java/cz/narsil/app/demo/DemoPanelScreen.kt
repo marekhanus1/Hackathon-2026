@@ -49,6 +49,8 @@ import cz.narsil.app.EchoOverlayStarter
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.Exercise
+import cz.narsil.overlay.ExerciseText
 import cz.narsil.core.LlmProvider
 import cz.narsil.detection.accessibility.AccessibilityEvents
 import cz.narsil.detection.accessibility.AccessibilityTriggerSource
@@ -198,6 +200,19 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                     ToggleRow("Smlouva platí hned", "Večerní smlouva se uloží na dnešek", settings.demoContractToday) { on ->
                         act("Smlouva ${if (on) "na dnešek" else "na zítřek"}") { DemoActions.setContractToday(on); true }
                     }
+                    HorizontalDivider()
+                    Text("Cvik v Ozvěně", style = MaterialTheme.typography.bodyLarge)
+                    val exercises = Exercise.entries
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        exercises.forEachIndexed { i, e ->
+                            SegmentedButton(
+                                selected = settings.exercise == e,
+                                onClick = { act("Cvik: ${ExerciseText.label(e)}") { DemoActions.setExercise(e); true } },
+                                shape = SegmentedButtonDefaults.itemShape(i, exercises.size),
+                            ) { Text(ExerciseText.label(e)) }
+                        }
+                    }
+                    Hint("Dřepy: 20 opakování, telefon opřený naproti. Kliky: 10 opakování, telefon leží na zemi pod hrudníkem displejem nahoru.")
                     HorizontalDivider()
                     Text("AI pro ověření úkolů", style = MaterialTheme.typography.bodyLarge)
                     val providers = LlmProvider.entries

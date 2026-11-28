@@ -164,7 +164,7 @@ fun EchoScreen(
                 )
 
                 ChoiceCard(
-                    title = "Udělat 20 dřepů hned",
+                    title = state.exerciseOptionTitle,
                     subtitle = "Kamera spočítá opakování a odemkne 10 min",
                     badgeText = "+20 XP",
                     tone = ChoiceCardTone.EMBER,
