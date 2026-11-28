@@ -68,7 +68,7 @@ fun OnboardingRoute(onDone: () -> Unit) {
     val state = remember(refresh, wifi, settings.homeSsid, healthGranted, miuiExpanded, miuiAutoStart, miuiBattery, miuiPopup) {
         val base = OnboardingUiState()
         OnboardingUiState(
-            detectedWifiSsid = wifi ?: "žádná Wi-Fi (nebo chybí poloha)",
+            detectedWifiSsid = wifi,
             homeWifiSsid = settings.homeSsid,
             permissions = base.permissions.map { item ->
                 item.copy(

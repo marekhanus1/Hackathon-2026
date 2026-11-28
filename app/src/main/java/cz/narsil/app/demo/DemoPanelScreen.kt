@@ -284,7 +284,7 @@ fun DemoPanelScreen(onBack: () -> Unit) {
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("Nahrát mock data (21 dní historie)") }
-                Hint("Jednou: zásahy, minuty feedu, XP a série za 21 dní + hodnocení videí z mockdata/.")
+                Hint("Jednou: zásahy, minuty feedu, XP a série za 21 dní + hodnocení videí (generátor v aplikaci).")
             }
         }
     }
