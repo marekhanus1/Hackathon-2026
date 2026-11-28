@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/541-zpusoby-overeni
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/94
 ---
 
 # 541 – Nové způsoby ověření splnění úkolu
