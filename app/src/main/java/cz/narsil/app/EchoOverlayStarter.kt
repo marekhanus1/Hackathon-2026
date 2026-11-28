@@ -70,6 +70,9 @@ object EchoOverlayStarter {
         return true
     }
 
+    /** Ukazuje se teď okno Ozvěny? Pro hlášení dema (161). */
+    fun isEchoShowing(): Boolean = controller?.isShowing == true
+
     /** Panel po konci videa počká, jestli ve stejné chvíli nepřijde Ozvěna. */
     private const val FEEDBACK_DELAY_MILLIS = 2_000L
 
