@@ -1,5 +1,6 @@
 package cz.narsil.app.nav
 
+import cz.narsil.ui.text.CzechPlural
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -77,7 +78,7 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
         levelTitle = RewardBuilder.levelTitle(game.level),
         currentXp = game.xp,
         avatarState = game.avatar.toUi(),
-        avatarSummary7Days = "Série ${game.streakDays} dní · vyhraných dnů ${game.wonDays}",
+        avatarSummary7Days = "Série ${CzechPlural.days(game.streakDays)} · vyhrané dny: ${game.wonDays}",
         reclaimedMinutesToday = game.today.reclaimedMinutes,
         feedMinutesToday = game.today.feedMinutes,
         wonDaysTotal = game.wonDays,

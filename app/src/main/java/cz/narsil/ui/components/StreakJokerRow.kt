@@ -1,5 +1,6 @@
 package cz.narsil.ui.components
 
+import cz.narsil.ui.text.CzechPlural
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -43,11 +44,7 @@ fun StreakJokerRow(
     val safeMax = maxJokers.coerceAtLeast(1)
     val safeJokers = availableJokers.coerceIn(0, safeMax)
 
-    val dayUnit = when {
-        safeDays == 1 -> "den"
-        safeDays in 2..4 -> "dny"
-        else -> "dní"
-    }
+    val dayUnit = CzechPlural.word(safeDays, "den", "dny", "dní")
 
     Card(
         modifier = modifier.fillMaxWidth(),

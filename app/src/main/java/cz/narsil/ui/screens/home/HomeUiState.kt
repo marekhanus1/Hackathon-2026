@@ -1,5 +1,6 @@
 package cz.narsil.ui.screens.home
 
+import cz.narsil.ui.text.CzechPlural
 import androidx.lifecycle.ViewModel
 import cz.narsil.ui.components.AvatarState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +44,7 @@ data class HomeUiState(
         get() = when {
             contractCompletedToday -> "Dnešní smlouva splněná (+100 XP)"
             contractSigned -> "Smlouva na ${if (contractSignedForToday) "dnes" else "zítra"} podepsaná · " +
-                "$contractTaskCount ${taskWord(contractTaskCount)}"
+                CzechPlural.tasks(contractTaskCount)
             else -> "Večerní smlouva čeká (2 minuty)"
         }
 
@@ -67,11 +68,6 @@ data class HomeUiState(
         }
 }
 
-private fun taskWord(n: Int): String = when {
-    n == 1 -> "úkol"
-    n in 2..4 -> "úkoly"
-    else -> "úkolů"
-}
 
 class HomeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())

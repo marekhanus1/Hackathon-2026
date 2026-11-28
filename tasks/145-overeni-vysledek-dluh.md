@@ -22,3 +22,4 @@ důvod zamítnutí po restartu, správná délka uloženého videa ve smlouvě, 
 - Ověření: zobrazený úkol se drží (`pickVerifyTask`), karta „Ověřeno“ ukáže „+N min · +30 XP“ a tlačítko „Další úkol: …“.
 - Důvod ověření po restartu: `VerificationReasonStore` (SharedPreferences `verify_reasons`), bez změny schématu.
 - Dluh: `MovementState.carriedDebtMinutes` (nový nepovinný parametr, výchozí 0) = přenesený dluh nepokrytý kroky/odměnami.
+- Plurály: sdílené `ui/text/CzechPlural` (Zrcadlo, Odznaky, Domov, StreakJokerRow).
