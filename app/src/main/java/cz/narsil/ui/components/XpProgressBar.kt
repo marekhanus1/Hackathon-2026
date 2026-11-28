@@ -2,16 +2,11 @@ package cz.narsil.ui.components
 
 import android.content.res.Configuration
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -68,21 +63,11 @@ fun XpProgressBar(
             )
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(12.dp)
-                .clip(CircleShape)
-                .background(colors.xpTrack)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(animatedFraction)
-                    .fillMaxHeight()
-                    .clip(CircleShape)
-                    .background(colors.xpFill)
-            )
-        }
+        NarsilProgressBar(
+            progress = animatedFraction,
+            fillColor = colors.xpFill,
+            height = 12.dp
+        )
     }
 }
 
