@@ -1,6 +1,16 @@
 package cz.narsil.ui.screens.badges
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import cz.narsil.core.GamificationEngine
+import cz.narsil.core.History
+import cz.narsil.core.HistoryRepository
+import cz.narsil.core.MovementRepository
+import cz.narsil.core.fake.FakeGamificationEngine
+import cz.narsil.core.fake.FakeHistoryRepository
+import cz.narsil.core.fake.FakeMovementRepository
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import cz.narsil.ui.components.AvatarState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,7 +91,31 @@ private fun defaultLeaderboard(): List<PartyMemberEntry> = listOf(
     PartyMemberEntry(rank = 4, name = "Štěpán", reclaimedMinutes = 195, isCurrentUser = false)
 )
 
-class BadgesViewModel : ViewModel() {
+/**
+ * Odznaky a party nad skutečnými daty (140): historie z databáze + stav gamifikace a kroků.
+ * [avatarOf] převede postavu z jádra na ilustraci (dodá route).
+ */
+class BadgesViewModel(
+    private val history: HistoryRepository = FakeHistoryRepository(),
+    private val gamification: GamificationEngine = FakeGamificationEngine(),
+    private val movement: MovementRepository = FakeMovementRepository(),
+    private val avatarOf: (cz.narsil.core.AvatarState) -> AvatarState = { AvatarState.BALANCED },
+    loadOnStart: Boolean = true,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(BadgesUiState())
     val uiState: StateFlow<BadgesUiState> = _uiState.asStateFlow()
+    private val historyState = MutableStateFlow<History?>(null)
+
+    init {
+        if (loadOnStart) {
+            viewModelScope.launch {
+                historyState.value = runCatching { history.load(60) }.getOrDefault(History())
+            }
+            viewModelScope.launch {
+                combine(historyState, gamification.state, movement.state) { h, game, move ->
+                    if (h == null) null else BadgesMapper.map(game, h, avatarOf(game.avatar), move.stepsToday)
+                }.collect { mapped -> if (mapped != null) _uiState.value = mapped }
+            }
+        }
+    }
 }

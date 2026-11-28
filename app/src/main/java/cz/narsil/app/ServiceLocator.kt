@@ -9,6 +9,10 @@ import cz.narsil.gamification.reward.TaskRewardService
 import cz.narsil.movement.MovementModule
 import cz.narsil.core.ContentMatcher
 import cz.narsil.core.StravaRepository
+import cz.narsil.core.HistoryRepository
+import cz.narsil.core.data.NarsilDatabase
+import cz.narsil.core.data.RoomHistoryRepository
+import cz.narsil.core.fake.FakeHistoryRepository
 import cz.narsil.core.TaskVerifier
 import cz.narsil.core.fake.FakeContentMatcher
 import cz.narsil.core.fake.FakeStravaRepository
@@ -191,6 +195,12 @@ object ServiceLocator {
                 MultiProviderLlmClient({ settingsRepository.settings.value.llmProvider }),
                 isOnline = AndroidNetworkStatus(appContext)::isOnline,
             )
+        }
+
+    /** Historie pro Zrcadlo a odznaky (140): jen čte sdílenou databázi. */
+    val historyRepository: HistoryRepository
+        get() = cached("history") {
+            if (useFakes) FakeHistoryRepository() else RoomHistoryRepository(NarsilDatabase.get(appContext))
         }
 
     val stravaRepository: StravaRepository

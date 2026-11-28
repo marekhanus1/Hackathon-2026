@@ -20,6 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
@@ -32,7 +34,7 @@ import kotlinx.coroutines.withContext
 import cz.narsil.overlay.ExerciseText
 import cz.narsil.overlay.RewardBuilder
 import cz.narsil.ui.screens.badges.BadgesScreen
-import cz.narsil.ui.screens.badges.BadgesUiState
+import cz.narsil.ui.screens.badges.BadgesViewModel
 import cz.narsil.ui.screens.home.HomeScreen
 import cz.narsil.ui.screens.home.HomeUiState
 import cz.narsil.ui.screens.home.ZoneStatus
@@ -137,13 +139,17 @@ fun MirrorRoute() {
     MirrorScreen(state = MirrorStats.apply(state, days), onSelectTab = vm::selectTab)
 }
 
+/** Odznaky a žebříček (323 + 140): odznaky a „Ty“ ze skutečných dat, kamarádi v MVP ukázkoví. */
 @Composable
 fun BadgesRoute() {
-    val game by ServiceLocator.gamificationEngine.state.collectAsState()
-    BadgesScreen(
-        state = BadgesUiState(
-            currentAvatarState = game.avatar.toUi(),
-            avatarSummary7Days = "Série ${game.streakDays} dní · úroveň ${game.level} · ${game.xp} XP",
-        ),
+    val sl = ServiceLocator
+    val vm: BadgesViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                BadgesViewModel(sl.historyRepository, sl.gamificationEngine, sl.movementRepository, avatarOf = { it.toUi() }) as T
+        },
     )
+    val state by vm.uiState.collectAsState()
+    BadgesScreen(state = state)
 }
