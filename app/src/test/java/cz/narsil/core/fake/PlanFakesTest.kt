@@ -23,7 +23,7 @@ class PlanFakesTest {
     fun taskTypeDefaults() {
         val t = PlanTask(type = TaskType.MOVEMENT, title = "Běh")
         assertEquals(30, t.rewardMinutes)
-        assertEquals(VerificationMethod.STRAVA, t.method)
+        assertEquals(VerificationMethod.PHOTO, t.method)
         assertEquals(10, PlanTask(type = TaskType.OTHER, title = "x").rewardMinutes)
         assertFalse(t.copy(attempts = 3).canRetry)
         assertFalse(t.copy(status = TaskStatus.VERIFIED).canRetry)

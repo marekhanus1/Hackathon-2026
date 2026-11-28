@@ -264,20 +264,14 @@ fun SettingsScreen(
                     text = if (selectedHasKey) {
                         "Klíč ${providerLabel(s.llmProvider)} je nastavený."
                     } else {
-                        "Klíč ${providerLabel(s.llmProvider)} chybí v local.properties – ověření počká, " +
-                            "pohybový úkol jde přes Stravu."
+                        "Klíč ${providerLabel(s.llmProvider)} chybí v local.properties – ověření úkolů počká, až bude klíč."
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = if (selectedHasKey) NarsilTheme.colors.positive else MaterialTheme.colorScheme.error
                 )
             }
 
-            StravaCard(
-                state = state.strava,
-                onConnect = actions.onConnectStrava,
-                onStartDemo = actions.onStartStravaDemo,
-                onDisconnect = actions.onDisconnectStrava,
-            )
+            // Strava se nepoužije (146) – karta se neukazuje, kód zůstává.
 
             // Upozornění
             SettingsCard(
@@ -508,7 +502,7 @@ private fun FixedRulesCard() {
                 "Odemčení dává ${MovementRates.MINUTES_PER_UNLOCK} minut, kroky se počítají za celý den.",
                 "Narsil nic tvrdě neblokuje, jen přeruší a nabídne volbu.",
                 "Zprávy a chaty se nikdy nesledují ani nepočítají.",
-                "Pohybový úkol splní aktivita na Stravě od 15 minut.",
+                "Úkoly se dokládají fotkou, fotkou prostředí nebo popisem, nejvýš 3 pokusy.",
             ).forEach { rule ->
                 Text(text = "· $rule", style = MaterialTheme.typography.bodySmall)
             }

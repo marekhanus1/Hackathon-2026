@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 /** Typ úkolu v plánu dne (SPEC 6). Určuje výchozí odměnu a způsob ověření. */
 enum class TaskType(val defaultRewardMinutes: Int, val defaultMethod: VerificationMethod) {
-    MOVEMENT(30, VerificationMethod.STRAVA),
+    MOVEMENT(30, VerificationMethod.PHOTO), // Strava se nepoužije (146)
     SCHOOL(20, VerificationMethod.PHOTO),
     WORK(20, VerificationMethod.PHOTO),
     OTHER(10, VerificationMethod.PHOTO),

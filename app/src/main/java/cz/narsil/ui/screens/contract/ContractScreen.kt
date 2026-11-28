@@ -419,7 +419,7 @@ private fun TasksStep(
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
         Text(
-            text = "Co chceš ${state.dayWord} stihnout? Splněný úkol doložíš fotkou, textem nebo Stravou a dostaneš minuty navíc.",
+            text = "Co chceš ${state.dayWord} stihnout? Splněný úkol doložíš fotkou, fotkou prostředí nebo popisem a dostaneš minuty navíc.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -487,7 +487,7 @@ private fun TasksStep(
                             Text(text = task.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
                             Text(
                                 text = "${task.type.label} · +${task.rewardMinutes} min" +
-                                    if (task.type == TaskType.MOVEMENT) " · ověří Strava nebo fotka" else " · fotka nebo text",
+                                     " · fotka nebo popis",
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }

@@ -44,8 +44,8 @@ import kotlinx.coroutines.launch
 /**
  * Ověření úkolu (324 + 520): Janova obrazovka nad skutečným [cz.narsil.verify.TaskVerificationService].
  * Úkol = první neověřený z dnešní smlouvy. Důkaz (541): fotka úkolu, fotka prostředí (systémový
- * fotoaparát), vlastní popis (2–3 věty, LLM vrátí zpětnou vazbu) nebo Strava (pohybový úkol se ověří sám,
- * když je Strava připojená). Demo „vždy ANO“ jde přes DemoAwareTaskVerifier.
+ * fotoaparát) nebo vlastní popis (2–3 věty, LLM vrátí zpětnou vazbu). Strava se nepoužije (146), i pohybový
+ * úkol se dokládá fotkou nebo popisem. Demo „vždy ANO“ jde přes DemoAwareTaskVerifier.
  */
 @Composable
 fun VerifyRoute(onBack: () -> Unit) {
@@ -54,7 +54,6 @@ fun VerifyRoute(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val contract by sl.contractRepository.today.collectAsState()
     val events by sl.verification.events.collectAsState()
-    val stravaConnected by sl.stravaRepository.isConnected.collectAsState()
 
     // Zobrazený úkol se drží, dokud uživatel neklepne na „Další úkol“ – po ověření uvidí výsledek a odměnu.
     var shownTaskId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -81,20 +80,11 @@ fun VerifyRoute(onBack: () -> Unit) {
 
     fun submit(proof: Proof) = scope.launch { runCatching { sl.verification.submit(task, proof) } }
 
-    // Pohybový úkol: se Stravou se ověří sám (SPEC 7), jinak záloha fotkou.
-    LaunchedEffect(task.id, stravaConnected) {
-        if (task.method == VerificationMethod.STRAVA && stravaConnected && task.status == TaskStatus.PENDING && task.attempts == 0) {
-            submit(Proof.Strava)
-        }
-    }
-
     // Po restartu aplikace vezme důvod (pochvalu / zamítnutí od AI) uložený u úkolu.
     val event = events[task.id] ?: remember(task.id, task.status) { sl.verification.eventFor(task) }
     val state = VerifyTaskUiState(
         taskTitle = task.title,
-        taskGoal = task.target.ifBlank {
-            if (task.method == VerificationMethod.STRAVA) "Aktivita ve Stravě (≥ 15 min), nebo snímek aktivity" else "Fotka, fotka prostředí nebo vlastní popis"
-        },
+        taskGoal = task.target.ifBlank { "Fotka, fotka prostředí nebo vlastní popis" },
         taskType = UiTaskType.entries.firstOrNull { it.name == task.type.name } ?: UiTaskType.OTHER,
         rewardMinutes = task.rewardMinutes,
         proofMode = proofMode,
