@@ -1,5 +1,5 @@
 ---
-status: review
+status: done
 owner: jan
 agent: gemini
 branch: jan/gemini/325-obrazovka-nastaveni
