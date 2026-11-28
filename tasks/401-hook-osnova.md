@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/401-hook-osnova
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/69
 ---
 
 # 401 – Hook, persona a osnova pitche

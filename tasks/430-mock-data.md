@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/430-mock-data
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/68
 ---
 
 # 430 – Připravená data za 21 dní

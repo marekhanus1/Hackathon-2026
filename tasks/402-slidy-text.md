@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: claude
 branch: simon/claude/402-slidy-text
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/70
 ---
 
 # 402 – Text slidů a poznámky pro mluvčího
