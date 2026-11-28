@@ -21,7 +21,7 @@ object EchoStateBuilder {
         "com.ss.android.ugc.trill" to "TikTok",
         "com.ss.android.ugc.aweme" to "TikTok",
         "com.google.android.youtube" to "YouTube",
-        "com.android.chrome" to "Chrome",
+        "org.mozilla.firefox" to "Firefox",
     )
 
     fun appName(packageName: String): String = APP_NAMES[packageName] ?: packageName.substringAfterLast('.')

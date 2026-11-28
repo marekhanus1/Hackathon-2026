@@ -10,7 +10,8 @@ class WatchedAppsTest {
     @Test
     fun recognizesWatchedAndIgnoresChats() {
         assertEquals(WatchedApp.TIKTOK, WatchedApp.of("com.zhiliaoapp.musically"))
-        assertEquals(WatchedApp.CHROME, WatchedApp.of("com.android.chrome"))
+        assertEquals(WatchedApp.FIREFOX, WatchedApp.of("org.mozilla.firefox"))
+        assertNull(WatchedApp.of("com.android.chrome"))
         assertNull(WatchedApp.of("com.whatsapp"))
         assertTrue(WatchedApp.isIgnored("com.facebook.orca"))
         assertFalse(WatchedApp.isIgnored("com.instagram.android"))
