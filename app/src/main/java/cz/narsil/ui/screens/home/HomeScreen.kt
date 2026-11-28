@@ -2,16 +2,13 @@ package cz.narsil.ui.screens.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -25,13 +22,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import cz.narsil.ui.components.AlgorithmDuelCard
 import cz.narsil.ui.components.AvatarCard
 import cz.narsil.ui.components.LevelBadge
+import cz.narsil.ui.components.NarsilProgressBar
+import cz.narsil.ui.components.StatusPill
 import cz.narsil.ui.components.StreakJokerRow
 import cz.narsil.ui.components.XpProgressBar
 import cz.narsil.ui.theme.NarsilTheme
@@ -58,12 +56,15 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .systemBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.md)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 44.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -81,18 +82,12 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 LevelBadge(level = state.level, title = state.levelTitle)
-                Surface(
-                    onClick = onOpenBadges,
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Text(
-                        text = "Odznaky",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
-                    )
-                }
+                StatusPill(
+                    text = "Odznaky",
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    onClick = onOpenBadges
+                )
             }
 
             XpProgressBar(currentXp = state.currentXp)
@@ -129,7 +124,6 @@ fun HomeScreen(
 @Composable
 private fun ZoneStatusPill(status: ZoneStatus) {
     val colors = NarsilTheme.colors
-    val spacing = NarsilTheme.spacing
 
     val containerColor = when (status) {
         ZoneStatus.HOME -> colors.echoContainer
@@ -142,17 +136,11 @@ private fun ZoneStatusPill(status: ZoneStatus) {
         ZoneStatus.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
-    Surface(
-        shape = CircleShape,
-        color = containerColor,
+    StatusPill(
+        text = status.label,
+        containerColor = containerColor,
         contentColor = contentColor
-    ) {
-        Text(
-            text = status.label,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.padding(horizontal = spacing.sm, vertical = spacing.xxs)
-        )
-    }
+    )
 }
 
 @Composable
@@ -215,21 +203,11 @@ private fun MovementBalanceCard(state: HomeUiState) {
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp)
-                    .clip(CircleShape)
-                    .background(colors.xpTrack)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(fraction)
-                        .fillMaxHeight()
-                        .clip(CircleShape)
-                        .background(colors.ember)
-                )
-            }
+            NarsilProgressBar(
+                progress = fraction,
+                fillColor = colors.ember,
+                height = 10.dp
+            )
         }
     }
 }
