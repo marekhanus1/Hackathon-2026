@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/152-zastaraly-konec-videa
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/113
 ---
 
 # 152 – Zastaralý end-screen při otevření videa
