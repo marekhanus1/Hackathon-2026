@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <path d="M256 90L388 188L337 390H175L124 188L256 90Z" fill="#D8842F"/>
+  <path d="M124 188L205 205L175 390L124 188Z" fill="#A95723"/>
+  <path d="M388 188L307 205L337 390L388 188Z" fill="#BD6827"/>
+  <path d="M205 205L256 90L307 205L256 353L205 205Z" fill="#F2A359"/>
+  <path d="M175 390L256 353L337 390H175Z" fill="#87451E"/>
+  <path d="M205 205L256 90L227 218Z" fill="#FFD19B" opacity=".78"/>
+</svg>
