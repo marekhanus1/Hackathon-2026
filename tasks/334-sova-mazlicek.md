@@ -22,6 +22,6 @@ Sova-mazlíček „Narsilka“ s chatem, náladami podle `AvatarState` (+ nočn�
 - Zapojení do navigace sahá na Markovy soubory v `cz.narsil.app.nav` a `app/build.gradle.kts` (samostatné commity, nutný souhlas Marka).
 - Nepushnuto na přání Jana (vše pouze lokálně na větvi `jan/gemini/334-sova-mazlicek`).
 - Jméno mazlíčka není „Parťák“, to je ve SPEC kamarád-člověk.
-- Sova používá vlastní klíč `PET_GEMINI_API_KEY` (Google Gemini Free API, `gemini-2.5-flash-lite`) s pádem zpět na `GEMINI_API_KEY` a pak offline.
-- Ochrana free kvóty a proti sekání: lokální odpovědi pro rychlé volby/pozdravy/krizi, cache, rate-limiter (min 6 s, max 25 volání/den, 60 s cooldown po 429), timeout 4 s, max 90 tokenů.
+- Sova používá vlastní klíč `PET_GEMINI_API_KEY` (Google Gemini Free API, `gemini-3.5-flash-lite`) s pádem zpět na `GEMINI_API_KEY` a pak offline.
+- Ochrana free kvóty a proti sekání: lokální odpovědi pro rychlé volby/pozdravy/krizi, cache, rate-limiter (min 6 s, max 25 volání/den, 60 s cooldown po 429), timeout 5 s, max 160 tokenů.
 - Build ani testy neběžely: na Janově PC chybí JDK 17 a Android SDK; ověřit `./gradlew testDebugUnitTest assembleDebug` v Android Studiu.

@@ -247,7 +247,7 @@ private fun createPetViewModel(): PetViewModel {
         context = contextFlow,
         replier = { prompt ->
             val resp = llmClient.complete(
-                LlmRequest(prompt = prompt, maxTokens = 90, timeoutMillis = 4_000L),
+                LlmRequest(prompt = prompt, maxTokens = 160, timeoutMillis = 5_000L),
             )
             val text = resp.text
             when {
