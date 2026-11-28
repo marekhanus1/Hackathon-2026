@@ -1,0 +1,50 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="390" height="844" rx="40" fill="#121110" stroke="#332E28" stroke-width="3"/>
+  <!-- Top badge -->
+  <rect x="24" y="52" width="144" height="28" rx="14" fill="#344180"/>
+  <text x="96" y="71" text-anchor="middle" fill="#E0E5FA" font-size="13" font-weight="700">Ozvěna · TikTok</text>
+
+  <!-- Video player slot -->
+  <rect x="24" y="96" width="342" height="192" rx="22" fill="#344180" stroke="#9FA8DA" stroke-opacity="0.4"/>
+  <circle cx="195" cy="164" r="24" fill="#9FA8DA"/>
+  <polygon points="189,154 207,164 189,174" fill="#1D285E"/>
+  <text x="195" y="216" text-anchor="middle" fill="#E0E5FA" font-size="15" font-weight="700">Tvoje včerejší Ozvěna</text>
+  <text x="195" y="242" text-anchor="middle" fill="#E0E5FA" opacity="0.85" font-size="12">„Večer jsi říkal, že chceš mít ráno čistou hlavu.“</text>
+
+  <!-- Question & Chips -->
+  <text x="24" y="328" fill="#F3EFE9" font-size="21" font-weight="700">Čemu se teď vyhýbáš?</text>
+  <text x="24" y="350" fill="#C1B7AA" font-size="13">Pojmenovat pocit často stačí, aby tlak povolil.</text>
+  <rect x="24" y="366" width="70" height="32" rx="10" fill="#1C1A17" stroke="#474139"/>
+  <text x="59" y="387" text-anchor="middle" fill="#F3EFE9" font-size="12">Nuda</text>
+  <rect x="102" y="366" width="76" height="32" rx="10" fill="#344180" stroke="#9FA8DA"/>
+  <text x="140" y="387" text-anchor="middle" fill="#E0E5FA" font-size="12" font-weight="700">Únava</text>
+  <rect x="186" y="366" width="102" height="32" rx="10" fill="#1C1A17" stroke="#474139"/>
+  <text x="237" y="387" text-anchor="middle" fill="#F3EFE9" font-size="12">Těžký úkol</text>
+  <rect x="296" y="366" width="70" height="32" rx="10" fill="#1C1A17" stroke="#474139"/>
+  <text x="331" y="387" text-anchor="middle" fill="#F3EFE9" font-size="12">Samota</text>
+
+  <!-- 4 ChoiceCards (POSITIVE prominent) -->
+  <rect x="24" y="422" width="342" height="86" rx="22" fill="#5CC497" stroke="#F2C14E" stroke-width="2"/>
+  <text x="42" y="456" fill="#003823" font-size="17" font-weight="800">Zavřít feed</text>
+  <text x="42" y="480" fill="#003823" opacity="0.85" font-size="13">Chuť opadla, vracím se k tomu, co má smysl</text>
+  <rect x="290" y="448" width="60" height="28" rx="14" fill="#003823" fill-opacity="0.16"/>
+  <text x="320" y="467" text-anchor="middle" fill="#003823" font-size="12" font-weight="800">+50 XP</text>
+
+  <rect x="24" y="522" width="342" height="80" rx="22" fill="#663209" stroke="#F2A359" stroke-opacity="0.5"/>
+  <text x="42" y="554" fill="#FFE5D0" font-size="16" font-weight="700">Udělat 20 dřepů hned</text>
+  <text x="42" y="576" fill="#FFE5D0" opacity="0.82" font-size="12">Kamera spočítá opakování a odemkne 10 min</text>
+  <rect x="290" y="546" width="60" height="28" rx="14" fill="#F2A359" fill-opacity="0.22"/>
+  <text x="320" y="565" text-anchor="middle" fill="#FFE5D0" font-size="12" font-weight="700">+20 XP</text>
+
+  <rect x="24" y="616" width="342" height="80" rx="22" fill="#344180" stroke="#9FA8DA" stroke-opacity="0.45"/>
+  <text x="42" y="648" fill="#E0E5FA" font-size="16" font-weight="700">Zaplatit kroky</text>
+  <text x="42" y="670" fill="#E0E5FA" opacity="0.82" font-size="12">1 000 kroků ze dneška za 10 min · máš 2 400</text>
+  <rect x="290" y="640" width="60" height="28" rx="14" fill="#9FA8DA" fill-opacity="0.2"/>
+  <text x="320" y="659" text-anchor="middle" fill="#E0E5FA" font-size="12" font-weight="700">+10 XP</text>
+
+  <rect x="24" y="710" width="342" height="80" rx="22" fill="#5A3916" stroke="#E5A96D" stroke-opacity="0.45"/>
+  <text x="42" y="742" fill="#FBE9D5" font-size="16" font-weight="700">Půjčit si 10 min</text>
+  <text x="42" y="764" fill="#FBE9D5" opacity="0.82" font-size="12">Přičte se k zítřejšímu pohybovému cíli</text>
+  <rect x="296" y="734" width="54" height="28" rx="14" fill="#E5A96D" fill-opacity="0.2"/>
+  <text x="323" y="753" text-anchor="middle" fill="#FBE9D5" font-size="12" font-weight="700">0 XP</text>
+</svg>

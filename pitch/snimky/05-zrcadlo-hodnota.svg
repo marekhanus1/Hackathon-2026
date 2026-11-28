@@ -1,0 +1,50 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="390" height="844" rx="40" fill="#121110" stroke="#332E28" stroke-width="3"/>
+  <text x="24" y="76" fill="#F3EFE9" font-size="24" font-weight="800">Zrcadlo a hodnota</text>
+
+  <!-- Tab chips -->
+  <rect x="24" y="98" width="136" height="34" rx="10" fill="#1C1A17" stroke="#474139"/>
+  <text x="92" y="120" text-anchor="middle" fill="#C1B7AA" font-size="13">Zrcadlo (21 dní)</text>
+  <rect x="170" y="98" width="128" height="34" rx="10" fill="#344180" stroke="#9FA8DA"/>
+  <text x="234" y="120" text-anchor="middle" fill="#E0E5FA" font-size="13" font-weight="700">Mapa hodnoty</text>
+
+  <!-- 21-day summary card -->
+  <rect x="24" y="152" width="342" height="96" rx="22" fill="#175139"/>
+  <text x="42" y="186" fill="#D2EFE0" font-size="18" font-weight="800">Za 21 dní sis vzal zpět 13 hodin</text>
+  <text x="42" y="212" fill="#D2EFE0" font-size="13">Pasivní scrollování kleslo o 58 %.</text>
+  <text x="42" y="232" fill="#D2EFE0" font-size="12">Boss kritické hodiny (22:00): přežito 5 dní</text>
+
+  <text x="24" y="280" fill="#C1B7AA" font-size="13">Který obsah ti dává energii a který tě jen vysává:</text>
+
+  <!-- KEEP 1 -->
+  <rect x="24" y="302" width="342" height="94" rx="20" fill="#1C1A17" stroke="#5CC497" stroke-opacity="0.5"/>
+  <text x="42" y="336" fill="#F3EFE9" font-size="15" font-weight="700">Let's Get Rusty · LONG</text>
+  <text x="42" y="360" fill="#C1B7AA" font-size="12">118 min · dokoukáváš (90 %) i ceníš</text>
+  <text x="42" y="380" fill="#5CC497" font-size="12" font-weight="700">KEEP · plánovaný obsah</text>
+  <rect x="284" y="332" width="66" height="32" rx="16" fill="#5CC497"/>
+  <text x="317" y="353" text-anchor="middle" fill="#003823" font-size="13" font-weight="800">4.7 / 5</text>
+
+  <!-- KEEP 2 -->
+  <rect x="24" y="410" width="342" height="94" rx="20" fill="#1C1A17" stroke="#5CC497" stroke-opacity="0.5"/>
+  <text x="42" y="444" fill="#F3EFE9" font-size="15" font-weight="700">Dokumenty a rozhovory</text>
+  <text x="42" y="468" fill="#C1B7AA" font-size="12">145 min · vysoká hodnota</text>
+  <text x="42" y="488" fill="#5CC497" font-size="12" font-weight="700">KEEP</text>
+  <rect x="284" y="440" width="66" height="32" rx="16" fill="#5CC497"/>
+  <text x="317" y="461" text-anchor="middle" fill="#003823" font-size="13" font-weight="800">4.3 / 5</text>
+
+  <!-- TRAP 1 -->
+  <rect x="24" y="518" width="342" height="104" rx="20" fill="#5A3916" stroke="#E5A96D" stroke-opacity="0.55"/>
+  <text x="42" y="552" fill="#FBE9D5" font-size="15" font-weight="700">Drama Recap CZ · SHORT</text>
+  <text x="42" y="576" fill="#FBE9D5" opacity="0.85" font-size="12">96 min · dokoukáváš (88 %), ale hodnotíš nízko</text>
+  <text x="42" y="598" fill="#F2A359" font-size="12" font-weight="800">TRAP · časová past</text>
+  <rect x="284" y="548" width="66" height="32" rx="16" fill="#E5A96D"/>
+  <text x="317" y="569" text-anchor="middle" fill="#432605" font-size="13" font-weight="800">1.6 / 5</text>
+
+  <!-- TRAP 2 -->
+  <rect x="24" y="636" width="342" height="104" rx="20" fill="#5A3916" stroke="#E5A96D" stroke-opacity="0.55"/>
+  <text x="42" y="670" fill="#FBE9D5" font-size="15" font-weight="700">Noční klipy a kompilace</text>
+  <text x="42" y="694" fill="#FBE9D5" opacity="0.85" font-size="12">110 min · dokoukáváš, ale hodnotíš nízko</text>
+  <text x="42" y="716" fill="#F2A359" font-size="12" font-weight="800">TRAP · časová past</text>
+  <rect x="284" y="666" width="66" height="32" rx="16" fill="#E5A96D"/>
+  <text x="317" y="687" text-anchor="middle" fill="#432605" font-size="13" font-weight="800">2.0 / 5</text>
+</svg>

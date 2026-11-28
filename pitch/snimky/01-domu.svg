@@ -1,0 +1,73 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="390" height="844" rx="40" fill="#121110" stroke="#332E28" stroke-width="3"/>
+  <!-- Header -->
+  <text x="24" y="76" fill="#F3EFE9" font-size="28" font-weight="800">Narsil</text>
+  <rect x="206" y="52" width="160" height="28" rx="14" fill="#344180"/>
+  <text x="286" y="71" text-anchor="middle" fill="#E0E5FA" font-size="12" font-weight="600">Doma · ochrana aktivní</text>
+
+  <!-- Level & Badges -->
+  <rect x="24" y="102" width="186" height="34" rx="17" fill="#663209" stroke="#F2C14E"/>
+  <circle cx="42" cy="119" r="11" fill="#F2C14E"/>
+  <text x="42" y="124" text-anchor="middle" fill="#451E00" font-size="12" font-weight="800">4</text>
+  <text x="60" y="124" fill="#FFE5D0" font-size="13" font-weight="700">Úroveň 4 · Kovář klidu</text>
+  <rect x="286" y="102" width="80" height="34" rx="17" fill="#26231F"/>
+  <text x="326" y="124" text-anchor="middle" fill="#C1B7AA" font-size="13" font-weight="600">Odznaky</text>
+
+  <!-- XP Bar -->
+  <text x="24" y="164" fill="#F3EFE9" font-size="13" font-weight="700">360 / 500 XP</text>
+  <text x="366" y="164" text-anchor="end" fill="#C1B7AA" font-size="12">Zbývá 140 XP do další úrovně</text>
+  <rect x="24" y="176" width="342" height="12" rx="6" fill="#332E28"/>
+  <rect x="24" y="176" width="246" height="12" rx="6" fill="#5CC497"/>
+
+  <!-- AvatarCard -->
+  <rect x="24" y="206" width="342" height="118" rx="22" fill="#1C1A17" stroke="#332E28"/>
+  <rect x="40" y="226" width="72" height="72" rx="16" fill="#175139"/>
+  <circle cx="76" cy="262" r="18" fill="#5CC497"/>
+  <text x="76" y="267" text-anchor="middle" fill="#121110" font-size="13" font-weight="800">4/5</text>
+  <text x="128" y="238" fill="#F3EFE9" font-size="16" font-weight="700">Budoucí já · Soustředěné já</text>
+  <text x="128" y="260" fill="#C1B7AA" font-size="12">Pevné tempo a čistá hlava.</text>
+  <rect x="128" y="274" width="218" height="24" rx="12" fill="#26231F"/>
+  <text x="237" y="290" text-anchor="middle" fill="#C1B7AA" font-size="11">Posledních 7 dní: 5 výher · 420 dřepů</text>
+
+  <!-- AlgorithmDuelCard -->
+  <rect x="24" y="340" width="342" height="148" rx="22" fill="#1C1A17" stroke="#332E28"/>
+  <text x="40" y="370" fill="#F3EFE9" font-size="16" font-weight="700">Souboj s algoritmem</text>
+  <rect x="262" y="352" width="88" height="24" rx="12" fill="#175139"/>
+  <text x="306" y="368" text-anchor="middle" fill="#D2EFE0" font-size="12" font-weight="600">Dnes vedeš</text>
+  <text x="40" y="408" fill="#5CC497" font-size="22" font-weight="800">45 min</text>
+  <text x="40" y="424" fill="#C1B7AA" font-size="12">Získaný čas</text>
+  <text x="350" y="408" text-anchor="end" fill="#B5A5C9" font-size="22" font-weight="800">14 min</text>
+  <text x="350" y="424" text-anchor="end" fill="#C1B7AA" font-size="12">Čas ve feedu</text>
+  <rect x="40" y="440" width="310" height="12" rx="6" fill="#322A3D"/>
+  <rect x="40" y="440" width="236" height="12" rx="6" fill="#5CC497"/>
+  <text x="40" y="472" fill="#C1B7AA" font-size="12">Vyhrané dny celkem: 11</text>
+
+  <!-- StreakJokerRow -->
+  <rect x="24" y="504" width="342" height="82" rx="22" fill="#1C1A17" stroke="#332E28"/>
+  <text x="40" y="536" fill="#F3EFE9" font-size="16" font-weight="700">Série: 6 dní</text>
+  <text x="40" y="558" fill="#C1B7AA" font-size="11">Žolík (50 dřepů navíc) chrání sérii</text>
+  <circle cx="266" cy="545" r="16" fill="#663209" stroke="#F2C14E"/>
+  <text x="266" y="550" text-anchor="middle" fill="#FFE5D0" font-size="13" font-weight="800">Ž</text>
+  <circle cx="304" cy="545" r="16" fill="#663209" stroke="#F2C14E"/>
+  <text x="304" y="550" text-anchor="middle" fill="#FFE5D0" font-size="13" font-weight="800">Ž</text>
+  <circle cx="342" cy="545" r="16" fill="#26231F" stroke="#332E28"/>
+  <text x="342" y="550" text-anchor="middle" fill="#C1B7AA" font-size="14">·</text>
+
+  <!-- Movement Card -->
+  <rect x="24" y="602" width="342" height="92" rx="22" fill="#1C1A17" stroke="#332E28"/>
+  <text x="40" y="632" fill="#F3EFE9" font-size="16" font-weight="700">Pohyb a rozpočet</text>
+  <text x="350" y="632" text-anchor="end" fill="#F2A359" font-size="13" font-weight="700">K dispozici 40 min</text>
+  <text x="40" y="656" fill="#F3EFE9" font-size="13">4 820 / 6 000 kroků</text>
+  <text x="350" y="656" text-anchor="end" fill="#5CC497" font-size="12" font-weight="600">Bez dluhu</text>
+  <rect x="40" y="668" width="310" height="10" rx="5" fill="#332E28"/>
+  <rect x="40" y="668" width="248" height="10" rx="5" fill="#F2A359"/>
+
+  <!-- Contract Card -->
+  <rect x="24" y="710" width="342" height="108" rx="22" fill="#344180"/>
+  <text x="40" y="740" fill="#E0E5FA" font-size="15" font-weight="700">Večerní smlouva čeká (2 minuty)</text>
+  <text x="40" y="760" fill="#E0E5FA" font-size="12">Plán: Přednáška o Rustu, 1 díl seriálu</text>
+  <rect x="40" y="772" width="210" height="34" rx="17" fill="#9FA8DA"/>
+  <text x="145" y="794" text-anchor="middle" fill="#1D285E" font-size="13" font-weight="700">Uzavřít večerní smlouvu</text>
+  <rect x="260" y="772" width="90" height="34" rx="17" fill="#1C1A17" opacity="0.8"/>
+  <text x="305" y="794" text-anchor="middle" fill="#F3EFE9" font-size="13" font-weight="600">Zrcadlo</text>
+</svg>

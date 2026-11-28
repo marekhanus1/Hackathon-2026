@@ -1,0 +1,36 @@
+<svg width="390" height="844" viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="390" height="844" rx="40" fill="#121110" stroke="#332E28" stroke-width="3"/>
+  <text x="24" y="76" fill="#F3EFE9" font-size="24" font-weight="800">Večerní smlouva</text>
+  <rect x="266" y="52" width="100" height="28" rx="14" fill="#344180"/>
+  <text x="316" y="71" text-anchor="middle" fill="#E0E5FA" font-size="12" font-weight="700">Krok 3 ze 3</text>
+
+  <!-- Step bar -->
+  <rect x="24" y="98" width="108" height="6" rx="3" fill="#9FA8DA"/>
+  <rect x="141" y="98" width="108" height="6" rx="3" fill="#9FA8DA"/>
+  <rect x="258" y="98" width="108" height="6" rx="3" fill="#9FA8DA"/>
+
+  <!-- Summary of Step 1 & 2 -->
+  <rect x="24" y="126" width="342" height="82" rx="18" fill="#1C1A17" stroke="#332E28"/>
+  <text x="40" y="154" fill="#F2A359" font-size="13" font-weight="700">1. Pohybový cíl: 6 000 kroků</text>
+  <text x="40" y="182" fill="#5CC497" font-size="13" font-weight="700">2. Plán zdarma: Přednáška o Rustu</text>
+
+  <!-- Step 3: Video -->
+  <text x="24" y="242" fill="#F3EFE9" font-size="20" font-weight="700">Tvoje 15s Ozvěna</text>
+  <text x="24" y="266" fill="#C1B7AA" font-size="13">Nahraj v klidu vzkaz pro zítřejší já v pokušení.</text>
+
+  <rect x="24" y="286" width="342" height="270" rx="24" fill="#26231F" stroke="#5CC497" stroke-width="2"/>
+  <circle cx="195" cy="400" r="44" fill="#344180"/>
+  <circle cx="195" cy="390" r="14" fill="#E0E5FA"/>
+  <path d="M168 424 C168 408 222 408 222 424" fill="#E0E5FA"/>
+  <rect x="246" y="302" width="104" height="26" rx="13" fill="#5CC497"/>
+  <text x="298" y="319" text-anchor="middle" fill="#003823" font-size="12" font-weight="700">Uloženo (14 s)</text>
+  <text x="195" y="492" text-anchor="middle" fill="#C1B7AA" font-size="13">CameraX · uloženo jen lokálně</text>
+
+  <rect x="24" y="576" width="342" height="46" rx="23" fill="none" stroke="#474139" stroke-width="1.5"/>
+  <text x="195" y="604" text-anchor="middle" fill="#F3EFE9" font-size="14" font-weight="600">Nahrát zprávu znovu</text>
+
+  <rect x="24" y="750" width="130" height="48" rx="24" fill="none" stroke="#474139" stroke-width="1.5"/>
+  <text x="89" y="779" text-anchor="middle" fill="#F3EFE9" font-size="14" font-weight="600">Zpět</text>
+  <rect x="166" y="750" width="200" height="48" rx="24" fill="#5CC497"/>
+  <text x="266" y="779" text-anchor="middle" fill="#003823" font-size="14" font-weight="800">Podepsat (+100 XP)</text>
+</svg>
