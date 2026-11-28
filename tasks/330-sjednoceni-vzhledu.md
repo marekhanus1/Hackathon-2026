@@ -1,8 +1,8 @@
 ---
-status: todo        # todo | in-progress | review | done
-owner:              # jméno člověka
-agent:              # claude | gemini | human
-branch:
+status: in-progress
+owner: jan
+agent: gemini
+branch: jan/gemini/330-sjednoceni-vzhledu
 pr:
 ---
 
