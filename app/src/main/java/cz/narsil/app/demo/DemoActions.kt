@@ -5,6 +5,7 @@ import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
 import cz.narsil.core.InterventionOutcome
+import cz.narsil.core.data.DayKey
 import cz.narsil.core.fake.FakeContractRepository
 import cz.narsil.gamification.debug.GamificationDebug
 import cz.narsil.movement.debug.MovementDebug
@@ -44,14 +45,27 @@ object DemoActions {
         (sl.interventionTriggerSource as? AccessibilityTriggerSource)?.onOutcome(InterventionOutcome.CLOSED)
         MovementDebug.resetDay(sl.movementRepository)
         GamificationDebug.resetDay(sl.gamificationEngine)
-        (sl.contractRepository as? FakeContractRepository)?.save(FakeContractRepository.demoContract(java.time.LocalDate.now()))
+        (sl.contractRepository as? FakeContractRepository)?.save(FakeContractRepository.demoContract(DayKey.today()))
     }
 
-    /** Připraví celé demo jedním klepnutím: doma, práh 20 s, smlouva platí dnes, čistý den. */
+    /**
+     * Dnešní smlouva pro demo: když žádná není nebo nemá úkoly, uloží demo smlouvu (6 000 kroků,
+     * plán, 4 úkoly – běh ověřený, ostatní k ověření). Platí i pro skutečnou smlouvu v Room.
+     */
+    suspend fun ensureDemoContract() {
+        val today = DayKey.today()
+        val current = runCatching { sl.contractRepository.forDate(today) }.getOrNull()
+        if (current != null && current.tasks.isNotEmpty()) return
+        val demo = FakeContractRepository.demoContract(today)
+        runCatching { sl.contractRepository.save(demo.copy(videoUri = current?.videoUri ?: demo.videoUri)) }
+    }
+
+    /** Připraví celé demo jedním klepnutím: doma, práh 20 s, smlouva platí dnes s úkoly, čistý den. */
     suspend fun prepareDemo() {
         resetDay()
         // XP těsně pod úrovní: 20 dřepů v demu spustí novou úroveň (230).
         GamificationDebug.prepareDemo(sl.gamificationEngine)
+        ensureDemoContract()
         setContext(ComfortContext.HOME)
         setShortThreshold(true)
         setContractToday(true)
