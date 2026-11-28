@@ -18,7 +18,7 @@ Názvy typů odpovídají kódu v `cz.narsil.core` (PR #8); co je nové, je v se
 
 ## 3. Detekce a zásah
 
-Povrchy (`Surface`): `FEED`, `REELS`, `SHORTS` jsou nekonečný obsah, `VIDEO` je jedno video, `MESSAGES` zprávy. V nejistotě `MESSAGES`.
+Povrchy (`Surface`): `FEED`, `REELS`, `SHORTS` jsou nekonečný obsah, `VIDEO` je jedno video, `MESSAGES` zprávy, `SEARCH` výsledky vyhledávání (nepočítají se a relaci nezačnou, 148). V nejistotě `MESSAGES`.
 
 - **Relace** = souvislý čas na nekonečném povrchu. Přepnutí mezi Instagramem a TikTokem relaci nepřeruší. Pauza delší než 2 min mimo nekonečný povrch relaci ukončí.
 - **Tolerance:** zásah (`ENDLESS_SCROLL`), když relace trvá ≥ **5 min** (demo 20 s) a kontext je `HOME`.

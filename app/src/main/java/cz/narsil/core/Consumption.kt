@@ -1,8 +1,11 @@
 package cz.narsil.core
 
-/** Typ obrazovky, na které uživatel je. MESSAGES se nikdy nepočítá ani nespouští zásah. */
+/**
+ * Typ obrazovky, na které uživatel je. MESSAGES se nikdy nepočítá ani nespouští zásah.
+ * SEARCH (148) = výsledky vyhledávání: nepočítá se, nezačne relaci ani řetěz videí, ale není to chat.
+ */
 enum class Surface {
-    FEED, REELS, SHORTS, MESSAGES, VIDEO;
+    FEED, REELS, SHORTS, MESSAGES, VIDEO, SEARCH;
 
     /** Nekonečný obsah (feed, Reels, Shorts) – kandidát na zásah. VIDEO řeší YouTube logika (120). */
     val isEndless: Boolean get() = this == FEED || this == REELS || this == SHORTS

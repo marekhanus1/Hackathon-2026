@@ -57,7 +57,7 @@ Fake: `FakeContextRepository(detected = HOME, wifiSsid = "Doma")`, `setDetected(
 Úsek spotřeby z detekce; ukládá se do Room (121).
 
 ```kotlin
-enum class Surface { FEED, REELS, SHORTS, MESSAGES, VIDEO; val isEndless: Boolean } // true pro FEED/REELS/SHORTS
+enum class Surface { FEED, REELS, SHORTS, MESSAGES, VIDEO, SEARCH; val isEndless: Boolean } // true pro FEED/REELS/SHORTS; SEARCH (148) = výsledky hledání, nepočítá se
 data class ConsumptionEvent(
     val packageName: String, val surface: Surface,
     val startedAtMillis: Long, val durationMillis: Long,

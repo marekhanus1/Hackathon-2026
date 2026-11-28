@@ -35,7 +35,7 @@ class SurfaceAndSessionTest {
         val ambiguous = setOf("clips_video_container")
         assertEquals(Surface.FEED, SurfaceClassifier.classify(snap(ig, ambiguous).copy(selectedTab = "feed_tab")))
         assertEquals(Surface.REELS, SurfaceClassifier.classify(snap(ig, ambiguous).copy(selectedTab = "clips_tab")))
-        assertEquals(Surface.MESSAGES, SurfaceClassifier.classify(snap(ig, ambiguous).copy(selectedTab = "search_tab")))
+        assertEquals(Surface.SEARCH, SurfaceClassifier.classify(snap(ig, ambiguous).copy(selectedTab = "search_tab")))
         // Celoobrazovkový reel otevřený z feedu: přehrávač má přednost před záložkou.
         assertEquals(Surface.REELS, SurfaceClassifier.classify(snap(ig, setOf("clips_viewer_container")).copy(selectedTab = "feed_tab")))
         // Zprávy mají přednost vždy.

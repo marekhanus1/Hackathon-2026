@@ -45,7 +45,19 @@ object SurfaceClassifier {
     private fun classifyByIds(s: ForegroundSnapshot, rules: List<Rule>, default: Surface): Surface {
         val haystack = idHaystack(s)
         // Pravidla jsou seřazená podle priority: zprávy první.
-        return rules.firstOrNull { rule -> rule.fragments.any { f -> haystack.any { it.contains(f) } } }?.surface ?: default
+        return rules.firstOrNull { rule -> rule.matches(haystack) }?.surface ?: default
+    }
+
+    /** Které pravidlo rozhodlo (ladění v logu služby, 148). */
+    fun explain(s: ForegroundSnapshot): String {
+        val haystack = idHaystack(s)
+        val rules = when (s.app) {
+            WatchedApp.YOUTUBE -> SurfaceRules.YOUTUBE
+            WatchedApp.TIKTOK -> SurfaceRules.TIKTOK
+            else -> return ""
+        }
+        val rule = rules.firstOrNull { it.matches(haystack) } ?: return "výchozí"
+        return haystack.firstOrNull { h -> rule.fragments.any { h.contains(it) } && rule.exclude.none { h.contains(it) } } ?: rule.surface.name
     }
 
     /** Web ve Firefoxu podle URL (bez schématu, jak ho ukazuje adresní řádek). */
@@ -54,6 +66,8 @@ object SurfaceClassifier {
         val host = url.substringBefore('/')
         val path = url.removePrefix(host)
         return when {
+            // Výsledky vyhledávání se nepočítají (148).
+            isSearchPath(host, path) -> Surface.SEARCH
             host.endsWith("instagram.com") -> when {
                 path.startsWith("/direct") -> Surface.MESSAGES
                 path.startsWith("/reels") || path.startsWith("/reel/") -> Surface.REELS
@@ -71,11 +85,33 @@ object SurfaceClassifier {
                 else -> Surface.FEED
             }
             host == "x.com" || host.endsWith("twitter.com") -> if (path.startsWith("/messages")) Surface.MESSAGES else Surface.FEED
+            host.endsWith("reddit.com") -> when {
+                path.startsWith("/message") || path.startsWith("/chat") -> Surface.MESSAGES
+                else -> Surface.FEED
+            }
             else -> null
         }
     }
 
-    data class Rule(val surface: Surface, val fragments: List<String>)
+    /** Stránka výsledků vyhledávání na sociálních sítích (148). [path] včetně dotazu, malými písmeny. */
+    private fun isSearchPath(host: String, path: String): Boolean = when {
+        host.endsWith("youtube.com") -> path.startsWith("/results") || path.startsWith("/hashtag/")
+        host.endsWith("instagram.com") -> path.startsWith("/explore/search") || path.startsWith("/explore/tags/")
+        host == "x.com" || host.endsWith("twitter.com") -> path.startsWith("/search") || path.startsWith("/explore")
+        host.endsWith("reddit.com") -> path.startsWith("/search") || path.contains("/search/") || path.contains("/search?")
+        host.endsWith("tiktok.com") -> path.startsWith("/search") || path.startsWith("/tag/")
+        host.endsWith("facebook.com") -> path.startsWith("/search")
+        else -> false
+    }
+
+    /**
+     * @param fragments část ID prvku nebo názvu okna (malými písmeny)
+     * @param exclude ID s fragmentem se nepočítá, když obsahuje i tohle (např. tlačítko lupy na feedu)
+     */
+    data class Rule(val surface: Surface, val fragments: List<String>, val exclude: List<String> = emptyList()) {
+        fun matches(haystack: List<String>): Boolean =
+            fragments.any { f -> haystack.any { h -> h.contains(f) && exclude.none { h.contains(it) } } }
+    }
 }
 
 /** Fragmenty názvu aktivity a ID prvků (malými písmeny, bez balíčku), seřazené podle priority. */
@@ -88,17 +124,33 @@ object SurfaceRules {
         "feed_tab" to Surface.FEED,
         "clips_tab" to Surface.REELS,
         "direct_tab" to Surface.MESSAGES,
-        // Prozkoumat a profil: v nejistotě nezasahovat.
-        "search_tab" to Surface.MESSAGES,
+        // Prozkoumat / hledání (148) a profil: nepočítat.
+        "search_tab" to Surface.SEARCH,
         "profile_tab" to Surface.MESSAGES,
     )
 
     val TIKTOK = listOf(
         SurfaceClassifier.Rule(Surface.MESSAGES, listOf("chatroom", "chat_", "im.chat", "inboxactivity", "messageactivity")),
+        SurfaceClassifier.Rule(Surface.SEARCH, listOf("searchactivity", "generalsearch", "search.ui")),
     )
+
+    /**
+     * Pole hledání a seznam výsledků v aplikacích bez vlastních pravidel (148). Ne lupa na feedu:
+     * tlačítka, ikony, položky menu a záložky s „search“ v ID se nepočítají.
+     */
+    val SEARCH_FRAGMENTS = listOf("search")
+    val SEARCH_EXCLUDE = listOf("button", "icon", "menu", "tab", "voice", "action_search", "_hint")
+
+    /**
+     * YouTube (148): nejdřív přehrávač (Shorts, otevřené video), pak vyhledávání, nakonec obecné „shorts“
+     * (polička Shorts je i ve výsledcích hledání a na domovské stránce – kvůli ní se dřív hledání počítalo jako Shorts).
+     */
     val YOUTUBE = listOf(
-        SurfaceClassifier.Rule(Surface.SHORTS, listOf("reel_player", "reel_recycler", "shorts")),
+        SurfaceClassifier.Rule(Surface.SHORTS, listOf("reel_player", "reel_recycler")),
         // Ne „watch_while“: watch_while_layout_coordinator_layout je viditelné na všech obrazovkách (ověřeno na Nothing 3a).
-        SurfaceClassifier.Rule(Surface.VIDEO, listOf("watch_player", "player_view")),
+        SurfaceClassifier.Rule(Surface.VIDEO, listOf("watch_player")),
+        SurfaceClassifier.Rule(Surface.SEARCH, SEARCH_FRAGMENTS, SEARCH_EXCLUDE),
+        SurfaceClassifier.Rule(Surface.VIDEO, listOf("player_view")),
+        SurfaceClassifier.Rule(Surface.SHORTS, listOf("shorts")),
     )
 }
