@@ -78,14 +78,15 @@ fun OnboardingRoute(onDone: () -> Unit) {
 
     // Kroky MIUI nejdou ověřit: označí se jako hotové po otevření nastavení (uživatel je může odškrtnout).
     var miuiExpanded by rememberSaveable { mutableStateOf(true) }
-    var miuiAutoStart by rememberSaveable { mutableStateOf(false) }
-    var miuiBattery by rememberSaveable { mutableStateOf(false) }
-    var miuiPopup by rememberSaveable { mutableStateOf(false) }
+    var miuiAutoStart by remember { mutableStateOf(OnboardingPrefs.miuiStep(context, "autostart")) }
+    var miuiBattery by remember { mutableStateOf(OnboardingPrefs.miuiStep(context, "battery")) }
+    var miuiPopup by remember { mutableStateOf(OnboardingPrefs.miuiStep(context, "popup")) }
+    var miuiLock by remember { mutableStateOf(OnboardingPrefs.miuiStep(context, "lock")) }
 
     fun granted(step: PermissionStep) = PermissionChecker.isGranted(context, step) == true
     val stepsGranted = granted(PermissionStep.STEPS)
 
-    val state = remember(refresh, wifi, settings.homeSsid, healthGranted, miuiExpanded, miuiAutoStart, miuiBattery, miuiPopup) {
+    val state = remember(refresh, wifi, settings.homeSsid, healthGranted, miuiExpanded, miuiAutoStart, miuiBattery, miuiPopup, miuiLock) {
         val base = OnboardingUiState()
         OnboardingUiState(
             detectedWifiSsid = wifi,
@@ -94,7 +95,6 @@ fun OnboardingRoute(onDone: () -> Unit) {
                 item.copy(
                     isGranted = when (item.type) {
                         PermissionType.ACCESSIBILITY -> granted(PermissionStep.ACCESSIBILITY)
-                        PermissionType.OVERLAY -> granted(PermissionStep.OVERLAY)
                         PermissionType.LOCATION_FOR_WIFI -> granted(PermissionStep.LOCATION)
                         PermissionType.CAMERA -> granted(PermissionStep.CAMERA)
                         // Kroky: Health Connect, nebo záloha přes senzor (ACTIVITY_RECOGNITION).
@@ -107,6 +107,7 @@ fun OnboardingRoute(onDone: () -> Unit) {
             miuiAutoStartDone = miuiAutoStart,
             miuiBatteryDone = miuiBattery || granted(PermissionStep.BATTERY),
             miuiBackgroundPopupDone = miuiPopup,
+            miuiLockDone = miuiLock,
         )
     }.copy(
         video = OnboardingVideoState(
@@ -144,10 +145,12 @@ fun OnboardingRoute(onDone: () -> Unit) {
         onToggleMiuiAutoStart = {
             if (!miuiAutoStart) PermissionChecker.open(context, PermissionStep.MIUI_AUTOSTART)
             miuiAutoStart = !miuiAutoStart
+            OnboardingPrefs.setMiuiStep(context, "autostart", miuiAutoStart)
         },
         onToggleMiuiBattery = {
             if (!miuiBattery) PermissionChecker.open(context, PermissionStep.BATTERY)
             miuiBattery = !miuiBattery
+            OnboardingPrefs.setMiuiStep(context, "battery", miuiBattery)
         },
         onToggleMiuiBackgroundPopup = {
             // MIUI: „Zobrazit vyskakovací okna na pozadí“ je v oprávněních aplikace.
@@ -159,6 +162,12 @@ fun OnboardingRoute(onDone: () -> Unit) {
                 )
             }.onFailure { runCatching { context.startActivity(PermissionChecker.appDetails(context).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } }
             miuiPopup = !miuiPopup
+            OnboardingPrefs.setMiuiStep(context, "popup", miuiPopup)
+        },
+        onToggleMiuiLock = {
+            // Zamknout v posledních aplikacích nejde otevřít z aplikace: návod je v kartě, tady jen zaškrtnutí.
+            miuiLock = !miuiLock
+            OnboardingPrefs.setMiuiStep(context, "lock", miuiLock)
         },
         onFinishOnboarding = {
             // Notifikace (zpráva Parťákovi) a mikrofon (video smlouvy) jsou nepovinné: jedna žádost na konci.
@@ -184,7 +193,6 @@ private fun request(
 ) {
     when (type) {
         PermissionType.ACCESSIBILITY -> PermissionChecker.open(context, PermissionStep.ACCESSIBILITY)
-        PermissionType.OVERLAY -> PermissionChecker.open(context, PermissionStep.OVERLAY)
         PermissionType.LOCATION_FOR_WIFI -> launchRuntime(PermissionStep.LOCATION.runtime.toTypedArray())
         PermissionType.CAMERA -> launchRuntime(PermissionStep.CAMERA.runtime.toTypedArray())
         PermissionType.HEALTH_CONNECT -> {

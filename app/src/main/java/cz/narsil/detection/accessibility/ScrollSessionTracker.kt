@@ -147,6 +147,28 @@ class ScrollSessionTracker(
         videoGate.reset()
     }
 
+    /** Stav k uložení přes smrt procesu (MIUI); null = není co ukládat. */
+    fun snapshot(): SavedSession? {
+        val s = session
+        return when {
+            s != null -> SavedSession(s.startedAtMillis, s.packageName, s.surface, lastEndlessAt, unlockedUntil)
+            unlockedUntil > 0 -> SavedSession(0, "", Surface.FEED, 0, unlockedUntil, hasSession = false)
+            else -> null
+        }
+    }
+
+    /**
+     * Obnoví relaci po restartu procesu: pokračuje, jen když od posledního nekonečného obsahu neuběhla
+     * pauza (jinak by stejně skončila). Zaplacený čas platí, dokud nevyprší.
+     */
+    fun restore(saved: SavedSession, now: Long) {
+        if (saved.unlockedUntilMillis > now) unlockedUntil = saved.unlockedUntilMillis
+        if (!saved.hasSession || saved.packageName.isEmpty() || now - saved.lastEndlessAtMillis > pauseMillis) return
+        session = Session(saved.startedAtMillis, saved.packageName, saved.surface)
+        lastEndlessAt = saved.lastEndlessAtMillis
+        lastSurface = saved.surface
+    }
+
     /** Okno zavřeno bez volby (např. systémem): dovolí další zásah. */
     fun onDismissed() {
         awaitingOutcome = false

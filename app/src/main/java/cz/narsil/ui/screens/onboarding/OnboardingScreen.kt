@@ -45,6 +45,7 @@ fun OnboardingScreen(
     onToggleMiuiAutoStart: () -> Unit,
     onToggleMiuiBattery: () -> Unit,
     onToggleMiuiBackgroundPopup: () -> Unit,
+    onToggleMiuiLock: () -> Unit = {},
     onFinishOnboarding: () -> Unit,
     modifier: Modifier = Modifier,
     onVideoButton: () -> Unit = {},
@@ -204,7 +205,7 @@ fun OnboardingScreen(
                         AnimatedVisibility(visible = state.miuiStepsExpanded) {
                             Column(verticalArrangement = Arrangement.spacedBy(spacing.xxs)) {
                                 Text(
-                                    text = "MIUI umí ukončovat služby na pozadí. Prosím potvrď tyto 3 kroky v nastavení aplikace:",
+                                    text = "Xiaomi jinak Narsil po chvíli vypne a hlídání přestane fungovat. Klepnutím otevřeš správné nastavení:",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                                 MiuiCheckRow(
@@ -222,6 +223,17 @@ fun OnboardingScreen(
                                     label = "Povolit vyskakovací okna na pozadí",
                                     onToggle = onToggleMiuiBackgroundPopup
                                 )
+                                MiuiCheckRow(
+                                    checked = state.miuiLockDone,
+                                    label = "Zamknout Narsil v posledních aplikacích",
+                                    onToggle = onToggleMiuiLock
+                                )
+                                if (!state.miuiLockDone) {
+                                    Text(
+                                        text = "Otevři přehled aplikací (přejeď zdola nahoru a podrž), podrž kartu Narsil a klepni na zámek.",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
                             }
                         }
                     }

@@ -23,14 +23,17 @@ enum class PermissionStep(
         "Narsil pozná nekonečný feed. Zprávy a chaty nikdy nečte.",
         required = true,
     ),
-    OVERLAY("Okno Ozvěny", "Ozvěna se ukáže přes aplikaci, ve které právě jsi.", required = true),
+    // Ozvěna i ukazatel jdou přes okno služby přístupnosti (TYPE_ACCESSIBILITY_OVERLAY), které tohle oprávnění
+    // nepotřebuje. Zůstává jen jako záloha v Nastavení, onboarding ho neukazuje.
+    OVERLAY("Okno Ozvěny", "Záloha, když služba přístupnosti neběží. Běžně není potřeba.", required = false),
     LOCATION(
         "Poloha kvůli Wi-Fi",
         "Android prozradí název Wi-Fi jen s polohou. Polohu nikam neposíláme.",
         required = true,
         runtime = listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
     ),
-    CAMERA("Kamera", "Počítá dřepy a natočí večerní video. Obraz zůstává v telefonu.", required = true, runtime = listOf(Manifest.permission.CAMERA)),
+    // Kamera až při použití (dřepy v Ozvěně se zeptají samy přes CameraPermissionActivity).
+    CAMERA("Kamera", "Počítá dřepy a natočí večerní video. Obraz zůstává v telefonu.", required = false, runtime = listOf(Manifest.permission.CAMERA)),
     MICROPHONE("Mikrofon", "Zvuk k večernímu videu.", required = false, runtime = listOf(Manifest.permission.RECORD_AUDIO)),
     STEPS("Kroky", "Kroky jsou tvoje měna za neplánovaný obsah.", required = false, runtime = listOf(Manifest.permission.ACTIVITY_RECOGNITION)),
     HEALTH_CONNECT("Health Connect", "Přesnější kroky z Health Connect.", required = false),

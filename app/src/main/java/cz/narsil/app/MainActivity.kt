@@ -19,7 +19,9 @@ import cz.narsil.ui.theme.NarsilTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        openSetupIfAsked(intent)
         handleStravaRedirect(intent)
+        GuardService.start(this)
         enableEdgeToEdge()
         setContent {
             NarsilTheme {
@@ -33,7 +35,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (openSetupIfAsked(intent)) recreate()
         handleStravaRedirect(intent)
+    }
+
+    /** Notifikace „Telefon vypnul Narsil“ (KillWatcher): otevřít průvodce s kroky pro Xiaomi. */
+    private fun openSetupIfAsked(intent: Intent?): Boolean {
+        if (intent?.getBooleanExtra(KillWatcher.EXTRA_OPEN_SETUP, false) != true) return false
+        intent.removeExtra(KillWatcher.EXTRA_OPEN_SETUP)
+        cz.narsil.app.onboarding.OnboardingPrefs.setDone(this, false)
+        return true
     }
 
     /** narsil://strava?code=… z prohlížeče po přihlášení ke Stravě (511). */
