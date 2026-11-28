@@ -157,16 +157,35 @@ class NarsilAccessibilityService : AccessibilityService() {
         else -> null
     }
 
-    /** Scroll bez obsahu (149): třída prvku, posun, indexy položek, pozice. */
-    private fun scrollSample(e: AccessibilityEvent) = ScrollSample(
-        className = e.className?.toString(),
-        deltaX = e.scrollDeltaX,
-        deltaY = e.scrollDeltaY,
-        fromIndex = e.fromIndex,
-        toIndex = e.toIndex,
-        itemCount = e.itemCount,
-        scrollY = e.scrollY.takeIf { e.maxScrollY > 0 || it > 0 } ?: -1,
-    )
+    /** Orientace posouvaných prvků podle [scrollKey] (uzel se čte jen poprvé – je to dotaz do cizí aplikace). */
+    private val orientationCache = object : LinkedHashMap<Int, ScrollOrientation?>(64, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, ScrollOrientation?>?) = size > 64
+    }
+
+    /** Prvek bez dotazu do aplikace: okno + třída + počet položek (feed a karusel v něm se liší). */
+    private fun scrollKey(e: AccessibilityEvent): Int =
+        java.util.Objects.hash(e.windowId, e.className?.toString(), e.itemCount).let { if (it == 0) 1 else it }
+
+    /** Scroll bez obsahu (149): třída prvku, posun, indexy položek, pozice; prvek a jeho orientace (bez textu). */
+    private fun scrollSample(e: AccessibilityEvent): ScrollSample {
+        val key = scrollKey(e)
+        val orientation = if (orientationCache.containsKey(key)) {
+            orientationCache[key]
+        } else {
+            runCatching { e.source?.let(ScrollOrientations::of) }.getOrNull().also { orientationCache[key] = it }
+        }
+        return ScrollSample(
+            className = e.className?.toString(),
+            sourceKey = key,
+            orientation = orientation,
+            deltaX = e.scrollDeltaX,
+            deltaY = e.scrollDeltaY,
+            fromIndex = e.fromIndex,
+            toIndex = e.toIndex,
+            itemCount = e.itemCount,
+            scrollY = e.scrollY.takeIf { e.maxScrollY > 0 || it > 0 } ?: -1,
+        )
+    }
 
     private var lastScrollLogAt = 0L
 
