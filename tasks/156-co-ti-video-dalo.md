@@ -1,5 +1,5 @@
 ---
-status: review
+status: done
 owner: marek
 agent: claude
 branch: marek/claude/156-co-ti-video-dalo
