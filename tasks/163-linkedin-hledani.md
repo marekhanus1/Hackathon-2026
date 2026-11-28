@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: simon
 agent: codex
 branch: simon/codex/163-linkedin-hledani
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/133
 ---
 
 # 163 – Rozlišit vyhledávání a feed LinkedInu
