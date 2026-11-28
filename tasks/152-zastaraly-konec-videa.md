@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: review
 owner: marek
 agent: claude
 branch: marek/claude/152-zastaraly-konec-videa
