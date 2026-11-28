@@ -1,703 +1,2136 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" data-theme="apricot">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Narsil – Pitch Deck (Hackathon 2026)</title>
+  <title>Narsil – Webová prezentace konceptu &amp; grafiky</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg: #121110;
-      --surface: #1C1A17;
-      --surface-hi: #26231F;
-      --outline: #3A342C;
-      --text: #F3EFE9;
-      --muted: #C1B7AA;
-      --amber: #F2A359;
-      --amber-soft: #663209;
+    /* ==========================================================================
+       NARSIL DESIGN TOKENS — 3 MINIMALIST PALETTES (APRICOT / SALMON / DUSK)
+       ========================================================================== */
+    :root,
+    html[data-theme="apricot"] {
+      --bg: #FFF9F4;
+      --bg-glow-1: rgba(255, 155, 106, 0.22);
+      --bg-glow-2: rgba(242, 122, 109, 0.16);
+      --surface: #FFFFFF;
+      --surface-soft: #FFF2E7;
+      --surface-tint: #FFE6D4;
+      --outline: #F5DCCB;
+      --outline-strong: #EDC4AA;
+      --ink: #241B18;
+      --ink-muted: #6E5C54;
+      --ink-subtle: #9A847A;
+      --primary: #F4845F;
+      --primary-hi: #FF9E75;
+      --primary-soft: #FFE4D6;
+      --on-primary: #FFFFFF;
+      --secondary: #E86B63;
+      --secondary-soft: #FFE1DE;
+      --sage: #2D8A65;
+      --sage-soft: #E3F5ED;
+      --gold: #DF9B26;
+      --gold-soft: #FFF3D8;
+      --indigo: #636FC7;
+      --indigo-soft: #EAEBFD;
+      --shadow-card: 0 20px 50px rgba(244, 132, 95, 0.10), 0 4px 14px rgba(36, 27, 24, 0.04);
+      --shadow-float: 0 28px 70px rgba(244, 132, 95, 0.18), 0 8px 24px rgba(36, 27, 24, 0.06);
+      --glass: rgba(255, 249, 244, 0.82);
+      --phone-bezel: #2A201C;
+      --phone-screen: #FFFBF7;
+      --grad-hero: linear-gradient(135deg, #FF9B6A 0%, #F27A6D 100%);
+      --grad-soft: linear-gradient(135deg, #FFF1E6 0%, #FFE4DF 100%);
+    }
+
+    html[data-theme="salmon"] {
+      --bg: #FFF8F7;
+      --bg-glow-1: rgba(240, 113, 103, 0.22);
+      --bg-glow-2: rgba(255, 170, 117, 0.18);
+      --surface: #FFFFFF;
+      --surface-soft: #FFECEA;
+      --surface-tint: #FFDAD6;
+      --outline: #F6D2CE;
+      --outline-strong: #EEB3AC;
+      --ink: #261918;
+      --ink-muted: #705856;
+      --ink-subtle: #9D807D;
+      --primary: #F07167;
+      --primary-hi: #FF8E85;
+      --primary-soft: #FFE0DD;
+      --on-primary: #FFFFFF;
+      --secondary: #FF9F68;
+      --secondary-soft: #FFEAD9;
+      --sage: #2B8762;
+      --sage-soft: #E2F4EC;
+      --gold: #DF9724;
+      --gold-soft: #FFF2D6;
+      --indigo: #636FC7;
+      --indigo-soft: #EAEBFD;
+      --shadow-card: 0 20px 50px rgba(240, 113, 103, 0.11), 0 4px 14px rgba(38, 25, 24, 0.04);
+      --shadow-float: 0 28px 70px rgba(240, 113, 103, 0.20), 0 8px 24px rgba(38, 25, 24, 0.06);
+      --glass: rgba(255, 248, 247, 0.84);
+      --phone-bezel: #2B1D1C;
+      --phone-screen: #FFF9F8;
+      --grad-hero: linear-gradient(135deg, #F07167 0%, #FF9E75 100%);
+      --grad-soft: linear-gradient(135deg, #FFEAE7 0%, #FFECE0 100%);
+    }
+
+    html[data-theme="dusk"] {
+      --bg: #171210;
+      --bg-glow-1: rgba(255, 164, 119, 0.14);
+      --bg-glow-2: rgba(255, 133, 122, 0.12);
+      --surface: #221B18;
+      --surface-soft: #2C221E;
+      --surface-tint: #382B25;
+      --outline: #463730;
+      --outline-strong: #634D43;
+      --ink: #FAF2EC;
+      --ink-muted: #CBB9AF;
+      --ink-subtle: #978378;
+      --primary: #FFA477;
+      --primary-hi: #FFB996;
+      --primary-soft: #4A2B1D;
+      --on-primary: #2B150B;
+      --secondary: #FF857A;
+      --secondary-soft: #4C2522;
       --sage: #5CC497;
-      --sage-soft: #175139;
-      --indigo: #9FA8DA;
-      --indigo-soft: #344180;
+      --sage-soft: #173F2E;
       --gold: #F2C14E;
-      --algo: #B5A5C9;
+      --gold-soft: #443514;
+      --indigo: #9FA8DA;
+      --indigo-soft: #29315C;
+      --shadow-card: 0 22px 54px rgba(0, 0, 0, 0.42);
+      --shadow-float: 0 30px 80px rgba(0, 0, 0, 0.56);
+      --glass: rgba(23, 18, 16, 0.84);
+      --phone-bezel: #0E0B0A;
+      --phone-screen: #1E1714;
+      --grad-hero: linear-gradient(135deg, #FFA477 0%, #FF857A 100%);
+      --grad-soft: linear-gradient(135deg, #2D221D 0%, #342322 100%);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ==========================================================================
+       BASE RESET & TYPOGRAPHY
+       ========================================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html, body {
-      height: 100%;
-      background: #0B0A09;
-      color: var(--text);
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      overflow: hidden;
-    }
-
-    .stage {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .deck {
-      position: relative;
-      width: min(100vw - 40px, calc((100vh - 84px) * 16 / 9));
-      aspect-ratio: 16 / 9;
+    html {
+      scroll-behavior: smooth;
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--ink);
       background: var(--bg);
-      border-radius: 24px;
-      border: 1px solid var(--outline);
-      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65);
-      overflow: hidden;
+      transition: background-color 280ms ease, color 280ms ease;
     }
 
-    .slide {
-      position: absolute;
-      inset: 0;
-      padding: 4.5% 5.5%;
-      display: none;
-      flex-direction: column;
-      justify-content: space-between;
+    body {
+      min-height: 100vh;
       background:
-        radial-gradient(circle at 85% 15%, rgba(242, 163, 89, 0.10), transparent 42%),
-        radial-gradient(circle at 12% 88%, rgba(159, 168, 218, 0.08), transparent 40%),
+        radial-gradient(circle at 12% 6%, var(--bg-glow-1), transparent 36%),
+        radial-gradient(circle at 88% 18%, var(--bg-glow-2), transparent 38%),
+        radial-gradient(circle at 50% 65%, var(--bg-glow-1), transparent 44%),
         var(--bg);
+      line-height: 1.55;
+      overflow-x: hidden;
     }
 
-    .slide.active {
+    h1, h2, h3, h4 {
+      letter-spacing: -0.025em;
+      line-height: 1.12;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    h1 { font-size: clamp(2.4rem, 4.6vw, 4.1rem); }
+    h2 { font-size: clamp(1.75rem, 3.1vw, 2.7rem); }
+    h3 { font-size: clamp(1.15rem, 1.5vw, 1.38rem); font-weight: 700; }
+
+    p { color: var(--ink-muted); }
+
+    .container {
+      width: min(1200px, calc(100vw - 36px));
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       FLOATING GLASS HEADER & THEME / PRESENTATION CONTROLS
+       ========================================================================== */
+    .topbar {
+      position: sticky;
+      top: 14px;
+      z-index: 50;
+      width: min(1200px, calc(100vw - 28px));
+      margin: 14px auto 0;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--glass);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--outline);
+      box-shadow: var(--shadow-card);
       display: flex;
-      animation: fadeIn 220ms ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .slide-top {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      font-size: clamp(11px, 1.1vw, 15px);
-      color: var(--muted);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    .brand-tag {
+    .brand {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      color: var(--amber);
-      font-weight: 700;
-    }
-
-    .slide-body {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 4%;
-      align-items: center;
-      margin: 2% 0;
-    }
-
-    .slide-body.centered {
-      grid-template-columns: 1fr;
-      text-align: center;
-      justify-items: center;
-    }
-
-    h1 {
-      font-size: clamp(30px, 4.4vw, 64px);
-      line-height: 1.08;
-      letter-spacing: -0.025em;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--ink);
       font-weight: 800;
-      color: var(--text);
+      font-size: 1.05rem;
+      padding-left: 6px;
     }
 
-    h2 {
-      font-size: clamp(24px, 3.2vw, 48px);
-      line-height: 1.14;
-      letter-spacing: -0.02em;
-      font-weight: 750;
-    }
-
-    .accent-amber { color: var(--amber); }
-    .accent-sage { color: var(--sage); }
-    .accent-indigo { color: var(--indigo); }
-    .accent-gold { color: var(--gold); }
-
-    .lead {
-      margin-top: 18px;
-      font-size: clamp(16px, 1.8vw, 26px);
-      line-height: 1.4;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    .pill-row {
+    .nav-links {
       display: flex;
+      align-items: center;
+      gap: 4px;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 24px;
     }
 
-    .pill {
-      padding: 10px 18px;
+    .nav-links a {
+      text-decoration: none;
+      color: var(--ink-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 7px 12px;
       border-radius: 999px;
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      font-size: clamp(13px, 1.25vw, 18px);
-      font-weight: 600;
-      color: var(--text);
+      transition: all 180ms ease;
     }
 
-    .pill.sage { background: var(--sage-soft); border-color: rgba(92,196,151,0.4); color: #D2EFE0; }
-    .pill.amber { background: var(--amber-soft); border-color: rgba(242,163,89,0.4); color: #FFE5D0; }
-    .pill.indigo { background: var(--indigo-soft); border-color: rgba(159,168,218,0.4); color: #E0E5FA; }
-
-    .card-grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-top: 26px;
-      width: 100%;
+    .nav-links a:hover,
+    .nav-links a.active {
+      background: var(--primary-soft);
+      color: var(--ink);
     }
 
-    .mini-card {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: 18px;
-      padding: 18px 14px;
-      text-align: center;
-    }
-
-    .mini-card .num {
-      font-size: clamp(22px, 2.5vw, 38px);
-      font-weight: 800;
-      margin-top: 6px;
-    }
-
-    .mini-card .lbl {
-      font-size: clamp(13px, 1.2vw, 17px);
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .list-clean {
-      list-style: none;
-      margin-top: 22px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .list-clean li {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: 16px;
-      padding: 14px 18px;
-      font-size: clamp(14px, 1.45vw, 21px);
-      font-weight: 600;
+    .toolbar-right {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .dot {
+    .theme-pills {
+      display: inline-flex;
+      background: var(--surface-soft);
+      border: 1px solid var(--outline);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .theme-btn {
+      border: none;
+      background: transparent;
+      color: var(--ink-muted);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 6px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 180ms ease;
+    }
+
+    .theme-btn .swatch {
       width: 10px;
       height: 10px;
       border-radius: 50%;
+      display: inline-block;
+    }
+
+    .theme-btn.active {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    .btn-primary, .btn-soft {
+      border: none;
+      border-radius: 999px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.86rem;
+      padding: 9px 16px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .btn-primary {
+      background: var(--grad-hero);
+      color: var(--on-primary);
+      box-shadow: 0 10px 24px rgba(244, 132, 95, 0.28);
+    }
+
+    .btn-primary:hover { transform: translateY(-1px); }
+
+    .btn-soft {
+      background: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--outline);
+    }
+
+    .btn-soft:hover {
+      background: var(--surface-soft);
+      border-color: var(--outline-strong);
+    }
+
+    /* ==========================================================================
+       SECTIONS & BENTO ROUNDED RECTANGLE GEOMETRY
+       ========================================================================== */
+    main.deck-root {
+      padding: 28px 0 96px;
+    }
+
+    .section-slide {
+      padding: 52px 0;
+      scroll-margin-top: 86px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--ink);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+
+    .eyebrow .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .lead {
+      font-size: clamp(1.02rem, 1.35vw, 1.22rem);
+      color: var(--ink-muted);
+      max-width: 64ch;
+      margin-top: 10px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: 30px;
+      padding: 26px;
+      box-shadow: var(--shadow-card);
+      transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
+    }
+
+    .card.soft { background: var(--surface-soft); }
+    .card.tint { background: var(--grad-soft); }
+
+    .card.interactive:hover {
+      transform: translateY(-3px);
+      border-color: var(--outline-strong);
+      box-shadow: var(--shadow-float);
+    }
+
+    .grad-text {
+      background: var(--grad-hero);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      background: var(--surface-soft);
+      border: 1px solid var(--outline);
+      color: var(--ink);
+    }
+
+    .pill.sage { background: var(--sage-soft); color: var(--sage); border-color: transparent; }
+    .pill.gold { background: var(--gold-soft); color: var(--gold); border-color: transparent; }
+    .pill.indigo { background: var(--indigo-soft); color: var(--indigo); border-color: transparent; }
+    .pill.salmon { background: var(--secondary-soft); color: var(--secondary); border-color: transparent; }
+    .pill.apricot { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
+
+    /* Grids */
+    .grid-hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .grid-5 {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    /* ==========================================================================
+       HERO ARTWORK & MINIMALIST GEOMETRY
+       ========================================================================== */
+    .hero-canvas {
+      position: relative;
+      border-radius: 38px;
+      padding: 44px;
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      box-shadow: var(--shadow-float);
+      overflow: hidden;
+    }
+
+    .hero-canvas::before {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: -110px;
+      top: -120px;
+      border-radius: 90px;
+      transform: rotate(18deg);
+      background: var(--grad-hero);
+      opacity: 0.12;
+      pointer-events: none;
+    }
+
+    .hero-canvas::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      left: -70px;
+      bottom: -80px;
+      border-radius: 60px;
+      transform: rotate(-14deg);
+      background: var(--secondary);
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .stat-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--outline);
+      border-radius: 22px;
+      padding: 14px 16px;
+    }
+
+    .stat-box .val {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .stat-box .lbl {
+      font-size: 0.78rem;
+      color: var(--ink-muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* ==========================================================================
+       MINIMALIST PHONE FRAME (USED IN HERO & SECTION 4)
+       ========================================================================== */
+    .phone-frame {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      background: var(--phone-bezel);
+      border-radius: 44px;
+      padding: 12px;
+      box-shadow: var(--shadow-float);
+      border: 2px solid rgba(255,255,255,0.14);
+    }
+
+    .phone-screen {
+      background: var(--phone-screen);
+      border-radius: 34px;
+      padding: 18px 16px 20px;
+      min-height: 540px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phone-notch {
+      width: 88px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--phone-bezel);
+      margin: 0 auto 4px;
+      opacity: 0.85;
+    }
+
+    .ui-card {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: 20px;
+      padding: 13px 14px;
+    }
+
+    .ui-card.apricot { background: var(--primary-soft); border-color: transparent; }
+    .ui-card.sage { background: var(--sage-soft); border-color: transparent; }
+    .ui-card.gold { background: var(--gold-soft); border-color: transparent; }
+    .ui-card.salmon { background: var(--secondary-soft); border-color: transparent; }
+
+    /* Interactive Pillars */
+    .pillar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pillar-tab {
+      text-align: left;
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--outline);
+      border-radius: 24px;
+      padding: 18px 20px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 200ms ease;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .pillar-tab:hover { border-color: var(--primary); }
+
+    .pillar-tab.active {
+      background: var(--surface-soft);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-card);
+    }
+
+    .pillar-num {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 800;
+      display: grid;
+      place-items: center;
       flex-shrink: 0;
     }
 
-    .visual-box {
+    .pillar-tab.active .pillar-num {
+      background: var(--grad-hero);
+      color: var(--on-primary);
+    }
+
+    .pillar-tab h4 { font-size: 1.03rem; margin-bottom: 4px; }
+    .pillar-tab p { font-size: 0.88rem; line-height: 1.45; }
+
+    .screen-view { display: none; flex-direction: column; gap: 11px; animation: fadeUp 240ms ease; }
+    .screen-view.active { display: flex; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       ECONOMY EQUATION & XP BARS
+       ========================================================================== */
+    .equation-box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 20px;
+      border-radius: 24px;
+      background: var(--surface-soft);
+      border: 1px solid var(--outline);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .eq-chip {
+      padding: 8px 14px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--outline);
+    }
+
+    .xp-bar-row {
+      display: grid;
+      grid-template-columns: 165px 1fr 72px;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .xp-track {
+      height: 14px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      overflow: hidden;
+    }
+
+    .xp-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--grad-hero);
+    }
+
+    /* ==========================================================================
+       AVATARS, BADGES, TIMELINE & FAQ ACCORDION
+       ========================================================================== */
+    .avatar-card {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: 26px;
+      padding: 18px 14px;
+      text-align: center;
+      box-shadow: var(--shadow-card);
+    }
+
+    .avatar-card.highlight {
+      background: var(--grad-soft);
+      border-color: var(--primary);
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: 24px;
+      padding: 18px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .step-time {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.76rem;
+      font-weight: 800;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .faq-item {
       background: var(--surface);
       border: 1px solid var(--outline);
       border-radius: 22px;
-      padding: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      max-height: 410px;
+      overflow: hidden;
     }
 
-    .visual-box svg {
-      width: 100%;
-      height: 100%;
-      max-height: 360px;
-    }
-
-    .slide-foot {
+    .faq-item summary {
+      list-style: none;
+      padding: 16px 20px;
+      font-weight: 700;
+      cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: clamp(11px, 1vw, 14px);
-      color: var(--muted);
+      gap: 12px;
     }
 
-    /* Controls bar */
-    .controls {
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: "+";
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .faq-item[open] summary::after { content: "−"; background: var(--primary-soft); }
+
+    .faq-body {
+      padding: 0 20px 18px;
+      font-size: 0.92rem;
+      color: var(--ink-muted);
+    }
+
+    /* ==========================================================================
+       PRESENTATION MODE (FULLSCREEN SLIDES + SPEAKER NOTES)
+       ========================================================================== */
+    body.present-mode {
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    body.present-mode .topbar {
       position: fixed;
-      bottom: 14px;
+      top: 12px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(28, 26, 23, 0.92);
-      border: 1px solid var(--outline);
-      padding: 6px 14px;
-      border-radius: 999px;
-      backdrop-filter: blur(8px);
-      z-index: 20;
+      margin: 0;
     }
 
-    .controls button {
-      background: var(--surface-hi);
-      color: var(--text);
-      border: 1px solid var(--outline);
+    body.present-mode .nav-links { display: none; }
+
+    body.present-mode main.deck-root {
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.present-mode .section-slide {
+      display: none;
+      width: min(1240px, calc(100vw - 48px));
+      max-height: calc(100vh - 148px);
+      overflow-y: auto;
+      padding: 20px 8px;
+      animation: fadeUp 240ms ease;
+    }
+
+    body.present-mode .section-slide.current-slide {
+      display: block;
+    }
+
+    .pres-controls {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
       border-radius: 999px;
-      padding: 5px 12px;
-      font-size: 13px;
+      background: var(--glass);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--outline-strong);
+      box-shadow: var(--shadow-float);
+    }
+
+    body.present-mode .pres-controls { display: flex; }
+
+    .pres-controls button {
+      border: 1px solid var(--outline);
+      background: var(--surface);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
       cursor: pointer;
     }
 
-    .controls button:hover {
-      border-color: var(--amber);
-      color: var(--amber);
+    .pres-controls button:hover {
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
-    .controls span {
-      font-size: 13px;
-      color: var(--muted);
-      min-width: 56px;
+    .pres-counter {
+      font-size: 0.84rem;
+      font-weight: 800;
+      min-width: 58px;
       text-align: center;
+      color: var(--ink);
     }
 
-    /* Speaker notes drawer */
-    .notes-panel {
+    .notes-drawer {
       position: fixed;
       right: 20px;
-      bottom: 62px;
-      width: min(460px, calc(100vw - 40px));
-      background: rgba(28, 26, 23, 0.96);
-      border: 1px solid var(--amber);
-      border-radius: 18px;
-      padding: 16px 18px;
+      bottom: 72px;
+      width: min(440px, calc(100vw - 40px));
+      background: var(--surface);
+      border: 1.5px solid var(--primary);
+      border-radius: 26px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-float);
+      z-index: 65;
       display: none;
-      z-index: 30;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
     }
 
-    .notes-panel.open { display: block; }
-    .notes-panel h4 { color: var(--amber); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-    .notes-panel p { color: var(--text); font-size: 14px; line-height: 1.5; white-space: pre-line; }
+    .notes-drawer.open { display: block; }
+    .notes-drawer h4 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary); margin-bottom: 6px; }
+    .notes-drawer p { font-size: 0.9rem; white-space: pre-line; }
+
+    /* Reveal animation in web mode */
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity 460ms ease, transform 460ms ease; }
+    .reveal.visible, body.present-mode .reveal { opacity: 1; transform: translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .grid-hero, .grid-2, .grid-3, .grid-4, .grid-5, .timeline {
+        grid-template-columns: 1fr;
+      }
+      .nav-links { display: none; }
+      .hero-canvas { padding: 26px; }
+      .hero-stats { grid-template-columns: 1fr; }
+      .xp-bar-row { grid-template-columns: 1fr; gap: 4px; }
+    }
 
     @media print {
-      @page { size: 16in 9in; margin: 0; }
-      html, body { overflow: visible; background: var(--bg); }
-      .controls, .notes-panel { display: none !important; }
-      .stage { display: block; padding: 0; height: auto; width: auto; }
-      .deck { width: 100%; height: auto; aspect-ratio: auto; border: none; border-radius: 0; box-shadow: none; }
-      .slide {
-        position: relative;
-        display: flex !important;
-        width: 100vw;
-        height: 100vh;
-        page-break-after: always;
-        break-after: page;
-      }
+      @page { size: landscape; margin: 10mm; }
+      .topbar, .pres-controls, .notes-drawer { display: none !important; }
+      .section-slide { display: block !important; page-break-after: always; padding: 12px 0; }
+      .reveal { opacity: 1 !important; transform: none !important; }
     }
   </style>
 </head>
 <body>
-  <div class="stage">
-    <main class="deck" id="deck">
+  <!-- ======================================================================
+       TOP FLOATING GLASS NAVIGATION & THEME SWITCHER
+       ====================================================================== -->
+  <header class="topbar">
+    <a href="#hero" class="brand">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <rect width="40" height="40" rx="13" fill="url(#logoGrad)"/>
+        <path d="M20 8L24.5 14.5L23 22L17 24L15.5 14.5L20 8Z" fill="#FFF9F4"/>
+        <path d="M16.5 25.5L23.5 23.5L23 30H17L16.5 25.5Z" fill="#FFE4D6"/>
+        <path d="M14.5 24.8L25.5 22.2" stroke="#F2C14E" stroke-width="2.8" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FF9B6A"/><stop offset="1" stop-color="#F07167"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span>Narsil</span>
+    </a>
 
-      <!-- SLIDE 1: HOOK -->
-      <section class="slide active" data-notes="Štěpán (0:25):
-Každá antiprokrastinační aplikace prohrává stejnou válku: staví zeď proti člověku. A člověk se naučí přelézat.
-Zablokuješ Instagram – otevřeš ho v prohlížeči. Nastavíš limit – klikneš „ještě 15 minut“. Smažeš aplikaci – za tři dny ji máš zpátky.
-My jsme zeď nepostavili. Postavili jsme zrcadlo.">
-        <div class="slide-top">
-          <span class="brand-tag">NARSIL · HACKATHON 2026</span>
-          <span>1 / 8 · Hook</span>
-        </div>
-        <div class="slide-body">
-          <div>
-            <h1>Zeď,<br />nebo <span class="accent-amber">zrcadlo</span>?</h1>
-            <p class="lead">Stavět vyšší zeď jen učí člověka lépe přelézat. Narsil vrací rozhodnutí zpátky tobě.</p>
-          </div>
-          <div class="visual-box">
-            <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg">
-              <!-- Left: Brick wall with "Limit vyčerpán" -->
-              <g opacity="0.72">
-                <rect x="20" y="38" width="160" height="244" rx="14" fill="#26231F" stroke="#5A5248" stroke-width="2"/>
-                <path d="M20 90 H180 M20 135 H180 M20 180 H180 M20 225 H180" stroke="#474139" stroke-width="2"/>
-                <path d="M75 38 V90 M130 90 V135 M75 135 V180 M130 180 V225 M75 225 V282" stroke="#474139" stroke-width="2"/>
-                <rect x="34" y="138" width="132" height="44" rx="10" fill="#4D1A15" stroke="#E58C83"/>
-                <text x="100" y="165" text-anchor="middle" fill="#FCE4E1" font-size="14" font-weight="700">Limit vyčerpán</text>
-              </g>
-              <!-- Right: Mirror with amber kintsugi seam -->
-              <g>
-                <rect x="228" y="38" width="170" height="244" rx="85" fill="#1C1A17" stroke="#F2A359" stroke-width="3"/>
-                <rect x="242" y="52" width="142" height="216" rx="71" fill="#17161D"/>
-                <path d="M248 175 L295 148 L330 164 L378 130" fill="none" stroke="#F2A359" stroke-width="4" stroke-linecap="round"/>
-                <circle cx="313" cy="112" r="24" fill="#9FA8DA" opacity="0.22"/>
-                <text x="313" y="236" text-anchor="middle" fill="#F2A359" font-size="14" font-weight="700">Ozvěna</text>
-              </g>
-            </svg>
-          </div>
-        </div>
-        <div class="slide-foot">
-          <span>Antiprokrastinační zbraň</span>
-          <span>Klávesy ← → · N poznámky · F celá obrazovka</span>
-        </div>
-      </section>
+    <nav class="nav-links" aria-label="Kapitoly prezentace">
+      <a href="#problem">Problém</a>
+      <a href="#kontext">Kontext</a>
+      <a href="#koncept">Koncept</a>
+      <a href="#tok">Ekonomika</a>
+      <a href="#gamifikace">Gamifikace</a>
+      <a href="#data">21 dní dat</a>
+      <a href="#demo">Demo</a>
+      <a href="#architektura">Architektura</a>
+    </nav>
 
-      <!-- SLIDE 2: PROBLÉM -->
-      <section class="slide" data-notes="Štěpán (0:25):
-Neprokrastinujeme, protože jsme líní. Utíkáme před nepříjemným pocitem – a feed je nejrychlejší únik.
-Proto zákazy nefungují: neřeší, před čím utíkáš. A otravují i tam, kde vůbec nemusí – když venku ukazuješ kamarádovi video nebo odpovídáš na zprávu.">
-        <div class="slide-top">
-          <span class="brand-tag">NARSIL · PROBLÉM</span>
-          <span>2 / 8</span>
-        </div>
-        <div class="slide-body">
-          <div>
-            <h2>Prokrastinace není lenost.<br /><span class="accent-indigo">Je to útěk.</span></h2>
-            <p class="lead">před nudou · únavou · úkolem · samotou</p>
-            <div class="pill-row">
-              <span class="pill">Nuda</span>
-              <span class="pill">Únava</span>
-              <span class="pill">Těžký úkol</span>
-              <span class="pill">Samota</span>
-            </div>
-          </div>
-          <div class="visual-box">
-            <svg viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg">
-              <rect x="20" y="20" width="340" height="280" rx="20" fill="#16151A"/>
-              <circle cx="190" cy="128" r="95" fill="#9FA8DA" opacity="0.14"/>
-              <!-- Person silhouette in dim room -->
-              <circle cx="150" cy="135" r="28" fill="#2E2A24" stroke="#9FA8DA" stroke-width="2"/>
-              <path d="M105 245 C105 190 195 190 195 245" fill="#26231F" stroke="#474139" stroke-width="2"/>
-              <!-- Phone glow on face -->
-              <rect x="212" y="128" width="46" height="82" rx="10" fill="#1C1A17" stroke="#9FA8DA" stroke-width="2.5"/>
-              <polygon points="212,140 166,118 166,162 212,196" fill="#9FA8DA" opacity="0.24"/>
-              <rect x="220" y="142" width="30" height="48" rx="4" fill="#344180"/>
-            </svg>
-          </div>
-        </div>
-        <div class="slide-foot">
-          <span>Insight</span>
-          <span>Feed je nejrychlejší únik před nepříjemným pocitem</span>
-        </div>
-      </section>
+    <div class="toolbar-right">
+      <div class="theme-pills" role="group" aria-label="Barevné téma">
+        <button class="theme-btn active" data-set-theme="apricot" title="Meruňkový úsvit">
+          <span class="swatch" style="background:#FF9B6A;"></span>Meruňková
+        </button>
+        <button class="theme-btn" data-set-theme="salmon" title="Lososový korál">
+          <span class="swatch" style="background:#F07167;"></span>Lososová
+        </button>
+        <button class="theme-btn" data-set-theme="dusk" title="Tmavý režim pro projektor">
+          <span class="swatch" style="background:#2A201C; border:1px solid #FFA477;"></span>Večer
+        </button>
+      </div>
+      <button class="btn-primary" id="togglePresentBtn" title="Přepnout na celoobrazovkové slidy (klávesa P)">
+        Režim prezentace
+      </button>
+    </div>
+  </header>
 
-      <!-- SLIDE 3: ŘEŠENÍ -->
-      <section class="slide" data-notes="Štěpán (0:40):
-Narsil zasahuje jen tam, kde prokrastinace opravdu vzniká: doma, u nekonečného obsahu, po pěti minutách. Venku a ve zprávách mlčí.
-Každý večer si dvě minuty podepíšeš smlouvu sám se sebou: kolik se zítra projdeš, co chceš vidět a krátké video.
-Když pak doma sklouzneš do feedu, Narsil ti pustí tvoje vlastní video – Ozvěnu – a zeptá se: Čemu se teď vyhýbáš?
-Pokračovat můžeš vždycky. Jen to něco stojí: kroky, dřepy, nebo dluh do zítřka. A když aplikaci smažeš, nedozví se to server, ale tvůj kamarád.
-Ukážeme vám to naživo.">
-        <div class="slide-top">
-          <span class="brand-tag">NARSIL · ŘEŠENÍ</span>
-          <span>3 / 8 · Pomocník, ne dozorce</span>
-        </div>
-        <div class="slide-body centered">
-          <div style="max-width: 920px; width: 100%;">
-            <h2>Plánované je <span class="accent-sage">zdarma</span>.<br />Neplánované se platí <span class="accent-amber">pohybem</span>.</h2>
-            <div class="card-grid-4">
-              <div class="mini-card">
-                <svg width="56" height="56" viewBox="0 0 56 56">
-                  <circle cx="28" cy="28" r="26" fill="#344180"/>
-                  <path d="M18 20 H38 M18 28 H34 M18 36 H28" stroke="#9FA8DA" stroke-width="3" stroke-linecap="round"/>
-                </svg>
-                <div class="num" style="font-size: 20px; color: var(--indigo);">Večerní smlouva</div>
-                <div class="lbl" style="margin-top:6px;">2 min klidu předem</div>
+  <main class="deck-root">
+    <!-- ====================================================================
+         1. HERO SECTION — KONCEPT A HLAVNÍ MYŠLENKA
+         ==================================================================== -->
+    <section class="section-slide current-slide" id="hero" data-title="1 · Úvod &amp; Koncept"
+      data-notes="Štěpán (0:25): Každá antiprokrastinační aplikace prohrává stejnou válku: staví zeď proti člověku. A člověk se naučí přelézat. My jsme zeď nepostavili. Postavili jsme zrcadlo – Narsil. Venku vás necháme žít, doma vám připomeneme, kým chcete být.">
+      <div class="container">
+        <div class="hero-canvas">
+          <div class="grid-hero">
+            <div>
+              <div class="eyebrow"><span class="dot"></span>Hackathon 2026 · Nativní Android</div>
+              <h1>Zeď, nebo <span class="grad-text">zrcadlo</span>?</h1>
+              <p class="lead">
+                <strong>Narsil</strong> je chytrý pomocník proti prokrastinaci na sociálních sítích.
+                Nikde nic tvrdě neblokuje – místo cizích zákazů ti ve chvíli pokušení pustí
+                <strong>Ozvěnu</strong>: tvoje vlastní včerejší video.
+              </p>
+              <p class="lead" style="font-size: 1rem; margin-top: 12px;">
+                Název odkazuje na zlomený meč, který byl znovu ukován zlatým <em>kintsugi</em> svárem:
+                <strong>relaps není konec, jen další krok.</strong>
+              </p>
+
+              <div class="hero-actions">
+                <a href="#koncept" class="btn-primary">Prozkoumat 4 pilíře</a>
+                <button class="btn-soft" id="heroPresentBtn">Spustit prezentaci (P)</button>
               </div>
-              <div class="mini-card">
-                <svg width="56" height="56" viewBox="0 0 56 56">
-                  <circle cx="28" cy="28" r="26" fill="#663209"/>
-                  <polygon points="23,18 40,28 23,38" fill="#F2A359"/>
-                </svg>
-                <div class="num" style="font-size: 20px; color: var(--amber);">Ozvěna</div>
-                <div class="lbl" style="margin-top:6px;">Tvoje vlastní video</div>
-              </div>
-              <div class="mini-card">
-                <svg width="56" height="56" viewBox="0 0 56 56">
-                  <circle cx="28" cy="28" r="26" fill="#175139"/>
-                  <path d="M18 30 L25 37 L39 21" fill="none" stroke="#5CC497" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <div class="num" style="font-size: 20px; color: var(--sage);">Hodnota obsahu</div>
-                <div class="lbl" style="margin-top:6px;">Záměr před, 1–5 po</div>
-              </div>
-              <div class="mini-card">
-                <svg width="56" height="56" viewBox="0 0 56 56">
-                  <circle cx="28" cy="28" r="26" fill="#344180"/>
-                  <circle cx="22" cy="24" r="5" fill="#F2A359"/>
-                  <circle cx="34" cy="24" r="5" fill="#9FA8DA"/>
-                  <path d="M14 39 C14 33 30 33 30 39 M26 39 C26 33 42 33 42 39" fill="none" stroke="#E0E5FA" stroke-width="2.5" stroke-linecap="round"/>
-                </svg>
-                <div class="num" style="font-size: 20px; color: var(--indigo);">Parťák</div>
-                <div class="lbl" style="margin-top:6px;">Vztah místo zámků</div>
+
+              <div class="hero-stats">
+                <div class="stat-box">
+                  <div class="val">Jen doma</div>
+                  <div class="lbl">Venku a v chatech mlčí</div>
+                </div>
+                <div class="stat-box">
+                  <div class="val">−77 %</div>
+                  <div class="lbl">Feedu za 21 dní (142 → 33 min)</div>
+                </div>
+                <div class="stat-box">
+                  <div class="val">100 % lokální</div>
+                  <div class="lbl">Videa neopouští telefon</div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div class="slide-foot">
-          <span>Zasahuje jen doma u nekonečného obsahu po 5 min</span>
-          <span>Venku a ve zprávách mlčí</span>
-        </div>
-      </section>
 
-      <!-- SLIDE 4: DEMO -->
-      <section class="slide" data-notes="Demo (2:00) podle pitch/demo.md:
-Šimon ovládá telefon, Štěpán komentuje.
-Zrcadlení telefonu na plátno (Nothing Phone 3a + Redmi Note 11 jako Parťák).">
-        <div class="slide-top">
-          <span class="brand-tag">NARSIL · ŽIVÁ UKÁZKA</span>
-          <span>4 / 8 · 2:00</span>
-        </div>
-        <div class="slide-body centered">
-          <div>
-            <svg width="112" height="112" viewBox="0 0 108 108" style="margin-bottom: 18px;">
-              <circle cx="54" cy="54" r="50" fill="#1C1A17" stroke="#F2A359" stroke-width="2.5"/>
-              <path d="M29,63 A27,27 0 1,1 79,63" fill="none" stroke="#9FA8DA" stroke-opacity="0.65" stroke-width="2.4" stroke-linecap="round"/>
-              <path fill="#F3EFE9" d="M54,24 L60,33 L58.5,48.5 L49.5,51.5 L48,33 Z"/>
-              <path fill="#D7CEC0" d="M49.5,54.5 L58.5,51.5 L58,66 L50,66 Z"/>
-              <path d="M47,53 L61,49" stroke="#F2A359" stroke-width="3.2" stroke-linecap="round"/>
-              <path d="M41,66 L67,66" stroke="#F2A359" stroke-width="3.6" stroke-linecap="round"/>
-              <path d="M54,68 L54,78" stroke="#C1B7AA" stroke-width="3.6" stroke-linecap="round"/>
-              <circle cx="54" cy="81" r="3" fill="#5CC497"/>
-            </svg>
-            <h1><span class="accent-amber">Demo</span> naživo</h1>
-            <p class="lead">Smlouva · Venku mlčí · Doma Ozvěna · 20 dřepů kamerou · YouTube · Parťák</p>
-          </div>
-        </div>
-        <div class="slide-foot">
-          <span>Nothing Phone 3a + Redmi Note 11</span>
-          <span>Zrcadlení obrazovky na plátno</span>
-        </div>
-      </section>
+            <!-- Hero Minimalist Visual Composition: Rounded Rectangles + Live Card -->
+            <div>
+              <div class="phone-frame" style="max-width: 340px;">
+                <div class="phone-screen" style="min-height: 460px; justify-content: space-between;">
+                  <div class="phone-notch"></div>
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:800; font-size:1.05rem;">Narsil</span>
+                    <span class="pill apricot" style="padding:4px 10px; font-size:0.74rem;">Doma · Wi-Fi aktivní</span>
+                  </div>
 
-      <!-- SLIDE 5: GAMIFIKACE -->
-      <section class="slide" data-notes="Štěpán (0:30):
-Gamifikace odměňuje nejlepší rozhodnutí, ne placení. Nejvíc bodů je za to, že od feedu odejdeš sám.
-Každý den hraješ souboj s algoritmem: minuty, které sis vzal zpátky, proti minutám feedu. Postava tvého budoucího já se mění podle posledního týdne.
-A relaps není konec: série má žolíky a nic ti body nebere. Proto se jmenujeme Narsil – podle zlomeného meče, který byl znovu ukován.">
-        <div class="slide-top">
-          <span class="brand-tag">NARSIL · GAMIFIKACE</span>
-          <span>5 / 8</span>
-        </div>
-        <div class="slide-body">
-          <div>
-            <h2>Nejvíc XP dostaneš<br />za <span class="accent-sage">odchod</span>.</h2>
-            <div class="card-grid-4">
-              <div class="mini-card" style="border-color: var(--sage); background: var(--sage-soft);">
-                <div class="lbl" style="color:#D2EFE0;">Zavřít</div>
-                <div class="num accent-sage">50 XP</div>
-              </div>
-              <div class="mini-card" style="border-color: var(--amber);">
-                <div class="lbl">Dřepy</div>
-                <div class="num accent-amber">20 XP</div>
-              </div>
-              <div class="mini-card" style="border-color: var(--indigo);">
-                <div class="lbl">Kroky</div>
-                <div class="num accent-indigo">10 XP</div>
-              </div>
-              <div class="mini-card">
-                <div class="lbl">Půjčka</div>
-                <div class="num" style="color:var(--muted);">0 XP</div>
+                  <!-- Stylized Echo Video Card -->
+                  <div class="ui-card" style="background: var(--grad-hero); color:#fff; border:none; border-radius:24px; padding:18px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; opacity:0.9; font-size:0.75rem; font-weight:700;">
+                      <span>OZVĚNA · VČEREJŠÍ SMLOUVA</span>
+                      <span>0:14</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; margin:14px 0 10px;">
+                      <div style="width:46px; height:46px; border-radius:16px; background:rgba(255,255,255,0.24); display:grid; place-items:center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><polygon points="6,4 20,12 6,20"/></svg>
+                      </div>
+                      <div style="font-weight:700; font-size:0.95rem; line-height:1.3;">
+                        „Zítra chci dopsat report, ne scrollovat do půlnoci.“
+                      </div>
+                    </div>
+                    <div style="font-size:0.8rem; opacity:0.92;">Čemu se teď vyhýbáš? Nuda · Únava · Úkol</div>
+                  </div>
+
+                  <!-- 2 primary choices preview -->
+                  <div class="ui-card sage" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <div style="font-weight:800; font-size:0.92rem; color:var(--sage);">Zavřít feed</div>
+                      <div style="font-size:0.76rem; color:var(--ink-muted);">Chuť opadla, jdu dál</div>
+                    </div>
+                    <span class="pill sage" style="background:var(--surface); padding:4px 10px;">+50 XP</span>
+                  </div>
+
+                  <div class="ui-card apricot" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <div style="font-weight:800; font-size:0.92rem; color:var(--ink);">20 dřepů / 10 kliků</div>
+                      <div style="font-size:0.76rem; color:var(--ink-muted);">Kamera spočítá · +10 min</div>
+                    </div>
+                    <span class="pill apricot" style="background:var(--surface); padding:4px 10px;">+20 XP</span>
+                  </div>
+
+                  <div style="text-align:center; font-size:0.75rem; font-weight:700; color:var(--ink-subtle);">
+                    Venku vás necháme žít · Doma připomeneme, kým chcete být
+                  </div>
+                </div>
               </div>
             </div>
-            <p class="lead" style="font-size: clamp(13px, 1.25vw, 18px);">Nic ti nikdy XP nevezme · Souboj s algoritmem · Série se žolíky</p>
-          </div>
-          <div class="visual-box">
-            <svg viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg">
-              <!-- 5 states of Future Self in a row -->
-              <text x="190" y="34" text-anchor="middle" fill="#C1B7AA" font-size="14" font-weight="600">5 stavů Budoucího já (posledních 7 dní)</text>
-              <g transform="translate(22,64)">
-                <circle cx="32" cy="40" r="24" fill="#344180"/><text x="32" y="45" text-anchor="middle" fill="#E0E5FA" font-size="14" font-weight="700">1</text>
-                <circle cx="100" cy="40" r="24" fill="#26231F" stroke="#5A5248"/><text x="100" y="45" text-anchor="middle" fill="#C1B7AA" font-size="14" font-weight="700">2</text>
-                <circle cx="168" cy="40" r="24" fill="#663209"/><text x="168" y="45" text-anchor="middle" fill="#FFE5D0" font-size="14" font-weight="700">3</text>
-                <circle cx="236" cy="40" r="24" fill="#175139"/><text x="236" y="45" text-anchor="middle" fill="#D2EFE0" font-size="14" font-weight="700">4</text>
-                <circle cx="304" cy="40" r="26" fill="#F2C14E"/><text x="304" y="46" text-anchor="middle" fill="#451E00" font-size="15" font-weight="800">5</text>
-              </g>
-              <!-- Badge card -->
-              <rect x="34" y="166" width="312" height="114" rx="18" fill="#26231F" stroke="#F2C14E" stroke-width="2"/>
-              <circle cx="92" cy="223" r="32" fill="#175139" stroke="#F2C14E" stroke-width="2.5"/>
-              <path d="M80 224 L89 233 L106 214" fill="none" stroke="#5CC497" stroke-width="4" stroke-linecap="round"/>
-              <text x="142" y="216" fill="#F3EFE9" font-size="17" font-weight="700">Odešel jsem sám 10×</text>
-              <text x="142" y="242" fill="#F2C14E" font-size="14" font-weight="600">Odznak odemčen · +100 XP série</text>
-            </svg>
           </div>
         </div>
-        <div class="slide-foot">
-          <span>Relaps není konec</span>
-          <span>Narsil – znovu ukovaný meč</span>
-        </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- SLIDE 6: SOUKROMÍ -->
-      <section class="slide" data-notes="Štěpán (0:20):
-Aplikace, která vidí obrazovku, musí být důvěryhodná. Chatovací aplikace nesledujeme vůbec a uvnitř Instagramu se obrazovka zpráv nepočítá.
-Videa zůstávají jen v telefonu. Do AI posíláme jen název videa a tvůj plán – a Parťák nedostává žádná data, jen zprávu.">
-        <div class="slide-top">
-          <span class="brand-tag">NARSIL · SOUKROMÍ A DŮVĚRA</span>
-          <span>6 / 8</span>
-        </div>
-        <div class="slide-body">
+    <!-- ====================================================================
+         2. PROBLÉM & PSYCHOLOGICKÝ INSIGHT
+         ==================================================================== -->
+    <section class="section-slide reveal" id="problem" data-title="2 · Problém &amp; Insight"
+      data-notes="Štěpán (0:25): Prokrastinace není lenost, je to útěk před nepříjemným pocitem. Zákazy prohrávají, protože staví zeď – člověk ji přeleze přes prohlížeč nebo aplikaci smaže. My místo zdi stavíme laskavé zrcadlo.">
+      <div class="container">
+        <div class="section-head">
           <div>
-            <h2>Zprávy <span class="accent-sage">nečteme</span>.<br />Videa neopustí telefon.</h2>
-            <ul class="list-clean">
-              <li><span class="dot" style="background: var(--sage);"></span>Chaty a zprávy se nikdy nesledují</li>
-              <li><span class="dot" style="background: var(--amber);"></span>Večerní videa zůstávají jen lokálně v telefonu</li>
-              <li><span class="dot" style="background: var(--indigo);"></span>Do AI jde jen název videa a tvůj plán</li>
-            </ul>
-          </div>
-          <div class="visual-box">
-            <svg viewBox="0 0 360 320" xmlns="http://www.w3.org/2000/svg">
-              <!-- Lock with amber kintsugi seam -->
-              <path d="M126 142 V104 A54 54 0 0 1 234 104 V142" fill="none" stroke="#9FA8DA" stroke-width="14" stroke-linecap="round"/>
-              <rect x="92" y="138" width="176" height="136" rx="26" fill="#26231F" stroke="#F2A359" stroke-width="3"/>
-              <path d="M95 215 L155 186 L195 204 L265 170" fill="none" stroke="#F2A359" stroke-width="4" stroke-linecap="round"/>
-              <circle cx="180" cy="196" r="14" fill="#5CC497"/>
-              <path d="M180 206 V232" stroke="#5CC497" stroke-width="6" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-        <div class="slide-foot">
-          <span>Privacy by design</span>
-          <span>Parťák vidí jen upozornění, ne tvoje data</span>
-        </div>
-      </section>
-
-      <!-- SLIDE 7: ARCHITEKTURA -->
-      <section class="slide" data-notes="Marek (0:20):
-Narsil je nativní Android aplikace. Detekce pozná feed, Reels i řetězení videí přes službu přístupnosti, domov podle Wi-Fi.
-Dřepy počítá kamera přes ML Kit, plán s videem páruje Claude. Postavili jsme to ve čtyřech s týmem AI agentů za dvacet hodin – každý agent měl svůj balíček a svoje úkoly.
-Dál chceme vlastní zóny, předpověď nejrizikovější hodiny a další typy obsahu.">
-        <div class="slide-top">
-          <span class="brand-tag">NARSIL · ARCHITEKTURA</span>
-          <span>7 / 8</span>
-        </div>
-        <div class="slide-body">
-          <div>
-            <h2><span class="accent-amber">4 lidé</span> · AI agenti · 20 hodin</h2>
-            <div class="pill-row">
-              <span class="pill">Android</span>
-              <span class="pill">Kotlin &amp; Compose</span>
-              <span class="pill indigo">AccessibilityService</span>
-              <span class="pill amber">ML Kit Pose</span>
-              <span class="pill sage">Claude / Gemini API</span>
-            </div>
-            <p class="lead" style="font-size: clamp(14px, 1.35vw, 19px);">
-              <strong>Roadmapa:</strong> vlastní zóny · předpověď kritické hodiny · Netflix a hry
+            <div class="eyebrow"><span class="dot"></span>Problém a psychologie</div>
+            <h2>Prokrastinace není lenost. <span class="grad-text">Je to útěk.</span></h2>
+            <p class="lead">
+              Když otevřeme feed „jen na chvilku“, neutíkáme za zábavou, ale před nepříjemným pocitem:
+              nudou, únavou, těžkým úkolem nebo samotou. Zákazy ten pocit neřeší.
             </p>
           </div>
-          <div class="visual-box">
-            <svg viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg">
-              <rect x="44" y="24" width="292" height="52" rx="14" fill="#344180" stroke="#9FA8DA"/>
-              <text x="190" y="55" text-anchor="middle" fill="#E0E5FA" font-size="17" font-weight="700">1. Detekce (Wi-Fi + Accessibility)</text>
-              <path d="M190 76 V96" stroke="#C1B7AA" stroke-width="2.5"/>
-              <rect x="44" y="96" width="292" height="52" rx="14" fill="#663209" stroke="#F2A359"/>
-              <text x="190" y="127" text-anchor="middle" fill="#FFE5D0" font-size="17" font-weight="700">2. Ozvěna (Overlay + Video)</text>
-              <path d="M190 148 V168" stroke="#C1B7AA" stroke-width="2.5"/>
-              <rect x="44" y="168" width="292" height="52" rx="14" fill="#26231F" stroke="#F2A359"/>
-              <text x="190" y="199" text-anchor="middle" fill="#F3EFE9" font-size="17" font-weight="700">3. Pohyb (Dřepy + Kroky + Strava)</text>
-              <path d="M190 220 V240" stroke="#C1B7AA" stroke-width="2.5"/>
-              <rect x="44" y="240" width="292" height="52" rx="14" fill="#175139" stroke="#5CC497"/>
-              <text x="190" y="271" text-anchor="middle" fill="#D2EFE0" font-size="17" font-weight="700">4. Gamifikace (XP + Room)</text>
-            </svg>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="pill apricot">Nuda</span>
+            <span class="pill salmon">Únava</span>
+            <span class="pill gold">Těžký úkol</span>
+            <span class="pill indigo">Samota</span>
           </div>
         </div>
-        <div class="slide-foot">
-          <span>Nativní výkon přímo v telefonu</span>
-          <span>4 paralelní pracovní proudy</span>
-        </div>
-      </section>
 
-      <!-- SLIDE 8: POINTA -->
-      <section class="slide" data-notes="Štěpán (0:15):
-Venku vás necháme žít. Doma vám připomeneme, kým chcete být.
-Narsil. Děkujeme.">
-        <div class="slide-top">
-          <span class="brand-tag">NARSIL</span>
-          <span>8 / 8</span>
-        </div>
-        <div class="slide-body centered">
-          <div style="max-width: 880px;">
-            <svg width="116" height="116" viewBox="0 0 108 108" style="margin-bottom: 22px;">
-              <circle cx="54" cy="54" r="50" fill="#1C1A17" stroke="#F2C14E" stroke-width="2.5"/>
-              <path d="M29,63 A27,27 0 1,1 79,63" fill="none" stroke="#9FA8DA" stroke-opacity="0.65" stroke-width="2.4" stroke-linecap="round"/>
-              <path fill="#F3EFE9" d="M54,24 L60,33 L58.5,48.5 L49.5,51.5 L48,33 Z"/>
-              <path fill="#D7CEC0" d="M49.5,54.5 L58.5,51.5 L58,66 L50,66 Z"/>
-              <path d="M47,53 L61,49" stroke="#F2A359" stroke-width="3.6" stroke-linecap="round"/>
-              <path d="M41,66 L67,66" stroke="#F2C14E" stroke-width="3.6" stroke-linecap="round"/>
-              <path d="M54,68 L54,78" stroke="#C1B7AA" stroke-width="3.6" stroke-linecap="round"/>
-              <circle cx="54" cy="81" r="3" fill="#5CC497"/>
+        <!-- Graphic comparison: Wall vs Mirror -->
+        <div class="grid-2" style="margin-bottom: 22px;">
+          <div class="card soft">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3>Běžné blokátory: Zeď</h3>
+              <span class="pill salmon">Smyčka obcházení</span>
+            </div>
+            <svg viewBox="0 0 480 180" width="100%" aria-label="Ilustrace zdi zákazů">
+              <rect x="4" y="4" width="472" height="172" rx="24" fill="var(--surface)" stroke="var(--outline)"/>
+              <!-- Rounded brick shapes -->
+              <rect x="28" y="30" width="94" height="32" rx="10" fill="var(--secondary-soft)"/>
+              <rect x="130" y="30" width="104" height="32" rx="10" fill="var(--secondary-soft)"/>
+              <rect x="242" y="30" width="90" height="32" rx="10" fill="var(--secondary-soft)"/>
+              <rect x="58" y="70" width="110" height="32" rx="10" fill="var(--primary-soft)"/>
+              <rect x="176" y="70" width="132" height="32" rx="10" fill="var(--secondary)" opacity="0.88"/>
+              <text x="242" y="91" text-anchor="middle" fill="#fff" font-size="13" font-weight="800">Limit vyčerpán</text>
+              <rect x="28" y="110" width="96" height="32" rx="10" fill="var(--secondary-soft)"/>
+              <rect x="132" y="110" width="116" height="32" rx="10" fill="var(--secondary-soft)"/>
+              <!-- Bypass arc -->
+              <path d="M352 136 C352 44, 434 44, 434 114" fill="none" stroke="var(--secondary)" stroke-width="3.5" stroke-dasharray="7 6" stroke-linecap="round"/>
+              <polygon points="434,126 426,110 442,110" fill="var(--secondary)"/>
+              <text x="394" y="152" text-anchor="middle" fill="var(--ink-muted)" font-size="12" font-weight="700">Otevřeš v prohlížeči</text>
             </svg>
-            <h1>Venku vás necháme žít.<br /><span class="accent-amber">Doma vám připomeneme,<br />kým chcete být.</span></h1>
-            <p class="lead" style="color: var(--gold); margin-top: 24px;">Narsil · Děkujeme</p>
+            <p style="font-size:0.92rem; margin-top:12px;">
+              Zablokuješ Instagram → otevřeš ho ve Firefoxu. Nastavíš limit → klikneš „+15 minut“. Smažeš aplikaci → za tři dny jsi zpátky.
+            </p>
+          </div>
+
+          <div class="card tint">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3>Narsil: Zrcadlo se zlatým svárem</h3>
+              <span class="pill sage">Vědomá volba</span>
+            </div>
+            <svg viewBox="0 0 480 180" width="100%" aria-label="Ilustrace zrcadla Narsil">
+              <rect x="4" y="4" width="472" height="172" rx="24" fill="var(--surface)" stroke="var(--outline)"/>
+              <!-- Concentric echo waves -->
+              <circle cx="136" cy="90" r="64" fill="var(--primary-soft)" opacity="0.55"/>
+              <circle cx="136" cy="90" r="46" fill="var(--secondary-soft)" opacity="0.75"/>
+              <rect x="96" y="28" width="80" height="124" rx="40" fill="var(--surface)" stroke="var(--primary)" stroke-width="3"/>
+              <!-- Kintsugi crack -->
+              <path d="M100 104 L128 86 L146 96 L174 74" fill="none" stroke="var(--gold)" stroke-width="3.5" stroke-linecap="round"/>
+              <!-- Pills on right -->
+              <rect x="218" y="34" width="224" height="32" rx="16" fill="var(--sage-soft)"/>
+              <text x="234" y="55" fill="var(--sage)" font-size="12.5" font-weight="800">1. Rozhoduje klidné večerní já</text>
+              <rect x="218" y="74" width="224" height="32" rx="16" fill="var(--primary-soft)"/>
+              <text x="234" y="95" fill="var(--ink)" font-size="12.5" font-weight="800">2. Vlastní hlas přesvědčí víc</text>
+              <rect x="218" y="114" width="224" height="32" rx="16" fill="var(--gold-soft)"/>
+              <text x="234" y="135" fill="var(--ink)" font-size="12.5" font-weight="800">3. Pohyb je cena i lék zároveň</text>
+            </svg>
+            <p style="font-size:0.92rem; margin-top:12px;">
+              Na zákaz se člověk naštve, se sebou z minulosti se hádá hůř. Pokračovat můžeš vždy – ale za pohyb, který mění tělesný stav.
+            </p>
           </div>
         </div>
-        <div class="slide-foot">
-          <span>Hackathon 2026</span>
-          <span>Otázky poroty</span>
+
+        <!-- 5 Principles -->
+        <div class="grid-5">
+          <div class="card" style="padding:18px; border-radius:24px;">
+            <div class="pill apricot" style="margin-bottom:10px;">01</div>
+            <h4>Pomocník, ne dozorce</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">Venku, s přáteli a ve zprávách aplikaci vůbec necítíš.</p>
+          </div>
+          <div class="card" style="padding:18px; border-radius:24px;">
+            <div class="pill salmon" style="margin-bottom:10px;">02</div>
+            <h4>Vlastní hlas</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">Tvoje vlastní včerejší video funguje lépe než cizí upozornění.</p>
+          </div>
+          <div class="card" style="padding:18px; border-radius:24px;">
+            <div class="pill gold" style="margin-bottom:10px;">03</div>
+            <h4>Klid před pokušením</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">Pravidla píšeš večer v klidu, ne uprostřed únavy.</p>
+          </div>
+          <div class="card" style="padding:18px; border-radius:24px;">
+            <div class="pill indigo" style="margin-bottom:10px;">04</div>
+            <h4>Lidi neobejdeš</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">Kód jde smazat, ale o výpadku se dozví tvůj Parťák.</p>
+          </div>
+          <div class="card" style="padding:18px; border-radius:24px;">
+            <div class="pill sage" style="margin-bottom:10px;">05</div>
+            <h4>Pohyb = cena i lék</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">20 dřepů nebo 10 kliků přepne hlavu i tělo z pasivity.</p>
+          </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-    </main>
+    <!-- ====================================================================
+         3. KONTEXTOVÁ INTELIGENCE — KDY ZASAHUJE A KDY MLČÍ
+         ==================================================================== -->
+    <section class="section-slide reveal" id="kontext" data-title="3 · Kontext &amp; Detekce"
+      data-notes="Marek/Štěpán: Zásada je raději zásah propásnout než člověka otravovat. Sledujeme domácí Wi-Fi bez GPS, rozlišujeme zprávy od feedu a nově sledujeme i web ve Firefoxu, tenký ukazatel limitu při scrollování a na YouTube počkáme až na konec videa.">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow"><span class="dot"></span>Chytrá detekce chování</div>
+            <h2>Kdy Narsil zasahuje <span class="grad-text">a kdy mlčí</span></h2>
+            <p class="lead">
+              Zásada zní: <strong>raději zásah propásnout, než člověka zbytečně otravovat.</strong>
+              Narsil reaguje jen tehdy, když jsi v komfortní zóně (domácí Wi-Fi) a zároveň scrolluješ nekonečný obsah déle než 5 minut.
+            </p>
+          </div>
+          <span class="pill apricot">Aplikace i prohlížeč Firefox</span>
+        </div>
+
+        <div class="grid-4" style="margin-bottom: 22px;">
+          <div class="card interactive" style="border-radius:28px;">
+            <svg width="46" height="46" viewBox="0 0 46 46" style="margin-bottom:12px;">
+              <rect width="46" height="46" rx="16" fill="var(--sage-soft)"/>
+              <circle cx="23" cy="23" r="10" fill="none" stroke="var(--sage)" stroke-width="2.5"/>
+              <path d="M19 23L22 26L28 20" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <div class="pill sage" style="margin-bottom:8px;">MLČÍ</div>
+            <h3>Venku ve společnosti</h3>
+            <p style="font-size:0.88rem; margin-top:8px;">
+              Ukazuješ kamarádovi Reels nebo TikTok v kavárně či tramvaji? Mimo domácí Wi-Fi se Narsil vůbec neozve.
+            </p>
+          </div>
+
+          <div class="card interactive" style="border-radius:28px;">
+            <svg width="46" height="46" viewBox="0 0 46 46" style="margin-bottom:12px;">
+              <rect width="46" height="46" rx="16" fill="var(--indigo-soft)"/>
+              <rect x="12" y="14" width="22" height="16" rx="7" fill="none" stroke="var(--indigo)" stroke-width="2.5"/>
+              <circle cx="19" cy="22" r="1.8" fill="var(--indigo)"/><circle cx="27" cy="22" r="1.8" fill="var(--indigo)"/>
+            </svg>
+            <div class="pill indigo" style="margin-bottom:8px;">NIKDY</div>
+            <h3>Zprávy a chaty</h3>
+            <p style="font-size:0.88rem; margin-top:8px;">
+              WhatsApp, Messenger i Instagram Direct se nikdy nepočítají. V nejistotě bere detekce obrazovku jako chat.
+            </p>
+          </div>
+
+          <div class="card interactive" style="border-radius:28px;">
+            <svg width="46" height="46" viewBox="0 0 46 46" style="margin-bottom:12px;">
+              <rect width="46" height="46" rx="16" fill="var(--gold-soft)"/>
+              <polygon points="19,16 31,23 19,30" fill="var(--gold)"/>
+            </svg>
+            <div class="pill gold" style="margin-bottom:8px;">ZDARMA</div>
+            <h3>Plánované &amp; do 5 min</h3>
+            <p style="font-size:0.88rem; margin-top:8px;">
+              Krátký pohled do 5 min nebo video z tvého večerního plánu (např. přednáška o Rustu spárovaná AI) běží volně.
+            </p>
+          </div>
+
+          <div class="card interactive" style="border-radius:28px; border-color:var(--primary); background:var(--grad-soft);">
+            <svg width="46" height="46" viewBox="0 0 46 46" style="margin-bottom:12px;">
+              <rect width="46" height="46" rx="16" fill="var(--primary)"/>
+              <circle cx="23" cy="23" r="9" fill="none" stroke="#fff" stroke-width="2.5"/>
+              <circle cx="23" cy="23" r="3" fill="#fff"/>
+            </svg>
+            <div class="pill apricot" style="background:var(--surface); margin-bottom:8px;">OZVĚNA</div>
+            <h3>Doma ve feedu &gt; 5 min</h3>
+            <p style="font-size:0.88rem; margin-top:8px;">
+              Nekonečný feed, Reels, Shorts nebo 3. neplánované video v řadě spustí Ozvěnu – i když je otevřeš ve Firefoxu.
+            </p>
+          </div>
+        </div>
+
+        <!-- Novinky z GitHubu (PR #83-#92) -->
+        <div class="grid-3">
+          <div class="card soft" style="padding:20px; border-radius:24px;">
+            <span class="pill apricot" style="margin-bottom:8px;">Novinka · Scroll bar (135)</span>
+            <h4>Jemný ukazatel při scrollování</h4>
+            <p style="font-size:0.86rem; margin-top:6px;">
+              Tenký, neblokující proužek na okraji obrazovky se při scrollování doma postupně plní k 100 % a barvou jemně upozorní, že se blíží Ozvěna.
+            </p>
+          </div>
+          <div class="card soft" style="padding:20px; border-radius:24px;">
+            <span class="pill salmon" style="margin-bottom:8px;">Novinka · Ohleduplný YouTube (134)</span>
+            <h4>Neskáče do půlky věty</h4>
+            <p style="font-size:0.86rem; margin-top:6px;">
+              Vyprší-li limit během sledování YouTube videa (v aplikaci i Firefoxu), Ozvěna zdvořile počká na konec videa nebo přepnutí na další.
+            </p>
+          </div>
+          <div class="card soft" style="padding:20px; border-radius:24px;">
+            <span class="pill gold" style="margin-bottom:8px;">Novinka · Firefox detekce</span>
+            <h4>Prohlížeč není úniková cesta</h4>
+            <p style="font-size:0.86rem; margin-top:6px;">
+              Accessibility čte adresní řádek Firefoxu – pozná Instagram, TikTok i konkrétní YouTube video na webu, aniž by četl obsah soukromých zpráv.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         4. KONCEPT: 4 PILÍŘE + INTERAKTIVNÍ PROHLÍŽEČ OBRAZOVEK
+         ==================================================================== -->
+    <section class="section-slide reveal" id="koncept" data-title="4 · Čtyři pilíře aplikace"
+      data-notes="Štěpán (0:40): Celek drží jedno pravidlo: plánovaná spotřeba je zdarma, neplánovaná se platí pohybem. Tady si můžeme rovnou proklikat všech pět hlavních momentů v aplikaci: večerní smlouvu, Ozvěnu, kamerové počítání dřepů i kliků, Zrcadlo a notifikaci Parťákovi.">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow"><span class="dot"></span>Architektura návyku</div>
+            <h2>Čtyři pilíře: <span class="grad-text">plán zdarma, chaos za pohyb</span></h2>
+            <p class="lead">Klikni na jednotlivé kroky vlevo a prohlédni si odpovídající obrazovku aplikace vpravo.</p>
+          </div>
+        </div>
+
+        <div class="grid-hero" style="align-items:start;">
+          <!-- Interactive Pillar Selector -->
+          <div class="pillar-list" role="tablist" aria-label="Pilíře aplikace Narsil">
+            <button class="pillar-tab active" data-screen="screen-contract" role="tab" aria-selected="true">
+              <div class="pillar-num">1</div>
+              <div>
+                <h4>Večerní smlouva &amp; Plán dne (2 min)</h4>
+                <p>Cíl kroků (6 000), seznam plánovaného obsahu zdarma, denní úkoly ověřované přes AI (Gemini / Claude / OpenAI) nebo Stravu a 15s osobní video na zítřek.</p>
+              </div>
+            </button>
+
+            <button class="pillar-tab" data-screen="screen-echo" role="tab" aria-selected="false">
+              <div class="pillar-num">2</div>
+              <div>
+                <h4>Ozvěna v okamžiku pokušení</h4>
+                <p>Překryvné okno pustí včerejší video, zeptá se „Čemu se teď vyhýbáš?“ a nabídne: Zavřít (+50 XP), Dřepy/Kliky (+20 XP), Kroky (+10 XP) nebo Půjčku.</p>
+              </div>
+            </button>
+
+            <button class="pillar-tab" data-screen="screen-move" role="tab" aria-selected="false">
+              <div class="pillar-num">3</div>
+              <div>
+                <h4>Dřepy i kliky před kamerou (Anti-cheat)</h4>
+                <p>ML Kit Pose počítá 20 dřepů zepředu i z boku. Přepínač umožňuje i 10 kliků přes kameru + proximity senzor s hlídačem ležícího telefonu (PhoneFlatGuard).</p>
+              </div>
+            </button>
+
+            <button class="pillar-tab" data-screen="screen-mirror" role="tab" aria-selected="false">
+              <div class="pillar-num">4</div>
+              <div>
+                <h4>Hodnota obsahu &amp; Zrcadlo</h4>
+                <p>Záměr před videem a hodnocení 1–5 po něm (+5 XP). Zrcadlo ukáže, kolik hodin sis vzal zpět a které kanály jsou jen časová past.</p>
+              </div>
+            </button>
+
+            <button class="pillar-tab" data-screen="screen-buddy" role="tab" aria-selected="false">
+              <div class="pillar-num">5</div>
+              <div>
+                <h4>Parťák &amp; Ochrana bez zámků</h4>
+                <p>Kamarád dostane zprávu jen při smazání aplikace nebo dluhu nad 30 min. Nevidí žádná data. Citlivá nastavení navíc chrání zpožděné potvrzení.</p>
+              </div>
+            </button>
+          </div>
+
+          <!-- Phone Mockup Screen Switcher -->
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <div class="phone-notch"></div>
+
+              <!-- Screen 1: Večerní smlouva -->
+              <div class="screen-view active" id="screen-contract">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong>Večerní smlouva</strong>
+                  <span class="pill indigo" style="padding:3px 10px; font-size:0.74rem;">Krok 3 ze 3</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px;">
+                  <div style="height:6px; border-radius:99px; background:var(--primary);"></div>
+                  <div style="height:6px; border-radius:99px; background:var(--primary);"></div>
+                  <div style="height:6px; border-radius:99px; background:var(--primary);"></div>
+                </div>
+                <div class="ui-card apricot">
+                  <div style="font-size:0.75rem; font-weight:800; color:var(--primary);">POHYBOVÝ CÍL &amp; ÚKOLY</div>
+                  <div style="font-weight:800; font-size:0.95rem; margin-top:2px;">6 000 kroků + Běh 20 min</div>
+                  <div style="font-size:0.78rem; color:var(--ink-muted); margin-top:4px;">Ověření: Strava API nebo fotka (SHA-256 + AI)</div>
+                </div>
+                <div class="ui-card sage">
+                  <div style="font-size:0.75rem; font-weight:800; color:var(--sage);">PLÁNOVANÝ OBSAH ZDARMA</div>
+                  <div style="font-weight:700; font-size:0.92rem; margin-top:2px;">„Přednáška o Rustu“, 1 díl seriálu</div>
+                </div>
+                <div class="ui-card" style="text-align:center; padding:18px 14px;">
+                  <div style="width:58px; height:58px; border-radius:22px; background:var(--grad-hero); margin:0 auto 10px; display:grid; place-items:center;">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="9" r="3.5"/><path d="M5 19c0-3.5 14-3.5 14 0" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+                  </div>
+                  <div style="font-weight:800; font-size:0.92rem;">Tvoje 15s Ozvěna uložena</div>
+                  <div style="font-size:0.76rem; color:var(--ink-muted); margin-top:3px;">CameraX · jen lokálně v telefonu</div>
+                </div>
+                <div style="margin-top:auto; background:var(--sage); color:#fff; text-align:center; padding:13px; border-radius:20px; font-weight:800; font-size:0.92rem;">
+                  Podepsat smlouvu (+100 XP)
+                </div>
+              </div>
+
+              <!-- Screen 2: Ozvěna -->
+              <div class="screen-view" id="screen-echo">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="pill indigo" style="padding:4px 10px; font-size:0.74rem;">Ozvěna · TikTok</span>
+                  <span style="font-size:0.76rem; font-weight:700; color:var(--ink-muted);">Doma · 21:47</span>
+                </div>
+                <div class="ui-card" style="background:var(--grad-hero); color:#fff; border:none; text-align:center; padding:16px;">
+                  <div style="font-weight:800; font-size:0.95rem;">Tvoje včerejší Ozvěna</div>
+                  <div style="font-size:0.8rem; opacity:0.94; margin-top:4px;">„Zítra chci mít čistou hlavu a hotový report.“</div>
+                </div>
+                <div style="font-weight:800; font-size:0.98rem;">Čemu se teď vyhýbáš?</div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <span class="pill" style="padding:4px 10px; font-size:0.75rem;">Nuda</span>
+                  <span class="pill apricot" style="padding:4px 10px; font-size:0.75rem;">Únava</span>
+                  <span class="pill" style="padding:4px 10px; font-size:0.75rem;">Úkol</span>
+                  <span class="pill" style="padding:4px 10px; font-size:0.75rem;">Samota</span>
+                </div>
+                <div class="ui-card sage" style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <strong style="color:var(--sage);">Zavřít feed</strong>
+                    <div style="font-size:0.74rem; color:var(--ink-muted);">Chuť opadla, odcházím</div>
+                  </div>
+                  <span class="pill sage" style="background:var(--surface);">+50 XP</span>
+                </div>
+                <div class="ui-card apricot" style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <strong>Udělat 20 dřepů / 10 kliků</strong>
+                    <div style="font-size:0.74rem; color:var(--ink-muted);">Kamera spočítá · +10 min</div>
+                  </div>
+                  <span class="pill apricot" style="background:var(--surface);">+20 XP</span>
+                </div>
+                <div class="ui-card" style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <strong>Zaplatit 1 000 kroků</strong>
+                    <div style="font-size:0.74rem; color:var(--ink-muted);">Máš 4 200 kroků (+42 min)</div>
+                  </div>
+                  <span class="pill" style="padding:4px 10px;">+10 XP</span>
+                </div>
+                <div class="ui-card salmon" style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <strong>Půjčit si 10 min</strong>
+                    <div style="font-size:0.74rem; color:var(--ink-muted);">Dluh se přenese do zítřka</div>
+                  </div>
+                  <span class="pill salmon" style="background:var(--surface);">0 XP</span>
+                </div>
+              </div>
+
+              <!-- Screen 3: Pohyb kamerou -->
+              <div class="screen-view" id="screen-move">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong>Pohyb kamerou</strong>
+                  <span class="pill apricot" style="padding:3px 10px; font-size:0.74rem;">+20 XP · 10 min</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  <div class="pill apricot" style="justify-content:center; font-size:0.78rem;">Dřepy (20×)</div>
+                  <div class="pill" style="justify-content:center; font-size:0.78rem;">Kliky (10×)</div>
+                </div>
+                <div class="ui-card soft" style="text-align:center; padding:18px 12px; position:relative;">
+                  <svg viewBox="0 0 200 180" width="180" height="150" style="margin:0 auto; display:block;">
+                    <rect x="10" y="6" width="180" height="168" rx="22" fill="var(--surface)" stroke="var(--outline)"/>
+                    <!-- Minimalist pose skeleton -->
+                    <circle cx="100" cy="42" r="14" fill="none" stroke="var(--sage)" stroke-width="3"/>
+                    <path d="M100 56 V100 L76 130 L86 158 M100 100 L124 130 L114 158 M72 80 L100 66 L128 80" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="76" cy="130" r="4.5" fill="var(--sage)"/>
+                    <circle cx="124" cy="130" r="4.5" fill="var(--sage)"/>
+                  </svg>
+                  <div style="font-size:2.3rem; font-weight:800; color:var(--primary); line-height:1;">18 / 20</div>
+                  <div style="font-size:0.8rem; color:var(--ink-muted); font-weight:700;">ML Kit Pose · zepředu i z boku</div>
+                </div>
+                <div class="ui-card">
+                  <div style="font-size:0.78rem; font-weight:700; color:var(--ink);">Podpora kliků (PhoneFlatGuard)</div>
+                  <div style="font-size:0.76rem; color:var(--ink-muted); margin-top:2px;">
+                    Telefon na zemi kontroluje akcelerometr i gyroskop, kliky měří přední kamera + proximity senzor.
+                  </div>
+                </div>
+                <div style="height:10px; border-radius:99px; background:var(--surface-soft); overflow:hidden;">
+                  <div style="width:90%; height:100%; background:var(--grad-hero); border-radius:99px;"></div>
+                </div>
+              </div>
+
+              <!-- Screen 4: Zrcadlo a mapa hodnoty -->
+              <div class="screen-view" id="screen-mirror">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong>Zrcadlo &amp; Hodnota</strong>
+                  <span class="pill sage" style="padding:3px 10px; font-size:0.74rem;">21 dní dat</span>
+                </div>
+                <div class="ui-card sage">
+                  <div style="font-weight:800; font-size:1rem; color:var(--sage);">+9 h 10 min za týden</div>
+                  <div style="font-size:0.78rem; color:var(--ink-muted); margin-top:2px;">Feed klesl z 142 na 33 min denně (−77 %)</div>
+                </div>
+                <div class="ui-card" style="border-color:var(--sage);">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:0.9rem;">Rust za kafe · LONG</strong>
+                      <div style="font-size:0.75rem; color:var(--ink-muted);">88 % dokoukáno · KEEP</div>
+                    </div>
+                    <span class="pill sage">4.7 / 5</span>
+                  </div>
+                </div>
+                <div class="ui-card salmon">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong style="font-size:0.9rem;">Drama Recap CZ · SHORT</strong>
+                      <div style="font-size:0.75rem; color:var(--ink-muted);">88 % dokoukáno · Časová past</div>
+                    </div>
+                    <span class="pill salmon" style="background:var(--surface);">1.6 / 5</span>
+                  </div>
+                </div>
+                <div class="ui-card">
+                  <div style="font-size:0.78rem; font-weight:700;">AI párování plánu</div>
+                  <div style="font-size:0.76rem; color:var(--ink-muted); margin-top:2px;">
+                    Titulek „Přednáška: Rust v embedded“ spárovaný s plánem → zdarma bez přerušení.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Screen 5: Parťák -->
+              <div class="screen-view" id="screen-buddy">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <strong>Telefon Parťáka</strong>
+                  <span class="pill gold" style="padding:3px 10px; font-size:0.74rem;">Vztah místo zámků</span>
+                </div>
+                <div style="text-align:center; padding:12px 0 4px;">
+                  <div style="font-size:2.4rem; font-weight:300; line-height:1;">22:14</div>
+                  <div style="font-size:0.76rem; color:var(--ink-muted);">Kamarádův telefon</div>
+                </div>
+                <div class="ui-card apricot" style="border:1.5px solid var(--primary);">
+                  <div style="display:flex; justify-content:space-between; font-size:0.74rem; font-weight:800; color:var(--primary); margin-bottom:6px;">
+                    <span>NARSIL · PARŤÁK</span>
+                    <span>nyní</span>
+                  </div>
+                  <div style="font-weight:800; font-size:0.94rem;">Tereza přerušila ochranu</div>
+                  <p style="font-size:0.78rem; margin-top:4px; line-height:1.4;">
+                    Aplikace se přestala hlásit nebo dluh překročil 30 min. Napiš jí krátkou zprávu.
+                  </p>
+                </div>
+                <div class="ui-card indigo" style="background:var(--indigo-soft); border:none;">
+                  <div style="font-weight:800; font-size:0.84rem; color:var(--indigo);">100 % soukromí</div>
+                  <div style="font-size:0.76rem; color:var(--ink-muted); margin-top:2px;">
+                    Parťák nikdy nevidí aplikace, názvy videí, minuty ani tvoje nahrávky.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         5. EKONOMIKA ČASU & TOK INTERVENCE
+         ==================================================================== -->
+    <section class="section-slide reveal" id="tok" data-title="5 · Ekonomika času &amp; Tok"
+      data-notes="Logika ekonomiky a toku: den začíná ve 4:00 ráno. Zůstatek minut = kroky/100 + odměny ověřených úkolů − zaplacené minuty − přenesený dluh. Vývojový diagram ukazuje přesnou cestu od otevření feedu přes kontrolu Wi-Fi a plánu až po Ozvěnu.">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow"><span class="dot"></span>Pravidla a ekonomika minut</div>
+            <h2>Tok intervence <span class="grad-text">&amp; peněženka času</span></h2>
+            <p class="lead">
+              Žádné arbitrární limity. Svůj rozpočet pro neplánovaný obsah si přirozeně tvoříš pohybem a splněnými úkoly dne.
+            </p>
+          </div>
+        </div>
+
+        <!-- SVG Decision Flowchart -->
+        <div class="card" style="margin-bottom:22px; overflow-x:auto;">
+          <svg viewBox="0 0 1060 270" width="100%" style="min-width:740px;" aria-label="Vývojový diagram toku intervence">
+            <!-- Step 1 -->
+            <rect x="12" y="90" width="170" height="84" rx="22" fill="var(--surface-soft)" stroke="var(--outline)" stroke-width="1.5"/>
+            <text x="97" y="126" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">Otevřeš Reels,</text>
+            <text x="97" y="146" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">TikTok nebo Firefox</text>
+
+            <path d="M182 132 H222" stroke="var(--outline-strong)" stroke-width="2.5" stroke-linecap="round"/>
+
+            <!-- Step 2: Condition -->
+            <rect x="222" y="78" width="186" height="108" rx="26" fill="var(--primary-soft)" stroke="var(--primary)" stroke-width="1.8"/>
+            <text x="315" y="114" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">Doma na Wi-Fi</text>
+            <text x="315" y="135" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">&amp; feed &gt; 5 min?</text>
+            <text x="315" y="158" text-anchor="middle" fill="var(--ink-muted)" font-size="11.5" font-weight="700">(demo: 20 s · ne chaty)</text>
+
+            <!-- Branch NO -->
+            <path d="M315 78 V44 H550" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="444" y="14" width="212" height="52" rx="18" fill="var(--sage-soft)"/>
+            <text x="550" y="38" text-anchor="middle" fill="var(--sage)" font-size="13" font-weight="800">Narsil mlčí</text>
+            <text x="550" y="55" text-anchor="middle" fill="var(--ink-muted)" font-size="11.5" font-weight="600">Venku, zprávy, krátký pohled</text>
+
+            <!-- Branch YES -> Planned? -->
+            <path d="M408 132 H444" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="444" y="88" width="176" height="88" rx="24" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.6"/>
+            <text x="532" y="122" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">Je v plánu</text>
+            <text x="532" y="142" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800">ze smlouvy?</text>
+
+            <!-- Branch PLANNED YES -->
+            <path d="M532 176 V220 H660" fill="none" stroke="var(--sage)" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="606" y="198" width="204" height="52" rx="18" fill="var(--sage-soft)"/>
+            <text x="708" y="222" text-anchor="middle" fill="var(--sage)" font-size="13" font-weight="800">Plánovaný obsah: zdarma</text>
+            <text x="708" y="239" text-anchor="middle" fill="var(--ink-muted)" font-size="11.5" font-weight="600">AI spáruje název videa</text>
+
+            <!-- Branch PLANNED NO -> ECHO -->
+            <path d="M620 132 H656" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="656" y="74" width="172" height="114" rx="26" fill="url(#logoGrad)"/>
+            <text x="742" y="114" text-anchor="middle" fill="#fff" font-size="16" font-weight="800">OZVĚNA</text>
+            <text x="742" y="136" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Včerejší video +</text>
+            <text x="742" y="154" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">„Čemu se vyhýbáš?“</text>
+
+            <!-- 4 Outcomes -->
+            <path d="M828 132 H858" stroke="var(--primary)" stroke-width="2.5"/>
+            <rect x="858" y="20" width="188" height="44" rx="16" fill="var(--sage-soft)" stroke="var(--sage)"/>
+            <text x="952" y="47" text-anchor="middle" fill="var(--sage)" font-size="13" font-weight="800">Zavřít feed · +50 XP</text>
+
+            <rect x="858" y="76" width="188" height="44" rx="16" fill="var(--primary-soft)" stroke="var(--primary)"/>
+            <text x="952" y="103" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="800">20 dřepů / 10 kliků · +20</text>
+
+            <rect x="858" y="132" width="188" height="44" rx="16" fill="var(--indigo-soft)"/>
+            <text x="952" y="159" text-anchor="middle" fill="var(--indigo)" font-size="13" font-weight="800">Zaplatit kroky · +10 XP</text>
+
+            <rect x="858" y="188" width="188" height="44" rx="16" fill="var(--secondary-soft)"/>
+            <text x="952" y="215" text-anchor="middle" fill="var(--secondary)" font-size="13" font-weight="800">Půjčit si (limit 30 min)</text>
+          </svg>
+        </div>
+
+        <!-- Wallet Equation & Exchange Rates -->
+        <div class="grid-2">
+          <div class="card soft">
+            <h3 style="margin-bottom:12px;">Rovnice rozpočtu minut</h3>
+            <div class="equation-box">
+              <span class="eq-chip" style="background:var(--primary-soft);">⌊Kroky dnes / 100⌋</span>
+              <span>+</span>
+              <span class="eq-chip" style="background:var(--sage-soft);">Odměny úkolů</span>
+              <span>−</span>
+              <span class="eq-chip">Zaplaceno dnes</span>
+              <span>−</span>
+              <span class="eq-chip" style="background:var(--secondary-soft);">Přenesený dluh</span>
+            </div>
+            <p style="font-size:0.88rem; margin-top:12px;">
+              Den začíná ve <strong>4:00 ráno</strong> (noční sovy nejsou penalizovány). Úkoly školy/práce/pohybu přidávají 10–30 minut po ověření AI (fotka se SHA-256 proti opakování / text) nebo Stravou (aktivita ≥ 15 min).
+            </p>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-bottom:12px;">Přehled kurzů a limitů</h3>
+            <div class="grid-2" style="gap:12px;">
+              <div class="stat-box">
+                <div class="val" style="color:var(--primary);">1 000 kroků</div>
+                <div class="lbl">= 10 minut obsahu (Health Connect / senzor)</div>
+              </div>
+              <div class="stat-box">
+                <div class="val" style="color:var(--secondary);">20 dřepů / 10 kliků</div>
+                <div class="lbl">= 10 minut hned přes kameru</div>
+              </div>
+              <div class="stat-box">
+                <div class="val" style="color:var(--sage);">+10 až +30 min</div>
+                <div class="lbl">Odměna za ověřený denní úkol</div>
+              </div>
+              <div class="stat-box">
+                <div class="val" style="color:var(--gold);">30 min strop</div>
+                <div class="lbl">Max dluh; nad limit zpráva Parťákovi</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         6. GAMIFIKACE, KTERÁ NIKDY NETRESTÁ
+         ==================================================================== -->
+    <section class="section-slide reveal" id="gamifikace" data-title="6 · Gamifikace bez trestů"
+      data-notes="Štěpán (0:30): Gamifikace má 25 % váhy hodnocení a je postavená obráceně než u jiných aplikací: nejvíc bodů je za odchod od feedu (50 XP), ne za čas v aplikaci. Nic nikdy XP nebere. Série chrání žolíky za 50 dřepů navíc.">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow"><span class="dot"></span>25 % hodnocení aplikace</div>
+            <h2>Gamifikace, která <span class="grad-text">nikdy netrestá</span></h2>
+            <p class="lead">
+              Nejvíc XP dostaneš za to, že odejdeš sám. Relaps ani dluh body neberou – jen nepřidávají.
+              Úroveň roste každých <strong>500 XP</strong>.
+            </p>
+          </div>
+          <span class="pill sage">Cíl: trávit v aplikaci minimum času</span>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:22px;">
+          <!-- XP Reward Hierarchy -->
+          <div class="card">
+            <h3 style="margin-bottom:16px;">Odměny XP za rozhodnutí</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div class="xp-bar-row">
+                <span>Boss 21:00–22:00</span>
+                <div class="xp-track"><div class="xp-fill" style="width:100%; background:var(--gold);"></div></div>
+                <span style="text-align:right; color:var(--gold);">+150 XP</span>
+              </div>
+              <div class="xp-bar-row">
+                <span>Splněná smlouva</span>
+                <div class="xp-track"><div class="xp-fill" style="width:74%; background:var(--indigo);"></div></div>
+                <span style="text-align:right; color:var(--indigo);">+100 XP</span>
+              </div>
+              <div class="xp-bar-row">
+                <span>Zavřít feed sám (5×/d)</span>
+                <div class="xp-track"><div class="xp-fill" style="width:52%; background:var(--sage);"></div></div>
+                <span style="text-align:right; color:var(--sage);">+50 XP</span>
+              </div>
+              <div class="xp-bar-row">
+                <span>Ověřený úkol dne</span>
+                <div class="xp-track"><div class="xp-fill" style="width:36%;"></div></div>
+                <span style="text-align:right; color:var(--primary);">+30 XP</span>
+              </div>
+              <div class="xp-bar-row">
+                <span>20 dřepů / 10 kliků</span>
+                <div class="xp-track"><div class="xp-fill" style="width:26%;"></div></div>
+                <span style="text-align:right; color:var(--primary);">+20 XP</span>
+              </div>
+              <div class="xp-bar-row">
+                <span>Zaplatit kroky</span>
+                <div class="xp-track"><div class="xp-fill" style="width:16%; background:var(--secondary);"></div></div>
+                <span style="text-align:right; color:var(--secondary);">+10 XP</span>
+              </div>
+              <div class="xp-bar-row">
+                <span>Hodnocení videa (10×/d)</span>
+                <div class="xp-track"><div class="xp-fill" style="width:10%; background:var(--secondary);"></div></div>
+                <span style="text-align:right; color:var(--ink-muted);">+5 XP</span>
+              </div>
+              <div class="xp-bar-row">
+                <span>Půjčka 10 minut</span>
+                <div class="xp-track"><div class="xp-fill" style="width:2%; background:var(--outline-strong);"></div></div>
+                <span style="text-align:right; color:var(--ink-subtle);">0 XP</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Souboj, Žolíky, Parta, Odznaky -->
+          <div class="card soft" style="display:flex; flex-direction:column; gap:14px;">
+            <h3>Mechaniky motivace</h3>
+            <div class="ui-card">
+              <strong>Souboj s algoritmem</strong>
+              <p style="font-size:0.84rem; margin-top:3px;">
+                Každý den porovnáváš <em>získaný čas</em> (Zavřít × 15 min + odměny úkolů) proti minutám ve feedu. Vyšší číslo bere denní bod.
+              </p>
+            </div>
+            <div class="ui-card">
+              <strong>Série se žolíky (50 dřepů navíc = 1 žolík)</strong>
+              <p style="font-size:0.84rem; margin-top:3px;">
+                V zásobě můžeš mít až 3 žolíky. Když některý den smlouvu nesplníš, žolík tě podrží bez ztráty série.
+              </p>
+            </div>
+            <div class="ui-card">
+              <strong>5 odznaků &amp; Parta „Kovárna“</strong>
+              <p style="font-size:0.84rem; margin-top:3px;">
+                Odznaky (<em>První odchod</em>, <em>Odešel jsem sám 10×</em>, <em>Týden bez dluhu</em>, <em>1 000 dřepů</em>, <em>3 dny podle plánu</em>) + týmový cíl <strong>203 400 / 200 000 kroků</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 States of Future Self -->
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+            <h3>5 stavů postavy „Budoucí já“ (podle posledních 7 dní)</h3>
+            <span class="pill apricot">Nováčci prvních 7 dní neklesnou pod OK</span>
+          </div>
+          <div class="grid-5">
+            <div class="avatar-card">
+              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--indigo-soft)"/><circle cx="34" cy="28" r="10" fill="var(--indigo)" opacity="0.55"/><path d="M18 52 C18 40 50 40 50 52" fill="var(--indigo)" opacity="0.45"/></svg>
+              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">1 · Unavené já</div>
+              <div style="font-size:0.76rem; color:var(--ink-muted);">0–1 splněný den</div>
+            </div>
+            <div class="avatar-card">
+              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--surface-soft)"/><circle cx="34" cy="26" r="10" fill="var(--secondary)" opacity="0.72"/><path d="M18 52 C18 39 50 39 50 52" fill="var(--secondary)" opacity="0.62"/></svg>
+              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">2 · Klidné já</div>
+              <div style="font-size:0.76rem; color:var(--ink-muted);">2 splněné dny</div>
+            </div>
+            <div class="avatar-card">
+              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--primary-soft)"/><circle cx="34" cy="25" r="10.5" fill="var(--primary)"/><path d="M18 52 C18 38 50 38 50 52" fill="var(--primary)" opacity="0.82"/></svg>
+              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">3 · Vyrovnané já</div>
+              <div style="font-size:0.76rem; color:var(--ink-muted);">3–4 splněné dny</div>
+            </div>
+            <div class="avatar-card">
+              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--sage-soft)"/><circle cx="34" cy="24" r="10.5" fill="var(--sage)"/><path d="M18 52 C18 37 50 37 50 52" fill="var(--sage)" opacity="0.88"/></svg>
+              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">4 · Soustředěné já</div>
+              <div style="font-size:0.76rem; color:var(--ink-muted);">5–6 splněných dní</div>
+            </div>
+            <div class="avatar-card highlight">
+              <svg width="68" height="68" viewBox="0 0 68 68"><rect width="68" height="68" rx="22" fill="var(--gold-soft)"/><circle cx="34" cy="34" r="24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-dasharray="4 4"/><circle cx="34" cy="24" r="10.5" fill="var(--gold)"/><path d="M18 52 C18 37 50 37 50 52" fill="url(#logoGrad)"/></svg>
+              <div style="font-weight:800; font-size:0.9rem; margin-top:8px;">5 · V plné kondici</div>
+              <div style="font-size:0.76rem; color:var(--ink-muted);">7 / 7 splněných dní</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         7. DŮKAZ V DATECH: ZRCADLO & MAPA HODNOTY (21 DNÍ Z MOCKDATA)
+         ==================================================================== -->
+    <section class="section-slide reveal" id="data" data-title="7 · 21 dní dat &amp; Mapa hodnoty"
+      data-notes="Ukázka dat z mockdata/mirror.json a value_map.json: za 21 dní klesl čas v neplánovaném feedu ze 142 na 33 minut denně. I když 23. 11. přišel relaps, další den uživatel navázal. Mapa hodnoty odhalí, co dává smysl (Rust za kafe 4.7/5) a co je past (Drama Recap CZ 1.6/5).">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow"><span class="dot"></span>Zrcadlo a Mapa hodnoty</div>
+            <h2>Co odhalí <span class="grad-text">21 dní dat</span></h2>
+            <p class="lead">
+              Když se člověk na své chování podívá bez výčitek v Zrcadle, uvidí trend i vlastní „časové pasti“ – kanály, které dokoukává, ale hodnotí nízko.
+            </p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="pill sage">9 h 10 min získáno za týden</span>
+            <span class="pill apricot">26× vlastní odchod</span>
+          </div>
+        </div>
+
+        <div class="grid-hero" style="align-items:stretch;">
+          <!-- 21-day SVG Chart dynamically built from exact mirror.json numbers -->
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+              <div>
+                <h3>Souboj s algoritmem (21 dní)</h3>
+                <p style="font-size:0.84rem;">Kritická hodina z dat: <strong>21:00</strong> · Relaps 23. 11. (den 17) sérii nezničil</p>
+              </div>
+              <div style="display:flex; gap:12px; font-size:0.8rem; font-weight:700;">
+                <span style="color:var(--secondary);">● Minuty feedu (142 → 33)</span>
+                <span style="color:var(--sage);">● Získaný čas (0 → 105)</span>
+              </div>
+            </div>
+            <svg id="mirrorChart" viewBox="0 0 640 240" width="100%" aria-label="Graf vývoje za 21 dní"></svg>
+          </div>
+
+          <!-- Value Map KEEP vs TRAP -->
+          <div class="card soft" style="display:flex; flex-direction:column; gap:12px;">
+            <h3>Mapa hodnoty obsahu</h3>
+            <p style="font-size:0.86rem;">Porovnává míru dokoukání s osobním hodnocením 1–5:</p>
+
+            <div class="ui-card sage">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <strong>Rust za kafe · LONG</strong>
+                  <div style="font-size:0.78rem; color:var(--ink-muted);">174 min · 88 % dokoukáno · KEEP</div>
+                </div>
+                <span class="pill sage" style="background:var(--surface);">4.7 / 5</span>
+              </div>
+            </div>
+
+            <div class="ui-card sage">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <strong>Fyzika v kostce · LONG</strong>
+                  <div style="font-size:0.78rem; color:var(--ink-muted);">82 min · 91 % dokoukáno · KEEP</div>
+                </div>
+                <span class="pill sage" style="background:var(--surface);">4.5 / 5</span>
+              </div>
+            </div>
+
+            <div class="ui-card salmon">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <strong>Drama Recap CZ · SHORT</strong>
+                  <div style="font-size:0.78rem; color:var(--ink-muted);">72 videí · 88 % dokoukáno · PAST</div>
+                </div>
+                <span class="pill salmon" style="background:var(--surface);">1.6 / 5</span>
+              </div>
+            </div>
+
+            <div class="ui-card salmon">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <strong>Memes denně · SHORT</strong>
+                  <div style="font-size:0.78rem; color:var(--ink-muted);">48 videí · 84 % dokoukáno · PAST</div>
+                </div>
+                <span class="pill salmon" style="background:var(--surface);">1.8 / 5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         8. PŘÍBĚH TEREZY & 2MINUTOVÝ SCÉNÁŘ ŽIVÉHO DEMA
+         ==================================================================== -->
+    <section class="section-slide reveal" id="demo" data-title="8 · Příběh &amp; Živé demo"
+      data-notes="Živé demo (2:00) na Nothing Phone 3a + Redmi Note 11 jako Parťák. Šimon ovládá telefon a dělá dřepy před porotou, Štěpán komentuje příběh Terezy.">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow"><span class="dot"></span>Persona &amp; 2minutové demo (35 % hodnocení)</div>
+            <h2>Jeden den Terezy <span class="grad-text">naživo na pódiu</span></h2>
+            <p class="lead">
+              <strong>Tereza (21 let, studentka informatiky)</strong> zkoušela limity i blokátory – vždy je vypla.
+              Chce, aby jí telefon připomněl, kým chce být, ne aby ji trestal.
+            </p>
+          </div>
+          <span class="pill apricot">Nothing Phone 3a + Redmi Note 11</span>
+        </div>
+
+        <div class="timeline">
+          <div class="step-card">
+            <span class="step-time">0:00 – 0:20</span>
+            <h4>Večerní smlouva</h4>
+            <p style="font-size:0.84rem;">Nastaví 6 000 kroků, přidá „přednáška o Rustu“ a natočí 3s vzkaz pro zítřejší já.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-time">0:20 – 0:35</span>
+            <h4>Venku mlčí</h4>
+            <p style="font-size:0.84rem;">Mimo domácí Wi-Fi ukáže kamarádovi Reels a odepíše v Directu. Narsil nezasahuje.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-time">0:35 – 0:55</span>
+            <h4>Doma Ozvěna</h4>
+            <p style="font-size:0.84rem;">Na domácí Wi-Fi po scrollování TikToku naskočí její video a otázka „Čemu se vyhýbáš?“.</p>
+          </div>
+          <div class="step-card" style="border-color:var(--primary); background:var(--grad-soft);">
+            <span class="step-time" style="background:var(--primary); color:#fff;">0:55 – 1:25</span>
+            <h4>20 dřepů naživo</h4>
+            <p style="font-size:0.84rem;">Kamera před porotou počítá 20 dřepů, feed se odemkne na 10 min a vyskočí animace Úrovně 4.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-time">1:25 – 1:50</span>
+            <h4>YouTube &amp; Mapa</h4>
+            <p style="font-size:0.84rem;">Přednáška o Rustu projde zdarma (AI párování). Neplánované video stojí kroky; Zrcadlo odhalí past.</p>
+          </div>
+          <div class="step-card">
+            <span class="step-time">1:50 – 2:00</span>
+            <h4>Pointa Parťák</h4>
+            <p style="font-size:0.84rem;">Pokus o odinstalaci → druhý telefon (Parťák) ukáže notifikaci. Kód jde obejít, lidi ne.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         9. SOUKROMÍ, TECHNICKÁ ARCHITEKTURA, TÝM & OTÁZKY POROTY
+         ==================================================================== -->
+    <section class="section-slide reveal" id="architektura" data-title="9 · Soukromí, Stack &amp; FAQ"
+      data-notes="Marek &amp; Štěpán: Nativní Android (Kotlin + Jetpack Compose), AccessibilityService, ML Kit Pose, senzory pro kliky, CameraX, Room, Strava a multi-provider LLM (Gemini 2.5 Flash-Lite, Claude Haiku, OpenAI). Postaveno za 20 hodin ve 4 lidech s paralelními AI agenty.">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow"><span class="dot"></span>Soukromí, Technologie &amp; Obhajoba</div>
+            <h2>Postaveno za <span class="grad-text">20 hodin</span> ve 4 lidech</h2>
+            <p class="lead">
+              Marek, Šimon, Jan a Štěpán s týmem paralelních AI agentů (oddělené git worktrees a sdílené kontrakty).
+            </p>
+          </div>
+        </div>
+
+        <!-- Privacy 4 cards -->
+        <div class="grid-4" style="margin-bottom:22px;">
+          <div class="card soft" style="padding:18px; border-radius:24px;">
+            <h4>Chaty se nečtou</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">Čteme jen název aplikace a typ povrchu (feed vs. chat). Obsah zpráv nikdy.</p>
+          </div>
+          <div class="card soft" style="padding:18px; border-radius:24px;">
+            <h4>Videa jen v telefonu</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">Večerní nahrávky nejdou do žádného cloudu. Smazáním aplikace zmizí.</p>
+          </div>
+          <div class="card soft" style="padding:18px; border-radius:24px;">
+            <h4>Minimum pro AI</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">Do Gemini / Claude / OpenAI jde jen titulek videa a plán nebo zmenšený důkaz úkolu.</p>
+          </div>
+          <div class="card soft" style="padding:18px; border-radius:24px;">
+            <h4>Parťák bez dat</h4>
+            <p style="font-size:0.84rem; margin-top:6px;">Dostane jen zprávu o výpadku či dluhu. Žádné minuty, aplikace ani videa.</p>
+          </div>
+        </div>
+
+        <!-- Tech Stack + Roadmap + FAQ -->
+        <div class="grid-2" style="margin-bottom:26px;">
+          <div class="card">
+            <h3 style="margin-bottom:14px;">Technická architektura &amp; Roadmapa</h3>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+              <span class="pill">Kotlin &amp; Jetpack Compose</span>
+              <span class="pill apricot">AccessibilityService</span>
+              <span class="pill salmon">WindowManager + Media3</span>
+              <span class="pill sage">ML Kit Pose + CameraX</span>
+              <span class="pill gold">Health Connect &amp; Strava</span>
+              <span class="pill indigo">Room &amp; DataStore</span>
+              <span class="pill apricot">Gemini 2.5 Flash-Lite / Claude / OpenAI</span>
+            </div>
+            <div class="ui-card soft">
+              <strong>Roadmapa po hackathonu</strong>
+              <p style="font-size:0.86rem; margin-top:4px;">
+                Vlastní komfortní zóny (kolej, kancelář, knihovna) · AI předpověď kritické hodiny z historie · Postupné šednutí obrazovky · Rozšíření na Netflix, hry a reálný backend pro Parťáka.
+              </p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-bottom:14px;">Nejčastější otázky poroty</h3>
+            <div class="faq-list">
+              <details class="faq-item">
+                <summary>Proč jen Android a ne iOS?</summary>
+                <div class="faq-body">
+                  iOS neumožní rozlišit feed od zpráv ani zobrazit překryvné okno s vlastním videem přes jinou aplikaci. Screen Time API umí jen tvrdý blok celé aplikace – a to je přesně model zdi, který nechceme.
+                </div>
+              </details>
+              <details class="faq-item">
+                <summary>Proč chcete oprávnění k poloze kvůli Wi-Fi?</summary>
+                <div class="faq-body">
+                  Od Androidu 10 vrací systém název připojené Wi-Fi sítě jen s oprávněním k poloze. GPS polohu samotnou nečteme ani neukládáme – funguje i ruční přepínač „Jsem doma“.
+                </div>
+              </details>
+              <details class="faq-item">
+                <summary>Čím se lišíte od one sec nebo Opalu?</summary>
+                <div class="faq-body">
+                  one sec i Opal staví zábranu před otevřením nebo podle času. Narsil nic neblokuje, zasahuje jen doma po 5 min nekonečného obsahu, používá vlastní video a plánovaný obsah nechává zdarma.
+                </div>
+              </details>
+              <details class="faq-item">
+                <summary>Co jste za 20 hodin opravdu postavili?</summary>
+                <div class="faq-body">
+                  Nativně běží: večerní smlouva s CameraX videem, Wi-Fi detekce + Firefox/TikTok/Instagram/YouTube, Ozvěna, počítání 20 dřepů i 10 kliků, kroky, dluh, XP/úrovně/odznaky/souboj a ověřování úkolů přes AI i Stravu. Zrcadlo, mapa hodnoty, žebříček a notifikace Parťáka jedou v MVP nad připravenými daty.
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <!-- Final Closing CTA Card -->
+        <div class="card" style="background: var(--grad-hero); color:#fff; border:none; border-radius:36px; padding:42px 34px; text-align:center; box-shadow:var(--shadow-float);">
+          <svg width="64" height="64" viewBox="0 0 64 64" style="margin-bottom:12px;">
+            <rect width="64" height="64" rx="22" fill="rgba(255,255,255,0.2)"/>
+            <path d="M32 14L38 22L36 34L28 37L26 22L32 14Z" fill="#fff"/>
+            <path d="M27.5 39.5L36.5 36.5L36 47H28L27.5 39.5Z" fill="rgba(255,255,255,0.85)"/>
+            <path d="M24 38.5L40 34.5" stroke="#FFF3D8" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+          <h2 style="color:#fff; font-size:clamp(1.7rem, 3.2vw, 2.7rem);">
+            „Venku vás necháme žít.<br />Doma vám připomeneme, kým chcete být.“
+          </h2>
+          <p style="color:rgba(255,255,255,0.92); font-weight:700; margin-top:12px; font-size:1.05rem;">
+            Narsil · Děkujeme za pozornost
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======================================================================
+       PRESENTATION CONTROLS & SPEAKER NOTES DRAWER
+       ====================================================================== -->
+  <div class="notes-drawer" id="notesDrawer">
+    <h4 id="notesTitle">Poznámky pro mluvčího</h4>
+    <p id="notesBody"></p>
   </div>
 
-  <div class="notes-panel" id="notesPanel">
-    <h4>Poznámky pro mluvčího</h4>
-    <p id="notesText"></p>
-  </div>
-
-  <div class="controls">
-    <button id="prevBtn" title="Předchozí (←)">←</button>
-    <span id="counter">1 / 8</span>
-    <button id="nextBtn" title="Další (→ / Mezerník)">→</button>
-    <button id="notesBtn" title="Poznámky pro mluvčího (N)">Poznámky</button>
-    <button id="fsBtn" title="Celá obrazovka (F)">Celá obr.</button>
+  <div class="pres-controls" id="presControls">
+    <button id="prevSlideBtn" title="Předchozí (←)">← Předchozí</button>
+    <span class="pres-counter" id="slideCounter">1 / 9</span>
+    <button id="nextSlideBtn" title="Další (→ / Mezerník)">Další →</button>
+    <button id="notesToggleBtn" title="Poznámky (N)">Poznámky</button>
+    <button id="fullscreenBtn" title="Celá obrazovka (F)">Celá obr.</button>
+    <button id="exitPresentBtn" title="Zpět do webového režimu (P / Esc)">Web</button>
   </div>
 
   <script>
-    const slides = Array.from(document.querySelectorAll('.slide'));
-    const counter = document.getElementById('counter');
-    const notesPanel = document.getElementById('notesPanel');
-    const notesText = document.getElementById('notesText');
-    let current = 0;
-
-    function show(idx) {
-      current = (idx + slides.length) % slides.length;
-      slides.forEach((s, i) => s.classList.toggle('active', i === current));
-      counter.textContent = `${current + 1} / ${slides.length}`;
-      notesText.textContent = slides[current].dataset.notes || '';
+    // 1. Theme Switcher (Apricot / Salmon / Dusk)
+    const htmlEl = document.documentElement;
+    const themeBtns = Array.from(document.querySelectorAll('[data-set-theme]'));
+    function setTheme(theme) {
+      htmlEl.setAttribute('data-theme', theme);
+      themeBtns.forEach(b => b.classList.toggle('active', b.dataset.setTheme === theme));
+      try { localStorage.setItem('narsil-theme', theme); } catch (_) {}
     }
+    themeBtns.forEach(btn => btn.addEventListener('click', () => setTheme(btn.dataset.setTheme)));
+    try {
+      const saved = localStorage.getItem('narsil-theme');
+      if (saved && ['apricot', 'salmon', 'dusk'].includes(saved)) setTheme(saved);
+    } catch (_) {}
 
-    document.getElementById('prevBtn').onclick = () => show(current - 1);
-    document.getElementById('nextBtn').onclick = () => show(current + 1);
-    document.getElementById('notesBtn').onclick = () => notesPanel.classList.toggle('open');
-    document.getElementById('fsBtn').onclick = () => {
-      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-      else document.exitFullscreen();
-    };
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(current + 1); }
-      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(current - 1); }
-      else if (e.key === 'n' || e.key === 'N') notesPanel.classList.toggle('open');
-      else if (e.key === 'f' || e.key === 'F') document.getElementById('fsBtn').click();
+    // 2. Interactive 4 Pillars Phone Mockup
+    const pillarTabs = Array.from(document.querySelectorAll('.pillar-tab'));
+    const screenViews = Array.from(document.querySelectorAll('.screen-view'));
+    pillarTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.screen;
+        pillarTabs.forEach(t => {
+          const active = t === tab;
+          t.classList.toggle('active', active);
+          t.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        screenViews.forEach(v => v.classList.toggle('active', v.id === target));
+      });
     });
 
-    show(0);
+    // 3. Exact 21-Day Mirror Chart rendered from mockdata/mirror.json values
+    (function renderMirrorChart() {
+      const svg = document.getElementById('mirrorChart');
+      if (!svg) return;
+      const days = [
+        { d: 1, f: 142, r: 0, ok: false }, { d: 2, f: 135, r: 0, ok: false },
+        { d: 3, f: 118, r: 20, ok: true }, { d: 4, f: 128, r: 0, ok: false },
+        { d: 5, f: 110, r: 25, ok: false }, { d: 6, f: 95, r: 45, ok: true },
+        { d: 7, f: 104, r: 15, ok: false }, { d: 8, f: 88, r: 55, ok: true },
+        { d: 9, f: 82, r: 35, ok: false }, { d: 10, f: 70, r: 70, ok: true },
+        { d: 11, f: 66, r: 65, ok: true }, { d: 12, f: 72, r: 35, ok: false },
+        { d: 13, f: 58, r: 70, ok: true }, { d: 14, f: 61, r: 45, ok: false },
+        { d: 15, f: 49, r: 90, ok: true }, { d: 16, f: 45, r: 80, ok: true },
+        { d: 17, f: 63, r: 25, ok: false }, { d: 18, f: 41, r: 90, ok: true },
+        { d: 19, f: 38, r: 80, ok: true }, { d: 20, f: 36, r: 80, ok: true },
+        { d: 21, f: 33, r: 105, ok: true }
+      ];
+      const W = 640, H = 240, padL = 42, padR = 18, padT = 20, padB = 34;
+      const plotW = W - padL - padR, plotH = H - padT - padB;
+      const maxVal = 150;
+      const xOf = (i) => padL + (i / (days.length - 1)) * plotW;
+      const yOf = (v) => padT + plotH - (v / maxVal) * plotH;
+
+      let out = '';
+      // Grid lines
+      [0, 50, 100, 150].forEach(val => {
+        const y = yOf(val).toFixed(1);
+        out += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="var(--outline)" stroke-dasharray="4 4"/>`;
+        out += `<text x="${padL - 8}" y="${Number(y) + 4}" text-anchor="end" fill="var(--ink-subtle)" font-size="11" font-weight="700">${val}</text>`;
+      });
+
+      const feedPts = days.map((p, i) => `${xOf(i).toFixed(1)},${yOf(p.f).toFixed(1)}`).join(' ');
+      const recPts = days.map((p, i) => `${xOf(i).toFixed(1)},${yOf(p.r).toFixed(1)}`).join(' ');
+
+      const recArea = `M${xOf(0).toFixed(1)},${yOf(0).toFixed(1)} ` +
+        days.map((p, i) => `L${xOf(i).toFixed(1)},${yOf(p.r).toFixed(1)}`).join(' ') +
+        ` L${xOf(days.length - 1).toFixed(1)},${yOf(0).toFixed(1)} Z`;
+
+      out += `<path d="${recArea}" fill="var(--sage)" opacity="0.14"/>`;
+      out += `<polyline points="${feedPts}" fill="none" stroke="var(--secondary)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+      out += `<polyline points="${recPts}" fill="none" stroke="var(--sage)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+      days.forEach((p, i) => {
+        const cx = xOf(i).toFixed(1);
+        out += `<circle cx="${cx}" cy="${yOf(p.f).toFixed(1)}" r="4" fill="var(--secondary)"/>`;
+        out += `<circle cx="${cx}" cy="${yOf(p.r).toFixed(1)}" r="4" fill="var(--sage)"/>`;
+        if (p.d === 1 || p.d === 7 || p.d === 14 || p.d === 17 || p.d === 21) {
+          out += `<text x="${cx}" y="${H - 10}" text-anchor="middle" fill="var(--ink-muted)" font-size="11" font-weight="700">D${p.d}</text>`;
+        }
+      });
+
+      // Highlight day 17 relapse
+      const relX = xOf(16).toFixed(1), relY = yOf(63).toFixed(1);
+      out += `<rect x="${Number(relX) - 34}" y="${Number(relY) - 30}" width="68" height="20" rx="10" fill="var(--primary-soft)"/>`;
+      out += `<text x="${relX}" y="${Number(relY) - 16}" text-anchor="middle" fill="var(--ink)" font-size="10.5" font-weight="800">Relaps 23.11.</text>`;
+
+      svg.innerHTML = out;
+    })();
+
+    // 4. Web Mode Scroll Reveal & Active Nav
+    const sections = Array.from(document.querySelectorAll('.section-slide'));
+    const navLinks = Array.from(document.querySelectorAll('.nav-links a'));
+    if ('IntersectionObserver' in window) {
+      const revealObs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) e.target.classList.add('visible');
+        });
+      }, { threshold: 0.1 });
+      sections.forEach(s => revealObs.observe(s));
+
+      const navObs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const id = e.target.id;
+            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
+          }
+        });
+      }, { rootMargin: '-40% 0px -45% 0px' });
+      sections.forEach(s => navObs.observe(s));
+    } else {
+      sections.forEach(s => s.classList.add('visible'));
+    }
+
+    // 5. Dual Mode: Web vs Presentation Slideshow
+    const bodyEl = document.body;
+    const togglePresentBtn = document.getElementById('togglePresentBtn');
+    const heroPresentBtn = document.getElementById('heroPresentBtn');
+    const prevSlideBtn = document.getElementById('prevSlideBtn');
+    const nextSlideBtn = document.getElementById('nextSlideBtn');
+    const slideCounter = document.getElementById('slideCounter');
+    const notesDrawer = document.getElementById('notesDrawer');
+    const notesTitle = document.getElementById('notesTitle');
+    const notesBody = document.getElementById('notesBody');
+    const notesToggleBtn = document.getElementById('notesToggleBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const exitPresentBtn = document.getElementById('exitPresentBtn');
+    let slideIdx = 0;
+
+    function showSlide(idx) {
+      slideIdx = (idx + sections.length) % sections.length;
+      sections.forEach((s, i) => s.classList.toggle('current-slide', i === slideIdx));
+      slideCounter.textContent = `${slideIdx + 1} / ${sections.length}`;
+      notesTitle.textContent = `Poznámky · ${sections[slideIdx].dataset.title || ''}`;
+      notesBody.textContent = sections[slideIdx].dataset.notes || 'Bez poznámky.';
+    }
+
+    function setPresentMode(enable) {
+      bodyEl.classList.toggle('present-mode', enable);
+      togglePresentBtn.textContent = enable ? 'Zpět na web' : 'Režim prezentace';
+      if (enable) {
+        showSlide(slideIdx);
+      } else {
+        notesDrawer.classList.remove('open');
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    togglePresentBtn.addEventListener('click', () => setPresentMode(!bodyEl.classList.contains('present-mode')));
+    heroPresentBtn.addEventListener('click', () => setPresentMode(true));
+    exitPresentBtn.addEventListener('click', () => setPresentMode(false));
+    prevSlideBtn.addEventListener('click', () => showSlide(slideIdx - 1));
+    nextSlideBtn.addEventListener('click', () => showSlide(slideIdx + 1));
+    notesToggleBtn.addEventListener('click', () => notesDrawer.classList.toggle('open'));
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      else document.exitFullscreen().catch(() => {});
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      if (e.key === 'p' || e.key === 'P') {
+        setPresentMode(!bodyEl.classList.contains('present-mode'));
+      } else if (e.key === 'Escape' && bodyEl.classList.contains('present-mode')) {
+        setPresentMode(false);
+      } else if (bodyEl.classList.contains('present-mode')) {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); showSlide(slideIdx + 1); }
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); showSlide(slideIdx - 1); }
+        else if (e.key === 'n' || e.key === 'N') notesDrawer.classList.toggle('open');
+        else if (e.key === 'f' || e.key === 'F') fullscreenBtn.click();
+      }
+    });
+
+    showSlide(0);
   </script>
 </body>
 </html>
