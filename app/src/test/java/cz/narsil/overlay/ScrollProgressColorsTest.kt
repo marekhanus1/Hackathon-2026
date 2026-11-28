@@ -7,11 +7,13 @@ import org.junit.Test
 class ScrollProgressColorsTest {
     @Test
     fun endpointsAndClamp() {
-        assertEquals(0x5926A69A, ScrollProgressColors.color(0))
-        assertEquals(0xFFE53935.toInt(), ScrollProgressColors.color(100))
+        assertEquals(0xE600BFA5.toInt(), ScrollProgressColors.color(0))
+        assertEquals(0xFFFF1744.toInt(), ScrollProgressColors.color(100))
         assertEquals(ScrollProgressColors.color(0), ScrollProgressColors.color(-5))
         assertEquals(ScrollProgressColors.color(100), ScrollProgressColors.color(150))
-        assertEquals(0xA6FFB300.toInt(), ScrollProgressColors.color(60))
+        assertEquals(0xF2FFC400.toInt(), ScrollProgressColors.color(50))
+        assertEquals(0xFFFF6D00.toInt(), ScrollProgressColors.color(80))
+        assertTrue("výrazné už od začátku", ScrollProgressColors.alpha(ScrollProgressColors.color(0)) >= 0xE0)
     }
 
     @Test

@@ -1,17 +1,22 @@
 package cz.narsil.overlay
 
 /**
- * Barva ukazatele blížícího se limitu (135): ze začátku nenápadná tyrkysová, ke konci jantarová,
- * oranžová a sytě červená. S procenty roste i krytí. Čistý Kotlin (ARGB jako Int) kvůli testům.
+ * Barva ukazatele blížícího se limitu (135, 148): výrazná tyrkysová, v půlce jantarová, ke konci oranžová
+ * a sytě červená. Krytí od 90 % do plné. Čistý Kotlin (ARGB jako Int) kvůli testům.
  */
 object ScrollProgressColors {
     /** Body přechodu: procento → ARGB. */
     private val STOPS = listOf(
-        0 to 0x5926A69A,          // tyrkysová, 35 %
-        60 to 0xA6FFB300.toInt(), // jantarová, 65 %
-        85 to 0xD9FF6D00.toInt(), // oranžová, 85 %
-        100 to 0xFFE53935.toInt(), // červená, plná
+        0 to 0xE600BFA5.toInt(),   // tyrkysová, 90 %
+        50 to 0xF2FFC400.toInt(),  // jantarová, 95 %
+        80 to 0xFFFF6D00.toInt(),  // oranžová
+        100 to 0xFFFF1744.toInt(), // červená
     )
+
+    /** Podklad (stopa) a obrys: tmavé, ať je pruh vidět na světlém i tmavém obsahu. */
+    const val TRACK = 0x8C000000.toInt()
+    const val OUTLINE = 0xCC000000.toInt()
+    const val LABEL_TEXT = 0xFFFFFFFF.toInt()
 
     fun color(percent: Int): Int {
         val p = percent.coerceIn(0, 100)
