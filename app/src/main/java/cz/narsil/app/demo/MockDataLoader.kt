@@ -13,6 +13,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Nahraje připravená data (SPEC 10, demo panel) do sdílené databáze: 21 dní spotřeby, zásahů a XP
@@ -122,7 +124,10 @@ object MockDataLoader {
         val today = DayKey.today(zone)
         val rows = rows(today, zone)
         // runInTransaction → Room po dokončení upozorní pozorovatele (Domov, Zrcadlo se překreslí).
-        db.runInTransaction { clearStatements(today).forEach { db.openHelper.writableDatabase.execSQL(it) } }
+        // Blokující volání Room → mimo hlavní vlákno (demo panel volá load z UI coroutine).
+        withContext(Dispatchers.IO) {
+            db.runInTransaction { clearStatements(today).forEach { db.openHelper.writableDatabase.execSQL(it) } }
+        }
         rows.consumption.forEach { db.consumptionDao().insert(it) }
         rows.interventions.forEach { db.interventionDao().insert(it) }
         rows.xp.forEach { db.xpDao().insert(it) }
