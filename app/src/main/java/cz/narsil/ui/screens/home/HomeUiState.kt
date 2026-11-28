@@ -63,13 +63,13 @@ data class HomeUiState(
 
     val contractDone: Boolean get() = contractCompletedToday || contractSigned
 
-    /** Řádek dluhu na kartě pohybu; null = bez dluhu. */
+    /** Řádek minut od Parťáka na kartě pohybu (163); null = dnes nic. Starý přenesený dluh jen dobíhá. */
     val debtLabel: String?
         get() = when {
             carriedDebtMinutes > 0 && debtMinutes > 0 ->
-                "Dluh ze včerejška: $carriedDebtMinutes min · dnes půjčeno $debtMinutes min"
+                "Dluh ze včerejška: $carriedDebtMinutes min · dnes od Parťáka $debtMinutes min"
             carriedDebtMinutes > 0 -> "Dluh ze včerejška: $carriedDebtMinutes min"
-            debtMinutes > 0 -> "Dluh do zítřka: $debtMinutes min"
+            debtMinutes > 0 -> "Dnes od Parťáka: $debtMinutes min"
             else -> null
         }
 }

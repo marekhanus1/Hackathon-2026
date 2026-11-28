@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: done
 owner: marek
 agent: claude
 branch: marek/claude/163-partak-misto-pujcky
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/134
 ---
 
 # 163 – Parťák místo půjčky do zítřka
@@ -23,3 +23,5 @@ nepůjčují z dalšího dne (žádný přenos dluhu), místo toho Narsil „nap
 ## Poznámky
 Zadal Marek 28. 11. 2026. Interně zůstává `InterventionOutcome.BORROWED` a ledger BORROW
 (bez migrace DB), mění se jen význam a texty.
+
+Ověřeno na Nothingu 28. 11. 15:25: prosba → „Píšu Parťákovi…“ → odpověď → odemčeno 10 min, notifikace „Parťák ti poslal 10 min“.

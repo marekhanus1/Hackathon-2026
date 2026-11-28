@@ -137,7 +137,7 @@ class SettingsViewModel(
 
     fun setPushupsPerUnlock(count: Int) = change("Snížit počet kliků?") { it.copy(pushupsPerUnlock = count) }
 
-    fun setDebtLimitMinutes(minutes: Int) = change("Zvýšit limit dluhu?") { it.copy(debtLimitMinutes = minutes) }
+    fun setDebtLimitMinutes(minutes: Int) = change("Víc minut od Parťáka?") { it.copy(debtLimitMinutes = minutes) }
 
     fun setAppTracked(app: TrackedApp, tracked: Boolean) = change("Přestat sledovat aplikaci?") {
         it.copy(trackedApps = if (tracked) it.trackedApps + app else it.trackedApps - app)

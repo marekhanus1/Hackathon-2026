@@ -21,12 +21,14 @@ import kotlinx.coroutines.launch
  * Skutečný [MovementRepository] (211): kroky z [steps] (Health Connect, záloha senzor),
  * měna a dluh z [book] (203, Room ledger). Nic nehází; bez kroků platí poslední známá hodnota.
  *
- * @param onPartnerAlert půjčka nad limit dluhu → zpráva Parťákovi (MVP ukázková notifikace)
+ * @param onPartnerAlert prosba nad denní limit → zpráva Parťákovi (MVP ukázková notifikace)
+ * @param onFriendGift Parťák dal minuty (163) → ukázková notifikace s jeho odpovědí
  */
 class StepsMovementRepository(
     private val steps: StepsSource,
     private val book: CurrencyBook,
     private val clock: Clock = Clock.systemDefaultZone(),
+    private val onFriendGift: (minutes: Int) -> Unit = {},
     private val onPartnerAlert: (debtMinutes: Int) -> Unit = {},
 ) : MovementRepository {
 
@@ -54,10 +56,11 @@ class StepsMovementRepository(
         return ok
     }
 
-    /** Půjčka do limitu dluhu (SPEC 5). Nad limit se nic nepůjčí a Parťák dostane zprávu. */
+    /** Minuty od Parťáka do denního limitu (SPEC 5, 163). Nad limit se nic nepřidá a Parťák dostane zprávu. */
     override suspend fun borrow(minutes: Int) {
         val result = book.borrow(minutes)
         if (result.partnerAlert) runCatching { onPartnerAlert(result.debtMinutes + minutes) }
+        if (result.accepted) runCatching { onFriendGift(minutes) }
         publish()
     }
 

@@ -34,7 +34,7 @@ Povrchy (`Surface`): `FEED`, `REELS`, `SHORTS` jsou nekonečný obsah, `VIDEO` j
 | `CLOSED` | Cílová aplikace se pošle do pozadí (návrat na plochu) | 50 až po potvrzení: 10 min bez dalšího zásahu (155); nejvýš 5× denně a s odstupem ≥ 10 min, jinak 0 |
 | `PAID_STEPS` | Strhne 10 min ze zůstatku; když nestačí, tlačítko je neaktivní | 10 |
 | `SQUATS` | 20 dřepů odemkne 10 min, do zůstatku se nepřičítají | 20 |
-| `BORROWED` | Odemkne 10 min, dluh +10; nad limitem dluhu nejde | 0 |
+| `BORROWED` | „Poprosit Parťáka o 10 min“ (163): Narsil napíše kamarádovi, ten (v MVP simulovaně) odpoví a odemkne se 10 min na dnešek; nad denním limitem nejde | 0 |
 | `PLANNED_FREE` | Není volba, plánovaný obsah prošel bez Ozvěny | 0 |
 
 Před volbou je otázka „Čemu se teď vyhýbáš?“ (nuda, únava, úkol, samota, jiné). Odpověď je nepovinná a ukládá se k zásahu.
@@ -42,13 +42,13 @@ Před volbou je otázka „Čemu se teď vyhýbáš?“ (nuda, únava, úkol, sa
 ## 5. Měna: minuty neplánovaného obsahu
 
 ```
-zůstatek = floor(kroky_dnes / 100) + Σ odměny ověřených úkolů dnes − dnes zaplacené minuty − přenesený dluh
+zůstatek = floor(kroky_dnes / 100) + Σ odměny ověřených úkolů dnes − dnes zaplacené minuty
 ```
 
 - Kurz z `MovementRates`: 1 000 kroků = 10 min, 20 dřepů = 10 min hned.
 - Kroky se počítají za celý den od 4:00, i ty ušlé před zásahem.
 - Zůstatek nikdy neklesne pod 0 platbou (`pay` vrátí `false`).
-- **Dluh:** limit 30 min. Na konci dne se dluh odečte od zůstatku dalšího dne (přenesený dluh) a vynuluje. Nad limit nejde půjčit a Parťák dostane zprávu (v MVP ukázková notifikace).
+- **Parťák (163, dřív dluh):** minuty se nepůjčují z dalšího dne. V Ozvěně můžeš poprosit kamaráda o 10 min; za den ti dá nejvýš 30 min (Nastavení, 0 = vypnuto) a do zítřka se nic nepřenáší. Bez serveru je odpověď simulovaná (Ozvěna „Píšu Parťákovi…“ → „Jasně, máš 10 min“ + ukázková notifikace). Starý přenesený dluh z doby před 163 se ještě odečte, nový nevzniká.
 
 ## 6. Plán dne (večerní smlouva)
 

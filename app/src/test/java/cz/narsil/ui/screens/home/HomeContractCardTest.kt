@@ -37,9 +37,9 @@ class HomeContractCardTest {
     fun debtLabelIncludesCarriedDebt() {
         assertEquals(null, HomeUiState(debtMinutes = 0, carriedDebtMinutes = 0).debtLabel)
         assertEquals("Dluh ze včerejška: 10 min", HomeUiState(debtMinutes = 0, carriedDebtMinutes = 10).debtLabel)
-        assertEquals("Dluh do zítřka: 10 min", HomeUiState(debtMinutes = 10, carriedDebtMinutes = 0).debtLabel)
+        assertEquals("Dnes od Parťáka: 10 min", HomeUiState(debtMinutes = 10, carriedDebtMinutes = 0).debtLabel)
         assertEquals(
-            "Dluh ze včerejška: 5 min · dnes půjčeno 10 min",
+            "Dluh ze včerejška: 5 min · dnes od Parťáka 10 min",
             HomeUiState(debtMinutes = 10, carriedDebtMinutes = 5).debtLabel,
         )
     }

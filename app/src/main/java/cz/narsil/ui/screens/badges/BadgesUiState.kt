@@ -52,8 +52,8 @@ private fun defaultBadges(): List<BadgeItem> = listOf(
     ),
     BadgeItem(
         id = "week_no_debt",
-        title = "Týden bez dluhu",
-        description = "Sedm dní po sobě bez přeneseného pohybového dluhu.",
+        title = "Týden po svém",
+        description = "Sedm dní po sobě bez proseb o minuty od Parťáka.",
         progress = 7,
         target = 7,
         isUnlocked = true

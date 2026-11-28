@@ -23,11 +23,11 @@ class InMemoryLedgerStore : LedgerStore {
     }
 }
 
-/** Výsledek půjčky. [partnerAlert] = dluh by přesáhl limit → zpráva Parťákovi, nic se nepůjčilo. */
+/** Výsledek prosby o minuty od Parťáka (163). [partnerAlert] = nad denní limit, nic se nepřidalo. */
 data class BorrowResult(val accepted: Boolean, val debtMinutes: Int, val partnerAlert: Boolean)
 
 /**
- * Účetní kniha minut (203): platby, půjčky, odměny za úkoly a přenos dluhu přes den (od 4:00).
+ * Účetní kniha minut (203): platby, minuty od Parťáka (163, jen na dnešek), odměny za úkoly (den od 4:00).
  * Kroky dodává volající (211 z Health Connect / senzoru). Nic nehází.
  */
 class CurrencyBook(
@@ -66,7 +66,7 @@ class CurrencyBook(
         add(date, LedgerKind.PAID, minutes)
     }
 
-    /** Půjčí [minutes]; nad limit nepůjčí a vrátí `partnerAlert = true` (SPEC 5). */
+    /** Parťák dá [minutes] na dnešek; nad denní limit nedá a vrátí `partnerAlert = true` (SPEC 5). */
     suspend fun borrow(minutes: Int = MovementRates.MINUTES_PER_UNLOCK): BorrowResult = mutex.withLock {
         val date = today()
         val day = ensureCarry(date)

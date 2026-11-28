@@ -83,26 +83,33 @@ class CurrencyTest {
     }
 
     @Test
-    fun debtCarriesToNextDayOnce() = runTest {
+    fun friendMinutesDoNotCarryToNextDay() = runTest {
+        // 163: minuty od Parťáka platí jen dnes, zítřejší zůstatek se nesnižuje.
         val clock = MutableClock(morning)
         val store = InMemoryLedgerStore()
         val book = CurrencyBook(store, clock)
         book.borrow(10)
         book.borrow(10)
         assertEquals(20, book.state(3_000).debtMinutes)
-        assertEquals(30, book.state(3_000).balanceMinutes) // dnes dluh zůstatek nesnižuje
+        assertEquals(30, book.state(3_000).balanceMinutes)
 
         clock.set(morning.plusDays(1))
         val next = book.state(3_000)
-        assertEquals(0, next.debtMinutes) // dluh se vynuloval…
-        assertEquals(10, next.balanceMinutes) // …a odečetl od zůstatku: 30 − 20
-        assertEquals(0, next.carriedDebtMinutes) // kroky ho pokryly
-        assertEquals(20, book.state(51).carriedDebtMinutes) // 51 kroků = 0 min → dluh 20 zůstává (145)
-        book.state(3_000)
-        assertEquals(1, store.entries(book.today()).count { it.kind == LedgerKind.DEBT_CARRY }) // přenos jen jednou
+        assertEquals(0, next.debtMinutes)
+        assertEquals(30, next.balanceMinutes) // nic se nepřeneslo
+        assertEquals(0, book.state(0).carriedDebtMinutes)
+        assertTrue(book.borrow(30).accepted) // denní limit znovu od nuly
+    }
 
-        clock.set(morning.plusDays(2))
-        assertEquals(30, book.state(3_000).balanceMinutes) // předevčírem dluh už nepřechází
+    @Test
+    fun oldCarriedDebtStillCounts() = runTest {
+        // Záznam přeneseného dluhu z doby před 163 se dnes pořád odečte (nic nemizí z historie).
+        val clock = MutableClock(morning)
+        val store = InMemoryLedgerStore()
+        val book = CurrencyBook(store, clock)
+        store.add(book.today(), MinuteEntry(LedgerKind.DEBT_CARRY, 20))
+        assertEquals(10, book.state(3_000).balanceMinutes)
+        assertEquals(1, store.entries(book.today()).count { it.kind == LedgerKind.DEBT_CARRY })
     }
 
     @Test

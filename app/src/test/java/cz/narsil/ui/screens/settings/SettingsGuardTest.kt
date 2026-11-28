@@ -39,7 +39,7 @@ class SettingsGuardTest {
         assertEquals(1, SettingsGuard.loosenings(d, d.copy(partnerAlerts = false)).size)
         val removed = SettingsGuard.loosenings(d, d.copy(trackedApps = d.trackedApps - TrackedApp.TIKTOK))
         assertEquals(listOf("Narsil přestane sledovat: TikTok."), removed)
-        assertTrue(SettingsGuard.loosenings(d, d.copy(debtLimitMinutes = 45)).single().contains("45 min místo 30 min"))
+        assertTrue(SettingsGuard.loosenings(d, d.copy(debtLimitMinutes = 45)).single().contains("45 min denně místo 30 min"))
     }
 
     @Test

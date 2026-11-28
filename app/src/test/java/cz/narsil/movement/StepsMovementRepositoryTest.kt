@@ -38,6 +38,15 @@ class StepsMovementRepositoryTest {
         assertEquals(40, repo.state.value.balanceMinutes)
     }
 
+    /** 163: Parťák odpoví (simulovaná notifikace) jen na prosbu, která prošla. */
+    @Test
+    fun friendGiftOnlyWhenAccepted() = runTest {
+        val gifts = mutableListOf<Int>()
+        val repo = StepsMovementRepository({ 0 }, CurrencyBook(clock = clock), clock, onFriendGift = { gifts += it })
+        repeat(4) { repo.borrow(10) }
+        assertEquals(listOf(10, 10, 10), gifts)
+    }
+
     @Test
     fun payBorrowRewardSquats() = runTest {
         val alerts = mutableListOf<Int>()
