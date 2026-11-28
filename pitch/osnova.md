@@ -48,7 +48,7 @@ Doporučení: **A** pro otevření, z **C** si vzít video jako první obraz dem
 | 4 | **Demo** | 2:00 | Živě na Nothing (scénář `pitch/demo.md`) | Šimon na telefonu, Štěpán komentuje |
 | 5 | Gamifikace, která netrestá | 0:30 | Nejvíc XP za „Zavřít“, souboj s algoritmem, postava budoucího já, série se žolíky – nic nikdy XP nebere | Štěpán |
 | 6 | Soukromí a důvěra | 0:20 | Zprávy nikdy nesledujeme, videa jen v telefonu, do LLM jde jen název videa, Parťák nedostává data | Štěpán |
-| 7 | Jak jsme to postavili | 0:20 | 4 lidi × AI agenti, 20 h, AccessibilityService + ML Kit + Claude API; roadmapa (vlastní zóny, předpověď kritické hodiny) | Marek |
+| 7 | Jak jsme to postavili | 0:20 | 4 lidi × AI agenti, 20 h, AccessibilityService + ML Kit + Gemini API; roadmapa (vlastní zóny, předpověď kritické hodiny) | Marek |
 | 8 | Pointa | 0:15 | „Venku vás necháme žít. Doma vám připomeneme, kým chcete být.“ + Narsil: zlomený meč znovu ukovaný – relaps není konec | Štěpán |
 
 **Pravidla pro slidy:** jedna myšlenka na slide, max. 12 slov textu, žádné odrážky na slidech 1, 4 a 8. Barvy a ilustrace podle `docs/ilustrace.md`.

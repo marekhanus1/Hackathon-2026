@@ -29,7 +29,7 @@ Ano, a to je v pořádku – jsme pomocník, ne dozorce. Ale smlouvu jste si nap
 Můžete – a podvádíte sám sebe. Smlouvu píšete vy pro sebe, ne pro nás. Dřepy počítá kamera podle úhlu v kolenou a pohybu kyčlí, takže mávání telefonem nepomůže, ale nehrajeme si na policii. Rozhodnutí 11 v briefu: podvádění vědomě neřešíme.
 
 **8. Co když otevřu Instagram v prohlížeči?**
-Detekce hlídá chování, ne seznam aplikací: nekonečné scrollování a řetězení videí. Instagram, TikTok a YouTube v Chromu poznáme podle adresy. To je přesně důvod, proč blokovací aplikace prohrávají a my ne.
+Detekce hlídá chování, ne seznam aplikací: nekonečné scrollování a řetězení videí. Instagram, TikTok a YouTube ve Firefoxu poznáme podle adresy. To je přesně důvod, proč blokovací aplikace prohrávají a my ne.
 
 ## Produkt a trh
 
@@ -71,5 +71,4 @@ Služba přístupnosti dává strukturu obrazovky: identifikátory prvků a typy
 ML Kit Pose Detection přímo v telefonu, bez sítě. Počítáme hloubku dřepu ze dvou signálů: úhel v koleni a zkrácení stehna vůči trupu – to funguje i čelem ke kameře. Zákmity tlumíme vyhlazením a minimálním časem mezi dřepy. Prahy jsou záměrně tolerantní kvůli horšímu světlu a před demem je ověřujeme v sále (3 lidé × 20 dřepů).
 
 **20. Co jste za 20 hodin opravdu postavili a co je nasimulované?**
-Postavené a běží spolu: večerní smlouva s videem, detekce domova a feedu, Ozvěna, dřepy kamerou, kroky, dluh, XP, úrovně, odznaky a souboj s algoritmem. Postavené a otestované, napojení do aplikace se dokončuje: párování videa s plánem a ověření úkolů přes AI, Strava. Nasimulované na připravených datech: Zrcadlo, mapa hodnoty, žebříček party a notifikace Parťáka. Roadmapa: vlastní zóny a předpověď kritické hodiny.
-*(Před pitchem aktualizovat podle stavu G3/G4.)*
+Postavené a běží spolu: večerní smlouva s videem, detekce domova a feedu, Ozvěna, dřepy kamerou, kroky, dluh, XP, úrovně, odznaky, souboj s algoritmem, párování videa s plánem a ověření úkolů přes AI (fotka nebo popis). Zrcadlo, mapu hodnoty a bosse počítáme z databáze aplikace – pro demo do ní nahráváme 21 dní připravených dat. Nasimulované: ostatní členové party v žebříčku a notifikace Parťáka. Stravu jsme vyřadili, její API vyžaduje předplatné. Roadmapa: vlastní zóny a předpověď kritické hodiny.
