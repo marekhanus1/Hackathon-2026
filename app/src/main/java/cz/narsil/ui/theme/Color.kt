@@ -16,7 +16,7 @@ val AmberContainerLight = Color(0xFFFFE5D0)
 val OnAmberContainerLight = Color(0xFF4A2104)
 
 val AmberDark = Color(0xFFF2A359)
-val OnAmberDark = Color(0xFF451E00)
+val OnAmberDark = Color(0xFF3A1A00)
 val AmberContainerDark = Color(0xFF663209)
 val OnAmberContainerDark = Color(0xFFFFE5D0)
 
@@ -27,7 +27,7 @@ val SageContainerLight = Color(0xFFD2EFE0)
 val OnSageContainerLight = Color(0xFF0A3825)
 
 val SageDark = Color(0xFF5CC497)
-val OnSageDark = Color(0xFF003823)
+val OnSageDark = Color(0xFF10241B)
 val SageContainerDark = Color(0xFF175139)
 val OnSageContainerDark = Color(0xFFD2EFE0)
 
@@ -53,15 +53,15 @@ val OnWarmVariantLight = Color(0xFF5A5248)
 val OutlineLight = Color(0xFFD7CEC0)
 val OutlineVariantLight = Color(0xFFE8E0D4)
 
-val ObsidianBackground = Color(0xFF121110)
-val ObsidianSurfaceDark = Color(0xFF1C1A17)
-val ObsidianSurfaceVariantDark = Color(0xFF26231F)
-val ObsidianSurfaceContainerDark = Color(0xFF211E1A)
-val ObsidianSurfaceContainerHighDark = Color(0xFF2E2A24)
-val OnObsidianDark = Color(0xFFF3EFE9)
-val OnObsidianVariantDark = Color(0xFFC1B7AA)
-val OutlineDark = Color(0xFF474139)
-val OutlineVariantDark = Color(0xFF332E28)
+val ObsidianBackground = Color(0xFF272B34) // koncept E (334)
+val ObsidianSurfaceDark = Color(0xFF23272F)
+val ObsidianSurfaceVariantDark = Color(0xFF20232A)
+val ObsidianSurfaceContainerDark = Color(0xFF23272F)
+val ObsidianSurfaceContainerHighDark = Color(0xFF2E333D)
+val OnObsidianDark = Color(0xFFE9ECF2)
+val OnObsidianVariantDark = Color(0xFFA3AAB8)
+val OutlineDark = Color(0xFF4A505C)
+val OutlineVariantDark = Color(0xFF30353F)
 
 // Soft, non-punishing semantic alerts (never harsh alarm red)
 val SoftErrorLight = Color(0xFFB8544B)
@@ -69,7 +69,7 @@ val OnSoftErrorLight = Color(0xFFFFFFFF)
 val SoftErrorContainerLight = Color(0xFFFCE4E1)
 val OnSoftErrorContainerLight = Color(0xFF4D1A15)
 
-val SoftErrorDark = Color(0xFFE58C83)
+val SoftErrorDark = Color(0xFFF59A8B)
 val OnSoftErrorDark = Color(0xFF4F1713)
 val SoftErrorContainerDark = Color(0xFF6B2B25)
 val OnSoftErrorContainerDark = Color(0xFFFCE4E1)
@@ -124,6 +124,11 @@ val NarsilDarkColorScheme = darkColorScheme(
     onSurfaceVariant = OnObsidianVariantDark,
     surfaceContainer = ObsidianSurfaceContainerDark,
     surfaceContainerHigh = ObsidianSurfaceContainerHighDark,
+    surfaceContainerHighest = ObsidianSurfaceContainerHighDark,
+    surfaceContainerLow = ObsidianSurfaceContainerDark,
+    surfaceContainerLowest = ObsidianSurfaceVariantDark,
+    surfaceBright = ObsidianSurfaceContainerHighDark,
+    surfaceDim = ObsidianSurfaceVariantDark,
     outline = OutlineDark,
     outlineVariant = OutlineVariantDark,
     error = SoftErrorDark,
@@ -204,7 +209,7 @@ val DarkNarsilExtendedColors = NarsilExtendedColors(
     onDebtContainer = Color(0xFFFBE9D5),
     algorithm = Color(0xFFB5A5C9),
     algorithmContainer = Color(0xFF322A3D),
-    xpTrack = Color(0xFF332E28),
+    xpTrack = Color(0xFF20232A),
     xpFill = SageDark,
     goldAccent = Color(0xFFF2C14E)
 )

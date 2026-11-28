@@ -1,6 +1,5 @@
 package cz.narsil.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -12,7 +11,8 @@ import androidx.compose.runtime.ReadOnlyComposable
  */
 @Composable
 fun NarsilTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    // Koncept E (334) je jen tmavý; světlé schéma zůstává pro náhledy.
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) NarsilDarkColorScheme else NarsilLightColorScheme
