@@ -32,6 +32,8 @@ class EchoOutcomeHandler(
     private val timer: UnlockTimer,
     private val goHome: () -> Unit,
     private val onDetectionOutcome: suspend (InterventionOutcome, Int) -> Unit = { _, _ -> },
+    /** Dřepy (v dřepovém ekvivalentu) zapsané za odemčení cvikem; z Nastavení (136). */
+    private val squatsForUnlock: () -> Int = { MovementRates.SQUATS_PER_UNLOCK },
     private val onResult: suspend (EchoResult) -> Unit = {},
 ) : EchoChoiceHandler {
 
@@ -45,7 +47,7 @@ class EchoOutcomeHandler(
             }
             InterventionOutcome.PAID_STEPS -> movement.pay(minutes)
             InterventionOutcome.SQUATS -> {
-                movement.recordSquats(MovementRates.SQUATS_PER_UNLOCK)
+                movement.recordSquats(squatsForUnlock())
                 true
             }
             InterventionOutcome.BORROWED -> canBorrow(minutes).also { if (it) movement.borrow(minutes) }

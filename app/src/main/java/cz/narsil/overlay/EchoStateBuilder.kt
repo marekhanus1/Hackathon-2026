@@ -33,6 +33,8 @@ object EchoStateBuilder {
         contract: DailyContract?,
         video: EchoVideo?,
         exercise: Exercise = Exercise.SQUATS,
+        /** Opakování na odemčení z Nastavení (136). */
+        reps: Int = ExerciseText.target(exercise),
     ): EchoContent {
         val firstTask = contract?.tasks?.firstOrNull()?.title ?: contract?.plannedContent?.firstOrNull()
         val fallback = firstTask?.let { "Dnes jsi chtěl: $it" }
@@ -45,7 +47,7 @@ object EchoStateBuilder {
             stepCostForTenMin = MovementRates.MINUTES_PER_UNLOCK * MovementRates.STEPS_PER_MINUTE,
             currentDebtMinutes = movement.debtMinutes,
             isVideoPlaying = video != null,
-            exerciseOptionTitle = ExerciseText.echoOption(exercise),
+            exerciseOptionTitle = ExerciseText.echoOption(exercise, reps),
         )
         return EchoContent(ui, video?.uri, fallback)
     }

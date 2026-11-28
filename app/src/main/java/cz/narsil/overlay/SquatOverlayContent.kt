@@ -30,12 +30,13 @@ fun SquatOverlayContent(
     demoMode: Boolean = false,
     onRequestPermission: (() -> Unit)? = null,
     exercise: Exercise = Exercise.SQUATS,
+    /** Opakování na odemčení: `Settings.repsPerUnlock(exercise)` (136). */
+    target: Int = ExerciseText.target(exercise),
 ) {
     if (exercise == Exercise.PUSHUPS) {
-        PushupContent(counter, onCancel, onDone, demoMode, onRequestPermission)
+        PushupContent(counter, onCancel, onDone, demoMode, onRequestPermission, target)
         return
     }
-    val target = MovementRates.SQUATS_PER_UNLOCK
     val count by counter.count.collectAsState()
     val state = SquatUiState(
         completedSquats = count.coerceAtMost(target),
@@ -70,8 +71,8 @@ private fun PushupContent(
     onDone: (count: Int) -> Unit,
     demoMode: Boolean,
     onRequestPermission: (() -> Unit)?,
+    target: Int,
 ) {
-    val target = MovementRates.PUSHUPS_PER_UNLOCK
     val count by counter.count.collectAsState()
     val camera = counter as? CameraPushupCounter
     val placement = camera?.placement?.collectAsState()?.value ?: PhonePlacement.READY_ON_FLOOR
