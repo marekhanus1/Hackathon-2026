@@ -1,22 +1,18 @@
 package cz.narsil.ui.screens.home
 
-import cz.narsil.ui.text.CzechPlural
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,17 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import cz.narsil.ui.components.AlgorithmDuelCard
-import cz.narsil.ui.components.AvatarCard
-import cz.narsil.ui.components.LevelBadge
 import cz.narsil.ui.components.NarsilProgressBar
 import cz.narsil.ui.components.StatusPill
-import cz.narsil.ui.components.StreakJokerRow
 import cz.narsil.ui.components.XpProgressBar
+import cz.narsil.ui.text.CzechPlural
 import cz.narsil.ui.theme.NarsilTheme
 
 /**
- * Main dashboard screen for Narsil using ViewModel StateFlow<HomeUiState> / fake data.
+ * Flat home dashboard with one primary action and a short, scan-friendly daily summary.
  */
 @Composable
 fun HomeScreen(
@@ -46,7 +39,6 @@ fun HomeScreen(
     onOpenBadges: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
 
     Surface(
@@ -59,71 +51,67 @@ fun HomeScreen(
                 .fillMaxSize()
                 .systemBarsPadding()
                 .verticalScroll(rememberScrollState())
-                .padding(spacing.md),
+                .padding(horizontal = spacing.md, vertical = spacing.sm),
             verticalArrangement = Arrangement.spacedBy(spacing.md)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Narsil",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                ZoneStatusPill(status = state.zoneStatus)
-            }
+            HomeHeader(zoneStatus = state.zoneStatus)
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                LevelBadge(level = state.level, title = state.levelTitle)
-                StatusPill(
-                    text = "Odznaky",
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    onClick = onOpenBadges
-                )
-            }
-
-            XpProgressBar(currentXp = state.currentXp)
-
-            AvatarCard(
-                state = state.avatarState,
-                summary7Days = state.avatarSummary7Days
-            )
-
-            AlgorithmDuelCard(
-                reclaimedMinutes = state.reclaimedMinutesToday,
-                feedMinutes = state.feedMinutesToday,
-                wonDaysCount = state.wonDaysTotal
-            )
-
-            StreakJokerRow(
-                streakDays = state.streakDays,
-                availableJokers = state.availableJokers
-            )
-
-            // Movement & gentle debt summary card
-            MovementBalanceCard(state = state)
-
-            // Evening contract card
-            ContractStatusCard(
+            ContractAction(
                 state = state,
-                onOpenContract = onOpenContract,
-                onOpenMirror = onOpenMirror
+                onOpenContract = onOpenContract
+            )
+
+            DailyOverview(state = state)
+            MovementOverview(state = state)
+            ProgressOverview(state = state)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm)
+            ) {
+                FlatNavigationAction(
+                    label = "Zrcadlo",
+                    supportingText = "Co ti bere čas",
+                    onClick = onOpenMirror,
+                    modifier = Modifier.weight(1f)
+                )
+                FlatNavigationAction(
+                    label = "Odznaky",
+                    supportingText = "Pokrok a výzvy",
+                    onClick = onOpenBadges,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeHeader(zoneStatus: ZoneStatus) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(NarsilTheme.spacing.xxs)) {
+            Text(
+                text = "Narsil",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Dnešní přehled",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        ZoneStatusPill(status = zoneStatus)
     }
 }
 
 @Composable
 private fun ZoneStatusPill(status: ZoneStatus) {
     val colors = NarsilTheme.colors
-
     val containerColor = when (status) {
         ZoneStatus.HOME -> colors.echoContainer
         ZoneStatus.AWAY -> colors.positiveContainer
@@ -136,160 +124,276 @@ private fun ZoneStatusPill(status: ZoneStatus) {
     }
 
     StatusPill(
-        text = status.label,
+        text = when (status) {
+            ZoneStatus.HOME -> "Ochrana aktivní"
+            ZoneStatus.AWAY -> "Narsil mlčí"
+            ZoneStatus.UNKNOWN -> "Zóna neznámá"
+        },
         containerColor = containerColor,
-        contentColor = contentColor
+        contentColor = contentColor,
+        bold = status == ZoneStatus.HOME
     )
 }
 
 @Composable
-private fun MovementBalanceCard(state: HomeUiState) {
+private fun ContractAction(
+    state: HomeUiState,
+    onOpenContract: () -> Unit
+) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
-    val safeGoal = state.stepGoal.coerceAtLeast(1)
-    val fraction = (state.stepsToday.toFloat() / safeGoal.toFloat()).coerceIn(0f, 1f)
+    val completed = state.contractDone
+    val container = if (completed) colors.positiveContainer else colors.echoContainer
+    val content = if (completed) colors.onPositiveContainer else colors.onEchoContainer
+    val action = if (completed) colors.positive else colors.echo
+    val actionContent = if (completed) colors.onPositive else colors.onEcho
 
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        shape = MaterialTheme.shapes.medium,
+        color = container,
+        contentColor = content
     ) {
         Column(
+            modifier = Modifier.padding(spacing.md),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs)
+        ) {
+            Text(
+                text = if (completed) "Plán je připravený" else "Další krok",
+                style = MaterialTheme.typography.labelLarge,
+                color = content.copy(alpha = 0.78f)
+            )
+            Text(
+                text = state.contractTitle,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Plánovaný obsah: ${state.plannedContentSummary}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = content.copy(alpha = 0.82f)
+            )
+            Button(
+                onClick = onOpenContract,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = spacing.xxs),
+                shape = MaterialTheme.shapes.small,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = action,
+                    contentColor = actionContent
+                )
+            ) {
+                Text(text = state.contractButton)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DailyOverview(state: HomeUiState) {
+    val colors = NarsilTheme.colors
+    val spacing = NarsilTheme.spacing
+
+    FlatSection {
+        Text(
+            text = "Dnes máš zpátky ${CzechPlural.minutesAccusative(state.reclaimedMinutesToday)}",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = colors.positive
+        )
+        Text(
+            text = if (state.reclaimedMinutesToday >= state.feedMinutesToday) {
+                "Ty vedeš nad algoritmem."
+            } else {
+                "Stačí jeden vědomý krok a rozdíl se zmenší."
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm)
+                .padding(top = spacing.xs),
+            horizontalArrangement = Arrangement.spacedBy(spacing.sm)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Pohyb a rozpočet",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "K dispozici ${state.availableStepMinutes} min",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colors.ember
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "${state.stepsToday} / ${CzechPlural.steps(state.stepGoal)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                val debtLabel = state.debtLabel
-                if (debtLabel != null) {
-                    Text(
-                        text = debtLabel,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = colors.debt
-                    )
-                } else {
-                    Text(
-                        text = "Bez dluhu",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = colors.positive
-                    )
-                }
-            }
-
-            NarsilProgressBar(
-                progress = fraction,
-                fillColor = colors.ember,
-                height = 10.dp
+            FlatMetric(
+                value = "${state.feedMinutesToday} min",
+                label = "ve feedu",
+                modifier = Modifier.weight(1f)
+            )
+            FlatMetric(
+                value = CzechPlural.days(state.streakDays),
+                label = "aktuální série",
+                modifier = Modifier.weight(1f)
+            )
+            FlatMetric(
+                value = "${state.wonDaysTotal}",
+                label = "vyhraných dní",
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
 
 @Composable
-private fun ContractStatusCard(
-    state: HomeUiState,
-    onOpenContract: () -> Unit,
-    onOpenMirror: () -> Unit
-) {
+private fun MovementOverview(state: HomeUiState) {
     val colors = NarsilTheme.colors
     val spacing = NarsilTheme.spacing
+    val safeGoal = state.stepGoal.coerceAtLeast(1)
+    val progress = (state.stepsToday.toFloat() / safeGoal.toFloat()).coerceIn(0f, 1f)
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = if (state.contractDone) {
-                colors.positiveContainer
-            } else {
-                colors.echoContainer
-            },
-            contentColor = if (state.contractDone) {
-                colors.onPositiveContainer
-            } else {
-                colors.onEchoContainer
+    FlatSection {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.xxs)) {
+                Text(
+                    text = "Pohyb",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "${state.stepsToday} z ${CzechPlural.steps(state.stepGoal)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${state.availableStepMinutes} min",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.ember
+                )
+                Text(
+                    text = "k dispozici",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        NarsilProgressBar(
+            progress = progress,
+            fillColor = colors.ember,
+            modifier = Modifier.padding(top = spacing.xs),
+            height = 8.dp
         )
+        Text(
+            text = state.debtLabel ?: "Bez dluhu",
+            style = MaterialTheme.typography.labelMedium,
+            color = if (state.debtLabel == null) colors.positive else colors.debt
+        )
+    }
+}
+
+@Composable
+private fun ProgressOverview(state: HomeUiState) {
+    val spacing = NarsilTheme.spacing
+
+    FlatSection {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Úroveň ${state.level}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = state.levelTitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = CzechPlural.count(state.availableJokers, "žolík", "žolíky", "žolíků"),
+                style = MaterialTheme.typography.labelLarge,
+                color = NarsilTheme.colors.goldAccent
+            )
+        }
+        XpProgressBar(
+            currentXp = state.currentXp,
+            modifier = Modifier.padding(top = spacing.xs)
+        )
+    }
+}
+
+@Composable
+private fun FlatMetric(
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(NarsilTheme.spacing.xxs)
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun FlatSection(content: @Composable ColumnScope.() -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainer
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.xs)
+            modifier = Modifier.padding(NarsilTheme.spacing.md),
+            verticalArrangement = Arrangement.spacedBy(NarsilTheme.spacing.xs),
+            content = content
+        )
+    }
+}
+
+@Composable
+private fun FlatNavigationAction(
+    label: String,
+    supportingText: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh
+    ) {
+        Column(
+            modifier = Modifier.padding(NarsilTheme.spacing.md),
+            verticalArrangement = Arrangement.spacedBy(NarsilTheme.spacing.xxs)
         ) {
             Text(
-                text = state.contractTitle,
+                text = label,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = "Plánovaný obsah: ${state.plannedContentSummary}",
-                style = MaterialTheme.typography.bodyMedium
+                text = supportingText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = spacing.xs),
-                horizontalArrangement = Arrangement.spacedBy(spacing.xs)
-            ) {
-                Button(
-                    onClick = onOpenContract,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (state.contractDone) colors.positive else colors.echo,
-                        contentColor = if (state.contractDone) colors.onPositive else colors.onEcho
-                    )
-                ) {
-                    Text(
-                        text = state.contractButton
-                    )
-                }
-
-                Surface(
-                    onClick = onOpenMirror,
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
-                ) {
-                    Text(
-                        text = "Zrcadlo",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = spacing.md, vertical = spacing.sm)
-                    )
-                }
-            }
         }
     }
 }
 
-@Preview(name = "Domů – Světlý režim", showBackground = true)
+@Preview(name = "Domů – Flat světlý", showBackground = true)
 @Composable
 private fun HomeScreenLightPreview() {
     NarsilTheme(darkTheme = false) {
@@ -301,7 +405,7 @@ private fun HomeScreenLightPreview() {
 }
 
 @Preview(
-    name = "Domů – Tmavý režim",
+    name = "Domů – Flat tmavý",
     showBackground = true,
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
