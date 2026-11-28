@@ -33,3 +33,23 @@ Jednoduchý světlý styl podle barev aplikace, motiv meče Narsil (zlomený a z
    Když neběží (nebo spadne), prezentace jimi normálně projde.
 
 Pozor: USB spojení s Nothingem občas samo spadne a scrcpy pak zavře okno – pak spustit znovu a znovu nasdílet (`S`).
+
+### Demo most: telefon ↔ prezentace (úkol 161)
+Místo `http.server` spusť z kořene repa:
+
+    python3 scripts/demo-most.py --scrcpy
+
+Servíruje `pitch/` na http://localhost:8000, drží scrcpy ve smyčce (po výpadku USB ho nahodí – okno pak ve Firefoxu nasdílet znovu)
+a propojí slide Demo s aplikací v telefonu:
+
+- **Telefon → prezentace:** aplikace hlásí momenty do logcatu (`NarsilDemo`, JSON na řádek), most je čte živě a posílá
+  prezentaci. Ozvěna posune scény na *Doma ve feedu*, dřepy na *20 dřepů* (velké počítadlo místo seznamu scén),
+  odemčení a nová úroveň se oslaví, ohodnocené video posune na *Přednáška z plánu*. Scény jdou jen dopředu, klik má přednost.
+  Nahoře na slidu čipy *z telefonu · Doma/Venku · Úroveň · Ozvěna*.
+- **Prezentace → telefon:** scéna 2 pošle `away`, scéna 3 `home` (`CONFIG.sceneCmds`). Panel `S` má tlačítka
+  *Připravit demo v telefonu*, *Venku*, *Doma*, *Ozvěna hned*, *+500 XP*, *Stav*. Na slidu Demo záloha z klávesnice
+  notebooku: `E` Ozvěna hned, `X` +500 XP, `H` doma, `V` venku.
+- Ručně: `adb shell am broadcast -a cz.narsil.DEMO -p cz.narsil --es cmd prepare|home|away|auto|echo|xp|steps|reset|state`,
+  události `adb logcat -v raw -s NarsilDemo:I`.
+- Zkouška bez telefonu: v konzoli prohlížeče `MOST.sim({e:'squats',n:12})`, `MOST.sim({e:'level',level:5})`.
+- Bez mostu (soubor nebo `http.server`) se prezentace chová jako dřív.

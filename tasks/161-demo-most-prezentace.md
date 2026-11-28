@@ -29,6 +29,7 @@ pr:
 - app/src/test/java/cz/narsil/app/demo/ (testy formátu událostí)
 - scripts/demo-most.py (nový)
 - pitch/narsil-pitch.html, pitch/snimky/README.md, pitch/demo.md (sekce Propojení s prezentací)
+- pitch/osnova.md (persona: Tereza → Šimon, 18 let – na žádost Marka, i v narsil-pitch.html a demo.md)
 
 ## Poznámky
 - Větev stojí na marek/claude/151-pitch-lotr (PR #112) – sloučit až po něm.
