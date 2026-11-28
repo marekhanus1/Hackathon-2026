@@ -1,10 +1,15 @@
 package cz.narsil.ui.screens.mirror
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import cz.narsil.core.History
+import cz.narsil.core.HistoryRepository
+import cz.narsil.core.fake.FakeHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 enum class MirrorTab(val label: String) {
     MIRROR("Zrcadlo (21 dní)"),
@@ -20,7 +25,8 @@ data class DailyTrendPoint(
 data class ContentValueEntry(
     val channelOrFormat: String,
     val averageRating: Float,
-    val watchedMinutes: Int,
+    /** Kolik ohodnocených videí do skupiny patří (minuty sledování se neukládají). */
+    val videoCount: Int,
     val isLowValueTrap: Boolean
 )
 
@@ -32,8 +38,27 @@ data class MirrorUiState(
     val criticalBossHour: String = "22:00 – 23:00",
     val bossSurvivedDays: Int = 5,
     val weeklyTrend: List<DailyTrendPoint> = defaultWeeklyTrend(),
-    val valueEntries: List<ContentValueEntry> = defaultValueEntries()
-)
+    val valueEntries: List<ContentValueEntry> = defaultValueEntries(),
+    /** Ze skutečné databáze (140); false = ukázková data do prvního načtení. */
+    val isLoaded: Boolean = false,
+    /** Dny s nějakým záznamem (0 = zatím žádná historie). */
+    val daysWithData: Int = 21,
+) {
+    /** Nadpis Zrcadla: hodiny, nebo minuty, dokud nejde o celou hodinu. */
+    val reclaimedHeadline: String
+        get() = when {
+            daysWithData == 0 -> "Zrcadlo se naplní po prvních dnech s Narsilem"
+            totalReclaimedMinutes >= 60 -> "Za $daysWithData dní sis vzal zpět ${totalReclaimedMinutes / 60} h ${totalReclaimedMinutes % 60} min"
+            else -> "Za $daysWithData dní sis vzal zpět $totalReclaimedMinutes min"
+        }
+
+    val trendLine: String
+        get() = if (daysWithData < 8) {
+            "Pokles scrollování ukážu po prvním týdnu · v průměru $averageDailySquats dřepů denně."
+        } else {
+            "Pasivní scrollování kleslo o $feedDropPercent % · v průměru $averageDailySquats dřepů denně."
+        }
+}
 
 private fun defaultWeeklyTrend(): List<DailyTrendPoint> = listOf(
     DailyTrendPoint("Týden 1", reclaimedMinutes = 160, feedMinutes = 340),
@@ -42,15 +67,30 @@ private fun defaultWeeklyTrend(): List<DailyTrendPoint> = listOf(
 )
 
 private fun defaultValueEntries(): List<ContentValueEntry> = listOf(
-    ContentValueEntry("Přednášky a programování", averageRating = 4.7f, watchedMinutes = 210, isLowValueTrap = false),
-    ContentValueEntry("Dokumenty a rozhovory", averageRating = 4.3f, watchedMinutes = 145, isLowValueTrap = false),
-    ContentValueEntry("Krátké klipy a kompilace", averageRating = 1.6f, watchedMinutes = 185, isLowValueTrap = true),
-    ContentValueEntry("Nekonečné herní streamy v noci", averageRating = 2.0f, watchedMinutes = 110, isLowValueTrap = true)
+    ContentValueEntry("Přednášky a programování", averageRating = 4.7f, videoCount = 12, isLowValueTrap = false),
+    ContentValueEntry("Dokumenty a rozhovory", averageRating = 4.3f, videoCount = 8, isLowValueTrap = false),
+    ContentValueEntry("Krátké klipy a kompilace", averageRating = 1.6f, videoCount = 15, isLowValueTrap = true),
+    ContentValueEntry("Nekonečné herní streamy v noci", averageRating = 2.0f, videoCount = 6, isLowValueTrap = true)
 )
 
-class MirrorViewModel : ViewModel() {
+/** Zrcadlo nad skutečnou historií (140). Fake výchozí jen pro náhledy. */
+class MirrorViewModel(
+    private val history: HistoryRepository = FakeHistoryRepository(),
+    private val loadOnStart: Boolean = true,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(MirrorUiState())
     val uiState: StateFlow<MirrorUiState> = _uiState.asStateFlow()
+
+    init {
+        if (loadOnStart) refresh()
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            val h = runCatching { history.load(HistoryRepository.DEFAULT_DAYS) }.getOrDefault(History())
+            _uiState.update { MirrorMapper.map(h, activeTab = it.activeTab) }
+        }
+    }
 
     fun selectTab(tab: MirrorTab) {
         _uiState.update { it.copy(activeTab = tab) }

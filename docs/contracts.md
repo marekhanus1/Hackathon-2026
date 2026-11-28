@@ -290,6 +290,23 @@ ruční „Venku“) obrazovka uloží až po potvrzení s 10s odpočtem (`ui.sc
 
 Skutečná implementace: `cz.narsil.core.data.DataStoreSettingsRepository(context)` (DataStore „settings“). Fake: `FakeSettingsRepository`.
 
+## HistoryRepository (140): historie pro Zrcadlo a odznaky
+
+```kotlin
+data class HistoryDay(val date: LocalDate, val feedMinutes: Int, val reclaimedMinutes: Int, val closes: Int,
+                      val squats: Int, val borrows: Int, val contractFulfilled: Boolean, val bossSurvived: Boolean,
+                      val hasData: Boolean) { val battleWon: Boolean }
+data class HistoryIntervention(val atMillis: Long, val packageName: String, val outcome: String, val feeling: String?)
+data class HistoryRating(val atMillis: Long, val title: String, val intent: String?, val rating: Int)
+data class History(val days: List<HistoryDay>, val interventions: List<HistoryIntervention>, val ratings: List<HistoryRating>)
+interface HistoryRepository { suspend fun load(days: Int = 21): History }   // jen čte, chyba = prázdná historie
+```
+
+Implementace `core.data.RoomHistoryRepository` (výpočet dne `HistoryMath`), fake `FakeHistoryRepository`,
+v `ServiceLocator.historyRepository`. Čte `consumption_events` (121: minuty feedu = neplánované FEED/REELS/SHORTS
+doma; bez událostí záloha 10 min za odemknutí), `interventions`, `xp_events`, `ledger` (TASK_REWARD) a
+`video_ratings`. Schéma ani DAO nemění – 121 stačí zapisovat události spotřeby.
+
 ## Sdílená databáze `NarsilDatabase` (105)
 
 `cz.narsil.core.data`, instance `NarsilDatabase.get(context)`, verze 1, `fallbackToDestructiveMigration()`, schéma v `app/schemas/`.
