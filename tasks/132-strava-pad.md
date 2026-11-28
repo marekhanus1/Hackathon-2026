@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/132-strava-pad
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/90
 ---
 
 # 132 – Strava: pád po prokliku, demo režim bez klíčů
