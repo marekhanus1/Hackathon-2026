@@ -214,6 +214,13 @@ private fun ValueMapContent(state: MirrorUiState) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
+        if (state.valueEntries.isEmpty()) {
+            Text(
+                text = "Zatím žádná hodnocení. Po videu na YouTube ohodnoť, co ti dalo – tady se pak ukáže, co stojí za to.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         state.valueEntries.forEach { entry ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -246,9 +253,9 @@ private fun ValueMapContent(state: MirrorUiState) {
                         )
                         Text(
                             text = if (entry.isLowValueTrap) {
-                                "${entry.watchedMinutes} min · dokoukáváš, ale hodnotíš nízko"
+                                "${entry.videoCount}× · díváš se, ale hodnotíš nízko"
                             } else {
-                                "${entry.watchedMinutes} min · vysoká hodnota pro tebe"
+                                if (entry.averageRating >= 4f) "${entry.videoCount}× · vysoká hodnota pro tebe" else "${entry.videoCount}× · střední hodnota"
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant

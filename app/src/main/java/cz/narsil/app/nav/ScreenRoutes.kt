@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.History
 import cz.narsil.core.data.DayKey
 import cz.narsil.core.data.LedgerKind
 import cz.narsil.core.data.NarsilDatabase
@@ -136,7 +137,11 @@ fun MirrorRoute() {
             }.getOrDefault(emptyList())
         }
     }
-    MirrorScreen(state = MirrorStats.apply(state, days), onSelectTab = vm::selectTab)
+    // Boss a mapa hodnoty z databáze (143); prázdná historie = připravená čísla.
+    val history by produceState(History()) {
+        value = withContext(Dispatchers.IO) { runCatching { ServiceLocator.historyRepository.load() }.getOrDefault(History()) }
+    }
+    MirrorScreen(state = MirrorStats.applyHistory(MirrorStats.apply(state, days), history), onSelectTab = vm::selectTab)
 }
 
 /** Odznaky a žebříček (323 + 140): odznaky a „Ty“ ze skutečných dat, kamarádi v MVP ukázkoví. */
