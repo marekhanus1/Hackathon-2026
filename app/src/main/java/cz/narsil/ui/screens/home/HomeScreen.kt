@@ -1,5 +1,6 @@
 package cz.narsil.ui.screens.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,12 +24,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cz.narsil.R
 import cz.narsil.ui.components.NeuDivider
 import cz.narsil.ui.components.NeuIcons
 import cz.narsil.ui.components.NeuPanel
@@ -85,7 +88,7 @@ fun HomeScreen(
 private fun HomeHeader(state: HomeUiState, exerciseLabel: String?, onOpenExercise: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Box(Modifier.size(44.dp).neuInset(NeuDepth.Shallow, RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
-            NeuText("N", size = 18.sp, weight = FontWeight.ExtraBold, color = NeuColors.Accent)
+            Image(painterResource(R.drawable.ic_narsil_logo), contentDescription = "Narsil", modifier = Modifier.size(38.dp))
         }
         Column(Modifier.weight(1f)) {
             NeuText("Úroveň ${state.level} · ${state.levelTitle}", size = 17.sp, weight = FontWeight.Bold, maxLines = 1)
