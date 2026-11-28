@@ -123,7 +123,7 @@ fun ContractScreen(
             }
 
             Text(
-                text = state.currentStep.title,
+                text = state.currentStep.title(state.targetIsToday),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold
             )
@@ -174,12 +174,13 @@ fun ContractScreen(
                         verticalArrangement = Arrangement.spacedBy(spacing.sm)
                     ) {
                         Text(
-                            text = "Smlouva podepsaná! +100 XP",
+                            text = "Smlouva podepsaná!",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Zítra tě Ozvěna jemně podpoří tvým vlastním hlasem.",
+                            text = "Až ji ${state.dayWord} splníš (krokový cíl a všechny úkoly ověřené), dostaneš +100 XP. " +
+                                "Ozvěna tě ${state.dayWord} jemně podpoří tvým vlastním hlasem.",
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Button(
@@ -195,6 +196,13 @@ fun ContractScreen(
                     }
                 }
             } else {
+                if (state.currentStep == ContractStep.ECHO_VIDEO) {
+                    Text(
+                        text = "+100 XP dostaneš, až smlouvu ${state.dayWord} splníš (krokový cíl a všechny úkoly ověřené).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(spacing.sm)
@@ -224,7 +232,7 @@ fun ContractScreen(
                                 contentColor = colors.onPositive
                             )
                         ) {
-                            Text("Podepsat smlouvu (+100 XP)")
+                            Text("Podepsat smlouvu")
                         }
                     } else {
                         Button(
@@ -253,7 +261,7 @@ private fun MovementGoalStep(
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
         Text(
-            text = "Rozhoduješ teď v klidu – ne zítra v pokušení.",
+            text = if (state.targetIsToday) "Rozhodni teď v klidu – ne až v pokušení." else "Rozhoduješ teď v klidu – ne zítra v pokušení.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -325,7 +333,7 @@ private fun PlannedContentStep(
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
         Text(
-            text = "Plánovaný obsah máš zítra na YouTube zdarma. Ostatní videa se platí pohybem.",
+            text = "Plánovaný obsah máš ${state.dayWord} na YouTube zdarma. Ostatní videa se platí pohybem.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -411,7 +419,7 @@ private fun TasksStep(
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
         Text(
-            text = "Co chceš zítra stihnout? Splněný úkol doložíš fotkou, textem nebo Stravou a dostaneš minuty navíc.",
+            text = "Co chceš ${state.dayWord} stihnout? Splněný úkol doložíš fotkou, textem nebo Stravou a dostaneš minuty navíc.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -511,7 +519,11 @@ private fun EchoVideoStep(
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
         Text(
-            text = "Nahraj krátké 15s video pro své zítřejší já: jak se dnes cítíš a proč chceš mít zítra klid.",
+            text = if (state.targetIsToday) {
+                "Nahraj krátké 15s video pro sebe v pokušení: jak se teď cítíš a proč chceš mít dnes klid."
+            } else {
+                "Nahraj krátké 15s video pro své zítřejší já: jak se dnes cítíš a proč chceš mít zítra klid."
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

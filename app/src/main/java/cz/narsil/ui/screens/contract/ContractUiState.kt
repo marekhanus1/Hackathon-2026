@@ -10,11 +10,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-enum class ContractStep(val index: Int, val title: String) {
-    MOVEMENT_GOAL(1, "Pohybový cíl na zítřek"),
-    PLANNED_CONTENT(2, "Plánovaný obsah zdarma"),
-    TASKS(3, "Úkoly na zítřek"),
-    ECHO_VIDEO(4, "Tvoje 15s Ozvěna")
+enum class ContractStep(val index: Int, private val baseTitle: String, private val withDay: Boolean) {
+    MOVEMENT_GOAL(1, "Pohybový cíl na", true),
+    PLANNED_CONTENT(2, "Plánovaný obsah zdarma", false),
+    TASKS(3, "Úkoly na", true),
+    ECHO_VIDEO(4, "Tvoje 15s Ozvěna", false);
+
+    /** Nadpis kroku podle cílového dne smlouvy (ráno / demo přepínač = dnešek). */
+    fun title(targetIsToday: Boolean): String =
+        if (withDay) "$baseTitle ${if (targetIsToday) "dnešek" else "zítřek"}" else baseTitle
 }
 
 /** Úkol rozepsaný ve smlouvě (139). Odměna a ověření podle [TaskType] (SPEC 6). */
@@ -62,8 +66,13 @@ data class ContractUiState(
     val taskDraftText: String = "",
     /** Hláška kamery (chybí oprávnění, nahrávání selhalo), null = nic. */
     val videoError: String? = null,
+    /** Smlouva se uloží na dnešek (ráno před 17:00 nebo demo „Smlouva platí hned“), jinak na zítřek. */
+    val targetIsToday: Boolean = false,
 ) {
     val canAddTask: Boolean get() = tasks.size < PlanRules.MAX_TASKS
+
+    /** „dnes“ / „zítra“ podle cílového dne smlouvy. */
+    val dayWord: String get() = if (targetIsToday) "dnes" else "zítra"
 }
 
 class ContractViewModel : ViewModel() {

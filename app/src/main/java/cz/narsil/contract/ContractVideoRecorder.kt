@@ -39,6 +39,8 @@ data class RecordingState(
     val maxSeconds: Int = PlanRules.MAX_VIDEO_SECONDS,
     val videoUri: String? = null,
     val error: String? = null,
+    /** Náhled a video jdou z přední (selfie) kamery. */
+    val frontCamera: Boolean = true,
 )
 
 /**
@@ -75,14 +77,18 @@ class ContractVideoRecorder(context: Context) {
                         .setQualitySelector(QualitySelector.from(Quality.SD, FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)))
                         .build()
                     val capture = VideoCapture.withOutput(recorder)
-                    val selector = if (cameraProvider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)) {
-                        CameraSelector.DEFAULT_FRONT_CAMERA
-                    } else {
-                        CameraSelector.DEFAULT_BACK_CAMERA
-                    }
                     preview?.let { cameraProvider.unbind(it) }
                     videoCapture?.let { cameraProvider.unbind(it) }
-                    cameraProvider.bindToLifecycle(lifecycleOwner, selector, newPreview, capture)
+                    // Selfie video (SPEC 9): vždy nejdřív přední kamera, zadní jen když přední navázat nejde.
+                    // (Ne přes hasCamera – na některých telefonech vrátí false i s přední kamerou.)
+                    val front = runCatching {
+                        cameraProvider.bindToLifecycle(lifecycleOwner, frontSelector(cameraProvider), newPreview, capture)
+                    }
+                    if (front.isFailure) {
+                        cameraProvider.unbind(newPreview, capture)
+                        cameraProvider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, newPreview, capture)
+                    }
+                    _state.update { it.copy(frontCamera = front.isSuccess) }
                     provider = cameraProvider
                     preview = newPreview
                     videoCapture = capture
@@ -90,6 +96,14 @@ class ContractVideoRecorder(context: Context) {
                 }.onFailure { _state.update { it.copy(isReady = false, error = "Kamera není k dispozici") } }
             }, mainExecutor)
         }.onFailure { _state.update { it.copy(isReady = false, error = "Kamera není k dispozici") } }
+    }
+
+    /** Přední kamera: podle `lensFacing` dostupných kamer, jinak výchozí přední selektor. */
+    private fun frontSelector(provider: ProcessCameraProvider): CameraSelector {
+        val hasFront = runCatching {
+            provider.availableCameraInfos.any { it.lensFacing == CameraSelector.LENS_FACING_FRONT }
+        }.getOrDefault(true)
+        return if (hasFront) CameraSelector.DEFAULT_FRONT_CAMERA else error("Přední kamera chybí")
     }
 
     /** Začne nahrávat video ke smlouvě na den [date]; [prefix] = „smlouva“, nebo „onboarding“ (139). */

@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -26,6 +27,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.narsil.app.ServiceLocator
 import cz.narsil.core.AvatarState
 import cz.narsil.core.ComfortContext
+import cz.narsil.core.DailyContract
+import cz.narsil.contract.ContractSigner
 import cz.narsil.core.History
 import cz.narsil.core.data.DayKey
 import cz.narsil.core.data.LedgerKind
@@ -62,6 +65,13 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
     val movement by sl.movementRepository.state.collectAsState()
     val contract by sl.contractRepository.today.collectAsState()
     val comfort by sl.contextRepository.context.collectAsState()
+    val appSettings by sl.settingsRepository.settings.collectAsState()
+    // Smlouva pro den, na který by se teď podepisovala (ráno / demo dnešek, večer zítřek).
+    val signer = remember { ContractSigner(sl.contractRepository, sl.settingsRepository) }
+    val signed by produceState<DailyContract?>(null, contract, appSettings.demoContractToday) {
+        val date = signer.targetDate()
+        value = if (contract?.date == date) contract else runCatching { sl.contractRepository.forDate(date) }.getOrNull()
+    }
     val state = HomeUiState(
         level = game.level,
         levelTitle = RewardBuilder.levelTitle(game.level),
@@ -78,7 +88,10 @@ fun HomeRoute(onNavigate: (NarsilRoute) -> Unit) {
         availableStepMinutes = movement.balanceMinutes,
         debtMinutes = movement.debtMinutes,
         contractCompletedToday = contract?.isFulfilled(movement.stepsToday) == true,
-        plannedContentSummary = contract?.plannedContent?.joinToString(", ")?.ifBlank { null } ?: "Zatím bez plánu",
+        contractSigned = signed != null,
+        contractSignedForToday = signed?.date == DayKey.today(),
+        contractTaskCount = signed?.tasks?.size ?: 0,
+        plannedContentSummary = (contract ?: signed)?.plannedContent?.joinToString(", ")?.ifBlank { null } ?: "Zatím bez plánu",
         zoneStatus = when (comfort) {
             ComfortContext.HOME -> ZoneStatus.HOME
             ComfortContext.AWAY -> ZoneStatus.AWAY

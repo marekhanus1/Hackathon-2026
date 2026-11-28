@@ -2,7 +2,6 @@ package cz.narsil.verify
 
 import cz.narsil.core.ContractRepository
 import cz.narsil.core.PhotoKind
-import cz.narsil.core.PlanRules
 import cz.narsil.core.PlanTask
 import cz.narsil.core.Proof
 import cz.narsil.core.TaskStatus
@@ -146,12 +145,9 @@ class TaskVerificationService(
         return when (task.status) {
             TaskStatus.VERIFIED -> if (feedback.isEmpty()) "Ověřeno" else "Ověřeno – $feedback."
             TaskStatus.REJECTED -> {
+                // Zbývající pokusy ukazuje karta zamítnutí („Zbývající pokusy: N z 3“), tady se neopakují.
                 val why = feedback.ifEmpty { "zkus jiný důkaz" }
-                if (task.attempts >= PlanRules.MAX_ATTEMPTS) {
-                    "Zamítnuto – $why. Pokusy došly."
-                } else {
-                    "Zamítnuto – $why. (zbývá ${PlanRules.MAX_ATTEMPTS - task.attempts})"
-                }
+                "Zamítnuto – $why."
             }
             TaskStatus.VERIFY_LATER -> outcome.reason.ifBlank { "Ověří se později, až bude síť." }
             TaskStatus.PENDING -> ""

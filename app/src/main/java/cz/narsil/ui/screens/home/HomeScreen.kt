@@ -223,12 +223,12 @@ private fun ContractStatusCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = if (state.contractCompletedToday) {
+            containerColor = if (state.contractDone) {
                 colors.positiveContainer
             } else {
                 colors.echoContainer
             },
-            contentColor = if (state.contractCompletedToday) {
+            contentColor = if (state.contractDone) {
                 colors.onPositiveContainer
             } else {
                 colors.onEchoContainer
@@ -242,11 +242,7 @@ private fun ContractStatusCard(
             verticalArrangement = Arrangement.spacedBy(spacing.xs)
         ) {
             Text(
-                text = if (state.contractCompletedToday) {
-                    "Večerní smlouva je podepsaná (+100 XP)"
-                } else {
-                    "Večerní smlouva čeká (2 minuty)"
-                },
+                text = state.contractTitle,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -265,16 +261,12 @@ private fun ContractStatusCard(
                     onClick = onOpenContract,
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (state.contractCompletedToday) colors.positive else colors.echo,
-                        contentColor = if (state.contractCompletedToday) colors.onPositive else colors.onEcho
+                        containerColor = if (state.contractDone) colors.positive else colors.echo,
+                        contentColor = if (state.contractDone) colors.onPositive else colors.onEcho
                     )
                 ) {
                     Text(
-                        text = if (state.contractCompletedToday) {
-                            "Upravit dnešní plán"
-                        } else {
-                            "Uzavřít večerní smlouvu"
-                        }
+                        text = state.contractButton
                     )
                 }
 

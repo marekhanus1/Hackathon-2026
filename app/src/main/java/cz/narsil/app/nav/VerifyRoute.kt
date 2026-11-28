@@ -68,6 +68,8 @@ fun VerifyRoute(onBack: () -> Unit) {
     var text by rememberSaveable(task.id) { mutableStateOf("") }
     var photo by rememberSaveable(task.id) { mutableStateOf<String?>(null) }
     var pendingPhoto by remember { mutableStateOf<Uri?>(null) }
+    // „Zkusit znovu“ po zamítnutí: znovu formulář důkazu, dokud se nezapíše další pokus.
+    var retrying by rememberSaveable(task.id, task.attempts) { mutableStateOf(false) }
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
         if (ok) photo = pendingPhoto?.toString()
     }
@@ -94,16 +96,10 @@ fun VerifyRoute(onBack: () -> Unit) {
         textProof = text,
         maxTextLength = PlanRules.MAX_TEXT_PROOF_CHARS,
         minTextLength = VerifyRules.MIN_TEXT_CHARS,
-        status = when {
-            event?.running == true -> VerificationStatus.VERIFYING
-            task.status == TaskStatus.VERIFIED -> VerificationStatus.VERIFIED
-            task.status == TaskStatus.REJECTED -> VerificationStatus.REJECTED
-            task.status == TaskStatus.VERIFY_LATER -> VerificationStatus.VERIFY_LATER
-            else -> VerificationStatus.PENDING
-        },
+        status = verifyStatus(task, running = event?.running == true, retrying = retrying),
         attemptsUsed = task.attempts,
         maxAttempts = PlanRules.MAX_ATTEMPTS,
-        statusMessage = event?.reason.orEmpty(),
+        statusMessage = if (retrying) "" else event?.reason.orEmpty(),
     )
 
     VerifyTaskScreen(
@@ -134,10 +130,24 @@ fun VerifyRoute(onBack: () -> Unit) {
             } else {
                 photo = null
                 text = ""
+                retrying = true
             }
         },
         onBack = onBack,
     )
+}
+
+/**
+ * Stav obrazovky ověření. Po „Zkusit znovu“ ([retrying]) se u zamítnutého úkolu znovu ukáže formulář
+ * důkazu, dokud zbývají pokusy a nezapíše se další pokus.
+ */
+internal fun verifyStatus(task: PlanTask, running: Boolean, retrying: Boolean): VerificationStatus = when {
+    running -> VerificationStatus.VERIFYING
+    task.status == TaskStatus.VERIFIED -> VerificationStatus.VERIFIED
+    task.status == TaskStatus.REJECTED && retrying && task.canRetry -> VerificationStatus.PENDING
+    task.status == TaskStatus.REJECTED -> VerificationStatus.REJECTED
+    task.status == TaskStatus.VERIFY_LATER -> VerificationStatus.VERIFY_LATER
+    else -> VerificationStatus.PENDING
 }
 
 @Composable
