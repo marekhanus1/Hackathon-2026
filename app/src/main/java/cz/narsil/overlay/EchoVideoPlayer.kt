@@ -28,6 +28,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import cz.narsil.ui.theme.NeuColors
 
 /**
  * Video Ozvěny (113) přes ExoPlayer. Přehraje [uri] jednou se zvukem; při chybě nebo bez videa
@@ -43,6 +44,7 @@ fun EchoVideoPlayer(uri: String?, fallbackText: String?, modifier: Modifier = Mo
         Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
                 text = fallbackText ?: "Čemu se teď vyhýbáš?",
+                color = NeuColors.Text,
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(16.dp),
