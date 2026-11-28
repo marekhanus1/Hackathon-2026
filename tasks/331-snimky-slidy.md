@@ -1,9 +1,9 @@
 ---
-status: in-progress
+status: review
 owner: jan
 agent: gemini
 branch: jan/gemini/331-snimky-slidy
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/75
 ---
 
 # 331 – Snímky obrazovek a slidy
