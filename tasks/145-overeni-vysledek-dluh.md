@@ -3,7 +3,7 @@ status: review
 owner: marek
 agent: claude
 branch: marek/claude/145-overeni-vysledek-dluh
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/105
 ---
 
 # 145 – Výsledek ověření, délka videa, dluh na Domově
