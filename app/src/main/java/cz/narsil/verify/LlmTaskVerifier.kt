@@ -45,11 +45,11 @@ class LlmTaskVerifier(
     private val network: NetworkStatus = NetworkStatus { true },
     private val strava: StravaRepository? = null,
     private val timeoutMillis: Long = LlmDefaults.TIMEOUT_MILLIS,
-) : TaskVerifier {
+) : TaskVerifier, DetailedVerifier {
 
     override suspend fun verify(task: PlanTask, proof: Proof): VerificationResult = verifyDetailed(task, proof).result
 
-    suspend fun verifyDetailed(task: PlanTask, proof: Proof): VerificationOutcome = runCatching {
+    override suspend fun verifyDetailed(task: PlanTask, proof: Proof): VerificationOutcome = runCatching {
         when (proof) {
             is Proof.Text -> verifyText(task, proof)
             is Proof.Photo -> verifyPhoto(task, proof)

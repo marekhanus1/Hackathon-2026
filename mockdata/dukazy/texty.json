@@ -1,0 +1,29 @@
+{
+  "popis": "Textové důkazy pro demo ověření (522). expected = co má LLM odpovědět.",
+  "dukazy": [
+    {
+      "ukol": "Dopsat report",
+      "cil": "",
+      "text": "Report o měření kroků je dopsaný a odeslaný vedoucímu v 16:40, má 4 strany a závěr s doporučeními.",
+      "expected": "ANO"
+    },
+    {
+      "ukol": "Dopsat report",
+      "cil": "",
+      "text": "jo udělal",
+      "expected": "NE"
+    },
+    {
+      "ukol": "Lineární algebra",
+      "cil": "kapitola 3, příklady 1–10",
+      "text": "Spočítal jsem příklady 1–10 z kapitoly 3, u 7 vyšel determinant −12, u 9 jsem musel použít Gaussovu eliminaci.",
+      "expected": "ANO"
+    },
+    {
+      "ukol": "Lineární algebra",
+      "cil": "kapitola 3, příklady 1–10",
+      "text": "Dneska jsem koukal na seriál a uklízel.",
+      "expected": "NE"
+    }
+  ]
+}
