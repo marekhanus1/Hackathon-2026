@@ -115,6 +115,15 @@ class GenericFeedTest {
         ForegroundSnapshot(pkg, WatchedApp.of(pkg) ?: WatchedApp.OTHER, SnapshotKind.WINDOW_CHANGED, 0, cls, null, ids.map { "$pkg:id/$it" }.toSet(), editFields = edits)
 
     @Test
+    fun linkedInSearchDoesNotTreatTheFeedHeaderAsAResultsPage() {
+        val linkedIn = "com.linkedin.android"
+        val header = setOf("search_bar", "search_input")
+        assertNull(SurfaceClassifier.classify(snap(linkedIn, ids = header)))
+        assertEquals(Surface.SEARCH, SurfaceClassifier.classify(snap(linkedIn, ids = header, edits = listOf("search_input|hledat"))))
+        assertEquals(Surface.SEARCH, SurfaceClassifier.classify(snap(linkedIn, ids = header + "search_results_list")))
+    }
+
+    @Test
     fun conversationsAndSearchFromSnapshot() {
         // X: spodní lišta (vč. zpráv) a tlačítko nového příspěvku jsou vidět všude – feed z toho nepoznáme, chat ne.
         val xShell = setOf("tabs", "dms_tab", "composer_write", "channels_tab_icon")

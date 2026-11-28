@@ -18,7 +18,7 @@ enum class SnapshotKind { WINDOW_CHANGED, SCROLLED, CONTENT_CHANGED }
  * @param selectedTab ID (bez balíčku) vybrané záložky ve spodní liště, např. "feed_tab", "clips_tab"; null = nezjištěno
  * @param video stav přehrávače YouTube (134): aplikace YouTube, nebo video na youtube.com ve Firefoxu; jinak null
  * @param editFields viditelná editovatelná pole jako „id|nápověda“ malými písmeny (149: pole pro zprávu / hledání);
- *   text, který uživatel píše, se nečte
+ *   u LinkedInu jen aktivní vyhledávací pole. Text, který uživatel píše, se nečte.
  * @param scroll údaje ze scroll události (149, obecná detekce feedu); null u jiných událostí
  */
 data class ForegroundSnapshot(
