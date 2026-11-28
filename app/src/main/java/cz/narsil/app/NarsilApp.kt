@@ -6,6 +6,9 @@ import android.app.Application
 class NarsilApp : Application() {
     override fun onCreate() {
         super.onCreate()
+        // ML Kit si pouští vlastní proces (cz.narsil:mlkit_acceleration_mini_benchmark), který taky vytvoří
+        // Application. Tam nic nespouštět: druhá kopie Wi-Fi, Ozvěny a hlídací služby by se prala s hlavní.
+        if (getProcessName() != packageName) return
         ServiceLocator.init(this)
         EchoOverlayStarter.start()
         // Proces mohl vypnout systém (MIUI): jednou za čas říct, co nastavit, a obnovit hlídací službu.

@@ -34,7 +34,7 @@ data class OnboardingUiState(
     val miuiAutoStartDone: Boolean = false,
     val miuiBatteryDone: Boolean = false,
     val miuiBackgroundPopupDone: Boolean = false,
-    /** MIUI: Narsil zamčený v posledních aplikacích (jinak ho „Vyčistit vše“ zabije i se službou). */
+    /** MIUI: Narsil zamčený v posledních aplikacích – jen pojistka, služba na popředí „Vyčistit vše“ přežije (Redmi Note 11, 28. 11.). */
     val miuiLockDone: Boolean = false,
     /** Video pro Ozvěnu z onboardingu (SPEC 9, záloha než vznikne video ze smlouvy) – 139. */
     val video: OnboardingVideoState = OnboardingVideoState(),

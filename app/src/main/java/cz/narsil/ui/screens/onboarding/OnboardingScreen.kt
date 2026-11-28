@@ -225,12 +225,12 @@ fun OnboardingScreen(
                                 )
                                 MiuiCheckRow(
                                     checked = state.miuiLockDone,
-                                    label = "Zamknout Narsil v posledních aplikacích",
+                                    label = "Zamknout Narsil v posledních aplikacích (nepovinné)",
                                     onToggle = onToggleMiuiLock
                                 )
                                 if (!state.miuiLockDone) {
                                     Text(
-                                        text = "Otevři přehled aplikací (přejeď zdola nahoru a podrž), podrž kartu Narsil a klepni na zámek.",
+                                        text = "Pojistka navíc: v přehledu aplikací (čtvereček dole) stáhni kartu Narsil dolů, nebo ji podrž a klepni na zámek. Když tam zámek není, nevadí – Narsil hlídá i tak.",
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }

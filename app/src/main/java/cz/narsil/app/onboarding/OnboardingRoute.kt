@@ -176,12 +176,12 @@ fun OnboardingRoute(onDone: () -> Unit) {
             OnboardingPrefs.setMiuiStep(context, "lock", miuiLock)
         },
         onFinishOnboarding = {
-            // Notifikace (zpráva Parťákovi) a mikrofon (video smlouvy) jsou nepovinné: jedna žádost na konci.
+            // Notifikace (hlídání, zpráva Parťákovi) jsou nepovinné: jedna žádost na konci. Mikrofon se žádá
+            // až s kamerou při natáčení videa (smlouva, video pro Ozvěnu), ne tady.
             val optional = buildList {
                 if (Build.VERSION.SDK_INT >= 33 && !PermissionChecker.has(context, Manifest.permission.POST_NOTIFICATIONS)) {
                     add(Manifest.permission.POST_NOTIFICATIONS)
                 }
-                if (!PermissionChecker.has(context, Manifest.permission.RECORD_AUDIO)) add(Manifest.permission.RECORD_AUDIO)
             }
             if (optional.isNotEmpty()) runtime.launch(optional.toTypedArray())
             OnboardingPrefs.setDone(context)
