@@ -39,7 +39,7 @@ object NeuColors {
 
     val OnSky = Color(0xFFFFFFFF)
     val OnSkyMuted = Color(0xF2FFFFFF)
-    val SkyTextShadow = Color(0xCC00578E)
+    val SkyTextShadow = Color(0xF2003C66)
     /** Světlé varianty pro text na nebi. */
     val OnSkyAccent = Color(0xFFD8F6FF)
     val OnSkySuccess = Color(0xFFBAFF73)

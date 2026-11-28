@@ -103,7 +103,7 @@ fun NeuText(
             lineHeight = lineHeight,
             letterSpacing = letterSpacing,
             textAlign = align ?: TextAlign.Unspecified,
-            shadow = if (onSky) Shadow(NeuColors.SkyTextShadow, Offset(0f, 2f), 6f) else null,
+            shadow = if (onSky) Shadow(NeuColors.SkyTextShadow, Offset(0f, 2f), 14f) else null,
         ),
         maxLines = maxLines,
         overflow = if (maxLines == Int.MAX_VALUE) TextOverflow.Clip else TextOverflow.Ellipsis,

@@ -80,7 +80,7 @@ private fun brush(style: AeroStyle, size: Size): Brush {
     val r = max(w, h).coerceAtLeast(1f)
     return when (style) {
         AeroStyle.Glass -> Brush.linearGradient(
-            listOf(Color(0xEBFFFFFF), Color(0xC4CFFAFF)), Offset.Zero, Offset(w, h * 1.2f),
+            listOf(Color(0xF2FFFFFF), Color(0xD9D6FAFF)), Offset.Zero, Offset(w, h * 1.2f),
         )
         AeroStyle.Frost -> Brush.linearGradient(listOf(Color(0xD9FFFFFF), Color(0xC7F3FDFF)))
         AeroStyle.BlueGlass -> Brush.linearGradient(

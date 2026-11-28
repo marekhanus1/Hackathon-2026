@@ -16,20 +16,18 @@ ROOT = Path(__file__).resolve().parent
 src = (ROOT / "narsil-pitch.html").read_text(encoding="utf-8")
 
 # slide -> screenshot (cesty relativní k pitch/)
+# Ozvěna, dřepy a hodnocení videa zatím z původních maket (screenshot by zasáhl do dat / ukázal kameru).
 SHOTS = {
-    "s06": "snimky-aero/01-ukoly.png",
-    "s07": "snimky-aero/02-plan.png",
-    "s08": "snimky-aero/03-ozvena.png",
-    "s09": "snimky-aero/04-drepy.png",
-    "s10": "snimky-aero/05-hodnoceni.png",
-    "s11": "snimky-aero/06-zrcadlo.png",
+    "s06": "snimky-aero/01-ukoly.jpg",
+    "s07": "snimky-aero/02-plan.jpg",
+    "s11": "snimky-aero/06-zrcadlo.jpg",
 }
 GALLERY = [
-    ("snimky-aero/01-ukoly.png", "Úkoly"),
-    ("snimky-aero/07-overeni.png", "Ověření úkolu"),
-    ("snimky-aero/02-plan.png", "Plán na zítra"),
-    ("snimky-aero/06-zrcadlo.png", "Zrcadlo"),
-    ("snimky-aero/08-odznaky.png", "Odznaky"),
+    ("snimky-aero/01-ukoly.jpg", "Úkoly"),
+    ("snimky-aero/07-overeni.jpg", "Ověření úkolu"),
+    ("snimky-aero/02-plan.jpg", "Plán na zítra"),
+    ("snimky-aero/06-zrcadlo.jpg", "Zrcadlo"),
+    ("snimky-aero/08-odznaky.jpg", "Odznaky"),
 ]
 
 AERO_CSS = """
