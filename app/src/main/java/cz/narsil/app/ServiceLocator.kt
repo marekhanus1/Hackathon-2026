@@ -7,6 +7,18 @@ import cz.narsil.core.fake.FakeRewardService
 import cz.narsil.gamification.GamificationModule
 import cz.narsil.gamification.reward.TaskRewardService
 import cz.narsil.movement.MovementModule
+import cz.narsil.core.ContentMatcher
+import cz.narsil.core.StravaRepository
+import cz.narsil.core.TaskVerifier
+import cz.narsil.core.fake.FakeContentMatcher
+import cz.narsil.core.fake.FakeStravaRepository
+import cz.narsil.core.fake.FakeTaskVerifier
+import cz.narsil.integrations.strava.HttpStravaRepository
+import cz.narsil.llm.client.MultiProviderLlmClient
+import cz.narsil.llm.matcher.LlmContentMatcher
+import cz.narsil.verify.AndroidNetworkStatus
+import cz.narsil.verify.TaskVerificationService
+import cz.narsil.verify.VerificationModule
 import cz.narsil.core.ContextRepository
 import cz.narsil.core.ContractRepository
 import cz.narsil.core.EchoVideoRepository
@@ -157,6 +169,36 @@ object ServiceLocator {
         get() = cached("reward") {
             if (useFakes) FakeRewardService(movementRepository, gamificationEngine)
             else TaskRewardService.create(appContext, movementRepository, gamificationEngine)
+        }
+
+    // Ověření úkolů, LLM a Strava (5xx). Klíče z BuildConfig; chybějící = poskytovatel vypnutý.
+
+    /** Je video v plánu? (512) LLM podle `Settings.llmProvider`, bez sítě záloha přes klíčová slova. */
+    val contentMatcher: ContentMatcher
+        get() = cached("contentMatcher") {
+            if (useFakes) FakeContentMatcher()
+            else LlmContentMatcher(
+                MultiProviderLlmClient({ settingsRepository.settings.value.llmProvider }),
+                isOnline = AndroidNetworkStatus(appContext)::isOnline,
+            )
+        }
+
+    val stravaRepository: StravaRepository
+        get() = cached("strava") { if (useFakes) FakeStravaRepository() else HttpStravaRepository.create(appContext) }
+
+    /** Ověřovač úkolů (501/522) včetně demo přepínače „vždy ANO“ (DemoAwareTaskVerifier). */
+    val taskVerifier: TaskVerifier
+        get() = cached("taskVerifier") {
+            if (useFakes) FakeTaskVerifier(stravaRepository)
+            else VerificationModule.verifier(appContext, settingsRepository, stravaRepository)
+        }
+
+    /** Ověření + stav pro UI + odměna (520/521). Při návratu sítě zkusí VERIFY_LATER znovu. */
+    val verification: TaskVerificationService
+        get() = cached("verification") {
+            VerificationModule.service(contractRepository, taskVerifier, rewardService).also {
+                if (!useFakes) VerificationModule.networkTrigger(appContext, it, appScope).start()
+            }
         }
 
     val squatCounter: SquatCounter
