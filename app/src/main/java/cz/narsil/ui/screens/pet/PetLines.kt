@@ -40,6 +40,41 @@ object PetLines {
         "Čas odložit displej a nechat hlavu odpočinout. Sladké sny.",
     )
 
+    private val greetingInputs = setOf(
+        "ahoj",
+        "cau",
+        "cus",
+        "nazdar",
+        "dobre rano",
+        "dobry den",
+        "dobry vecer",
+        "dobrou noc",
+    )
+
+    private val greetingReplies = listOf(
+        "Ahoj! Jsem tady, kdybys chtěl na chvilku vypnout feed.",
+        "Zdravím! Jak se ti dnes daří držet směr?",
+        "Ahoj! Stačí jeden malý krok mimo displej a hned je líp.",
+        "Ráda tě vidím. Co máš dnes v plánu?",
+    )
+
+    private val thanksReplies = listOf(
+        "Není vůbec zač. Jsem tu s tebou kdykoli budeš potřebovat.",
+        "Rádo se stalo! Držím ti palce do další chvíle klidu.",
+        "Kdykoli. Každý malý krok bez feedu se počítá.",
+    )
+
+    private val boredFallbackReplies = listOf(
+        "Zkus se na chvilku protáhnout nebo udělat 10 dřepů. Případně si dojdi pro sklenici vody.",
+        "Dej telefonu na pět minut pauzu a koukni z okna. Často to stačí na vyčištění hlavy.",
+        "Co zkusit krátkou procházku po pokoji nebo pustit si jednu oblíbenou písničku bez videa?",
+    )
+
+    private val tiredReplies = listOf(
+        "Když je hlava unavená, scrollování ji jen vyčerpá víc. Odlož telefon a dopřej si spánek.",
+        "Únava si říká o klid, ne o další obrazovku. Zkus na chvíli zavřít oči a vydechnout.",
+    )
+
     private val crisisKeywords = listOf(
         "nechci zit",
         "zabit",
@@ -59,6 +94,10 @@ object PetLines {
     private const val CRISIS_REPLY =
         "To zní hodně těžce a nemusíš na to být sám. Zkus prosím zavolat na Linku první psychické pomoci 116 123, jsou tam nonstop."
 
+    /** Normalizuje text pro klíčování v cache a lokální porovnání (bez diakritiky, lowercase). */
+    fun normalizeKey(text: String): String =
+        normalize(text).replace(Regex("\\s+"), " ").trim()
+
     /** Vybere deterministickou uvítací větu podle kontextu, nálady a indexu dne. */
     fun greeting(ctx: PetContext, mood: PetMood, dayIndex: Int): String {
         val pool = when {
@@ -77,28 +116,42 @@ object PetLines {
         return crisisKeywords.any { normalized.contains(it) }
     }
 
-    /** Offline odpověď sovy bez volání LLM. */
-    fun reply(userText: String, ctx: PetContext): String {
+    /**
+     * Okamžitá lokální odpověď s 0 API voláními pro krizi, krátké pozdravy, poděkování
+     * a standardní rychlé volby. Pro otevřené dotazy vrací null (ty mohou jít do Gemini API).
+     */
+    fun tryLocalReply(userText: String, ctx: PetContext, turnIndex: Int = 0): String? {
         if (isCrisis(userText)) return CRISIS_REPLY
-        val norm = normalize(userText)
-        return when {
-            norm.contains("nuda") || norm.contains("nudim") || norm.contains("scroll") -> {
-                val firstTask = ctx.plannedTasks.firstOrNull { it.isNotBlank() }
-                if (firstTask != null) {
-                    "Co třeba: $firstTask? Stačí pár minut a hned budeš mít lepší pocit."
-                } else {
-                    "Zkus se na chvilku protáhnout nebo udělat 10 dřepů. Případně si dojdi pro sklenici vody."
-                }
-            }
-            norm.contains("unav") || norm.contains("spat") || norm.contains("ospal") -> {
-                "Když je hlava unavená, scrollování ji jen vyčerpá víc. Odlož telefon a dopřej si spánek."
-            }
-            norm.contains("jak se mi dari") || norm.contains("jak se dari") || norm.contains("skore") -> {
-                "Dnes máš získaných ${ctx.reclaimedMinutes} min oproti ${ctx.feedMinutes} min feedu. Série je ${ctx.streakDays} dní a každé zavření se počítá."
-            }
-            else -> fallbackReplies[floorMod(userText.length, fallbackReplies.size)]
+        val norm = normalizeKey(userText)
+        if (norm.isEmpty()) return null
+
+        if (norm.length <= 24 && (norm in greetingInputs || norm.startsWith("ahoj ") || norm.startsWith("cau "))) {
+            return greetingReplies[floorMod(turnIndex, greetingReplies.size)]
         }
+        if (norm.length <= 32 && (norm.contains("diky") || norm.contains("dekuju") || norm.contains("dekuji"))) {
+            return thanksReplies[floorMod(turnIndex, thanksReplies.size)]
+        }
+        if (norm.contains("nuda") || norm.contains("nudim") || norm.contains("scroll")) {
+            val tasks = ctx.plannedTasks.filter { it.isNotBlank() }
+            if (tasks.isNotEmpty()) {
+                val task = tasks[floorMod(turnIndex, tasks.size)]
+                return "Co třeba: $task? Stačí pár minut a hned budeš mít lepší pocit."
+            }
+            return boredFallbackReplies[floorMod(turnIndex, boredFallbackReplies.size)]
+        }
+        if (norm.contains("unav") || norm.contains("spat") || norm.contains("ospal")) {
+            return tiredReplies[floorMod(turnIndex, tiredReplies.size)]
+        }
+        if (norm.contains("jak se mi dari") || norm.contains("jak se dari") || norm.contains("skore")) {
+            return "Dnes máš získaných ${ctx.reclaimedMinutes} min oproti ${ctx.feedMinutes} min feedu. Série je ${ctx.streakDays} dní a každé zavření se počítá."
+        }
+        return null
     }
+
+    /** Offline odpověď sovy bez volání LLM. */
+    fun reply(userText: String, ctx: PetContext, turnIndex: Int = 0): String =
+        tryLocalReply(userText, ctx, turnIndex)
+            ?: fallbackReplies[floorMod(userText.length + turnIndex, fallbackReplies.size)]
 
     /** Ořízne odpověď na max 2 věty a 280 znaků, odstraní okolní uvozovky a přebytečné mezery. */
     fun shorten(text: String): String {

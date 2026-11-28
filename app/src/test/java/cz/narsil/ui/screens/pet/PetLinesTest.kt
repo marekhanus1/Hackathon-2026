@@ -1,6 +1,8 @@
 package cz.narsil.ui.screens.pet
 
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -39,5 +41,15 @@ class PetLinesTest {
             val text = PetLines.greeting(ctx, mood, dayIndex = 1)
             assertTrue("Greeting empty for $mood", text.isNotBlank())
         }
+    }
+
+    @Test
+    fun `tryLocalReply handles quick replies, greetings and crisis without api, returns null for open prompt`() {
+        val ctx = PetContext(plannedTasks = listOf("Přečíst kapitolu"))
+
+        assertNotNull(PetLines.tryLocalReply("Mám chuť scrollovat", ctx))
+        assertNotNull(PetLines.tryLocalReply("Ahoj", ctx))
+        assertNotNull(PetLines.tryLocalReply("Už nechci žít", ctx))
+        assertNull(PetLines.tryLocalReply("Proč mě dneska nebaví učení na fyziku?", ctx))
     }
 }
