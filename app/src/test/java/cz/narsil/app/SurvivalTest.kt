@@ -67,6 +67,29 @@ class SurvivalTest {
     }
 
     @Test
+    fun closeWindowSurvivesProcessDeath() {
+        val t = ScrollSessionTracker()
+        for (m in 0L..5L) t.observe("com.instagram.android", Surface.REELS, ComfortContext.HOME, m * min, 5 * min, scrolled = true)
+        t.onClosed(5 * min)
+        val saved = t.snapshot()
+        assertNotNull(saved) // bez relace i odemčení, ale s oknem po Zavřít (158)
+        assertEquals(15 * min, saved!!.relapseUntilMillis)
+
+        // Proces zabit, návrat do feedu v 8. minutě: Ozvěna hned, ne až po nové toleranci.
+        val restarted = ScrollSessionTracker()
+        restarted.restore(saved, 7 * min)
+        assertNotNull(restarted.observe("com.zhiliaoapp.musically", Surface.FEED, ComfortContext.HOME, 8 * min, 5 * min, scrolled = true))
+    }
+
+    @Test
+    fun expiredCloseWindowNotRestored() {
+        val saved = SavedSession(0, "", Surface.FEED, 0, 0, hasSession = false, relapseUntilMillis = 15 * min)
+        val t = ScrollSessionTracker()
+        t.restore(saved, 16 * min)
+        assertNull(t.observe("com.instagram.android", Surface.REELS, ComfortContext.HOME, 16 * min, 5 * min, scrolled = true))
+    }
+
+    @Test
     fun onboardingNeedsOnlyAccessibilityAndWifi() {
         val base = OnboardingUiState(detectedWifiSsid = "Domov", homeWifiSsid = "Domov")
         assertFalse(base.permissions.any { it.type.name == "OVERLAY" }) // překrytí oken už není krok

@@ -239,6 +239,7 @@ class AccessibilityTriggerSource(
         val prev = lastSaved
         val changed = force || current?.startedAtMillis != prev?.startedAtMillis ||
             current?.packageName != prev?.packageName || current?.unlockedUntilMillis != prev?.unlockedUntilMillis ||
+            current?.relapseUntilMillis != prev?.relapseUntilMillis ||
             (current != null && prev != null && current.lastEndlessAtMillis - prev.lastEndlessAtMillis >= 15_000)
         if (!changed) return
         lastSaved = current

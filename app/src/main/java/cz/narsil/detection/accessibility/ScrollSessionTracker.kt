@@ -163,18 +163,21 @@ class ScrollSessionTracker(
     fun snapshot(): SavedSession? {
         val s = session
         return when {
-            s != null -> SavedSession(s.startedAtMillis, s.packageName, s.surface, lastEndlessAt, unlockedUntil)
-            unlockedUntil > 0 -> SavedSession(0, "", Surface.FEED, 0, unlockedUntil, hasSession = false)
+            s != null -> SavedSession(s.startedAtMillis, s.packageName, s.surface, lastEndlessAt, unlockedUntil, relapseUntilMillis = relapseUntil)
+            unlockedUntil > 0 || relapseUntil > 0 ->
+                SavedSession(0, "", Surface.FEED, 0, unlockedUntil, hasSession = false, relapseUntilMillis = relapseUntil)
             else -> null
         }
     }
 
     /**
      * Obnoví relaci po restartu procesu: pokračuje, jen když od posledního nekonečného obsahu neuběhla
-     * pauza (jinak by stejně skončila). Zaplacený čas platí, dokud nevyprší.
+     * pauza (jinak by stejně skončila). Zaplacený čas a okno po „Zavřít“ platí, dokud nevyprší.
      */
     fun restore(saved: SavedSession, now: Long) {
         if (saved.unlockedUntilMillis > now) unlockedUntil = saved.unlockedUntilMillis
+        // 158: okno po „Zavřít“ (155) platí i po restartu – návrat do feedu pořád zasáhne hned.
+        if (saved.relapseUntilMillis > now) relapseUntil = saved.relapseUntilMillis
         if (!saved.hasSession || saved.packageName.isEmpty() || now - saved.lastEndlessAtMillis > pauseMillis) return
         session = Session(saved.startedAtMillis, saved.packageName, saved.surface)
         lastEndlessAt = saved.lastEndlessAtMillis
