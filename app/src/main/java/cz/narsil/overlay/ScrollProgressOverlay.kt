@@ -47,9 +47,13 @@ class ScrollProgressOverlay(private val context: Context) {
     fun dismiss() = runOnMain { removeBar() }
 
     private fun addBar(): BarView? {
-        if (context !is AccessibilityService && !Settings.canDrawOverlays(context)) return null
+        if (context !is AccessibilityService && !Settings.canDrawOverlays(context)) {
+            Log.w("NarsilProgress", "ukazatel: bez oprávnění k překrytí")
+            return null
+        }
         val view = BarView(context)
         return runCatching { wm.addView(view, layoutParams()) }
+            .onSuccess { Log.d("NarsilProgress", "ukazatel: okno přidáno") }
             .onFailure { Log.w(TAG, "ukazatel limitu: addView selhal", it) }
             .map { view.also { bar = it } }
             .getOrNull()
