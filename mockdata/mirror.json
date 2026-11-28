@@ -1,0 +1,790 @@
+{
+  "critical_hour": "21:00",
+  "insights": [
+    "Nejčastěji utíkáš na TikTok kolem 21:00, když se ti nechce do úkolů.",
+    "Za poslední týden sis vzal zpátky 9 h 10 min.",
+    "Od feedu jsi 26× odešel sám.",
+    "Minut feedu ubylo z 142 na 33 denně.",
+    "Relaps 23. 11. nevadí – další den jsi navázal a série zase roste."
+  ],
+  "days": [
+    {
+      "day_index": 1,
+      "date": "2026-11-07",
+      "feed_minutes": 142,
+      "reclaimed_minutes": 0,
+      "planned_minutes": 45,
+      "by_app": {
+        "instagram": 95,
+        "tiktok": 47
+      },
+      "interventions": [
+        {
+          "time": "20:10",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "PAID_STEPS",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:47",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "BORROWED",
+          "avoiding": "unava"
+        },
+        {
+          "time": "22:30",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "SQUATS",
+          "avoiding": "ukol"
+        }
+      ],
+      "steps": 4200,
+      "squats": 20,
+      "debt_minutes": 10,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 30
+    },
+    {
+      "day_index": 2,
+      "date": "2026-11-08",
+      "feed_minutes": 135,
+      "reclaimed_minutes": 0,
+      "planned_minutes": 30,
+      "by_app": {
+        "tiktok": 90,
+        "youtube": 45
+      },
+      "interventions": [
+        {
+          "time": "19:40",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "PAID_STEPS",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:15",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "BORROWED",
+          "avoiding": "unava"
+        },
+        {
+          "time": "22:05",
+          "app": "youtube",
+          "surface": "SHORTS",
+          "outcome": "BORROWED",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 3900,
+      "squats": 0,
+      "debt_minutes": 20,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 10
+    },
+    {
+      "day_index": 3,
+      "date": "2026-11-09",
+      "feed_minutes": 118,
+      "reclaimed_minutes": 20,
+      "planned_minutes": 50,
+      "by_app": {
+        "instagram": 59,
+        "tiktok": 59
+      },
+      "interventions": [
+        {
+          "time": "20:30",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "SQUATS",
+          "avoiding": "ukol"
+        },
+        {
+          "time": "21:30",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "PAID_STEPS",
+          "avoiding": "nuda"
+        }
+      ],
+      "steps": 6400,
+      "squats": 20,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": false,
+      "xp_gained": 130
+    },
+    {
+      "day_index": 4,
+      "date": "2026-11-10",
+      "feed_minutes": 128,
+      "reclaimed_minutes": 0,
+      "planned_minutes": 20,
+      "by_app": {
+        "instagram": 43,
+        "tiktok": 85
+      },
+      "interventions": [
+        {
+          "time": "19:55",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "BORROWED",
+          "avoiding": "samota"
+        },
+        {
+          "time": "21:20",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "BORROWED",
+          "avoiding": "unava"
+        },
+        {
+          "time": "22:40",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "PAID_STEPS",
+          "avoiding": "nuda"
+        }
+      ],
+      "steps": 4500,
+      "squats": 0,
+      "debt_minutes": 20,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 10
+    },
+    {
+      "day_index": 5,
+      "date": "2026-11-11",
+      "feed_minutes": 110,
+      "reclaimed_minutes": 25,
+      "planned_minutes": 40,
+      "by_app": {
+        "instagram": 37,
+        "tiktok": 73
+      },
+      "interventions": [
+        {
+          "time": "20:20",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:35",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "PAID_STEPS",
+          "avoiding": "unava"
+        },
+        {
+          "time": "22:50",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "BORROWED",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 5200,
+      "squats": 0,
+      "debt_minutes": 10,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 60
+    },
+    {
+      "day_index": 6,
+      "date": "2026-11-12",
+      "feed_minutes": 95,
+      "reclaimed_minutes": 45,
+      "planned_minutes": 55,
+      "by_app": {
+        "instagram": 48,
+        "tiktok": 47
+      },
+      "interventions": [
+        {
+          "time": "20:05",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "SQUATS",
+          "avoiding": "ukol"
+        },
+        {
+          "time": "21:10",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        }
+      ],
+      "steps": 6800,
+      "squats": 20,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": false,
+      "xp_gained": 320
+    },
+    {
+      "day_index": 7,
+      "date": "2026-11-13",
+      "feed_minutes": 104,
+      "reclaimed_minutes": 15,
+      "planned_minutes": 25,
+      "by_app": {
+        "instagram": 35,
+        "tiktok": 35,
+        "youtube": 34
+      },
+      "interventions": [
+        {
+          "time": "19:30",
+          "app": "youtube",
+          "surface": "SHORTS",
+          "outcome": "PAID_STEPS",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:40",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "BORROWED",
+          "avoiding": "samota"
+        },
+        {
+          "time": "22:15",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 4900,
+      "squats": 0,
+      "debt_minutes": 10,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 60
+    },
+    {
+      "day_index": 8,
+      "date": "2026-11-14",
+      "feed_minutes": 88,
+      "reclaimed_minutes": 55,
+      "planned_minutes": 60,
+      "by_app": {
+        "instagram": 44,
+        "tiktok": 44
+      },
+      "interventions": [
+        {
+          "time": "20:45",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        },
+        {
+          "time": "21:25",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "SQUATS",
+          "avoiding": "nuda"
+        }
+      ],
+      "steps": 6900,
+      "squats": 20,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": false,
+      "xp_gained": 180
+    },
+    {
+      "day_index": 9,
+      "date": "2026-11-15",
+      "feed_minutes": 82,
+      "reclaimed_minutes": 35,
+      "planned_minutes": 35,
+      "by_app": {
+        "instagram": 27,
+        "tiktok": 55
+      },
+      "interventions": [
+        {
+          "time": "20:00",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:05",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "PAID_STEPS",
+          "avoiding": "unava"
+        },
+        {
+          "time": "22:20",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "SQUATS",
+          "avoiding": "ukol"
+        }
+      ],
+      "steps": 5600,
+      "squats": 20,
+      "debt_minutes": 0,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 90
+    },
+    {
+      "day_index": 10,
+      "date": "2026-11-16",
+      "feed_minutes": 70,
+      "reclaimed_minutes": 70,
+      "planned_minutes": 50,
+      "by_app": {
+        "instagram": 35,
+        "tiktok": 35
+      },
+      "interventions": [
+        {
+          "time": "19:50",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        },
+        {
+          "time": "21:30",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        }
+      ],
+      "steps": 7200,
+      "squats": 0,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": false,
+      "xp_gained": 360
+    },
+    {
+      "day_index": 11,
+      "date": "2026-11-17",
+      "feed_minutes": 66,
+      "reclaimed_minutes": 65,
+      "planned_minutes": 45,
+      "by_app": {
+        "tiktok": 33,
+        "youtube": 33
+      },
+      "interventions": [
+        {
+          "time": "20:15",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:45",
+          "app": "youtube",
+          "surface": "SHORTS",
+          "outcome": "SQUATS",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 7400,
+      "squats": 20,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": false,
+      "xp_gained": 180
+    },
+    {
+      "day_index": 12,
+      "date": "2026-11-18",
+      "feed_minutes": 72,
+      "reclaimed_minutes": 35,
+      "planned_minutes": 30,
+      "by_app": {
+        "instagram": 24,
+        "tiktok": 48
+      },
+      "interventions": [
+        {
+          "time": "19:45",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "PAID_STEPS",
+          "avoiding": "samota"
+        },
+        {
+          "time": "21:20",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "22:35",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "BORROWED",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 5800,
+      "squats": 0,
+      "debt_minutes": 10,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 225
+    },
+    {
+      "day_index": 13,
+      "date": "2026-11-19",
+      "feed_minutes": 58,
+      "reclaimed_minutes": 70,
+      "planned_minutes": 55,
+      "by_app": {
+        "instagram": 19,
+        "tiktok": 39
+      },
+      "interventions": [
+        {
+          "time": "20:30",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        },
+        {
+          "time": "21:15",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "22:10",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "SQUATS",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 7600,
+      "squats": 20,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": true,
+      "xp_gained": 380
+    },
+    {
+      "day_index": 14,
+      "date": "2026-11-20",
+      "feed_minutes": 61,
+      "reclaimed_minutes": 45,
+      "planned_minutes": 40,
+      "by_app": {
+        "instagram": 30,
+        "tiktok": 31
+      },
+      "interventions": [
+        {
+          "time": "20:05",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:50",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "PAID_STEPS",
+          "avoiding": "samota"
+        }
+      ],
+      "steps": 6100,
+      "squats": 0,
+      "debt_minutes": 0,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 70
+    },
+    {
+      "day_index": 15,
+      "date": "2026-11-21",
+      "feed_minutes": 49,
+      "reclaimed_minutes": 90,
+      "planned_minutes": 60,
+      "by_app": {
+        "tiktok": 33,
+        "youtube": 16
+      },
+      "interventions": [
+        {
+          "time": "19:40",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        },
+        {
+          "time": "21:00",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "22:25",
+          "app": "youtube",
+          "surface": "SHORTS",
+          "outcome": "SQUATS",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 8100,
+      "squats": 20,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": true,
+      "xp_gained": 380
+    },
+    {
+      "day_index": 16,
+      "date": "2026-11-22",
+      "feed_minutes": 45,
+      "reclaimed_minutes": 80,
+      "planned_minutes": 50,
+      "by_app": {
+        "instagram": 22,
+        "tiktok": 23
+      },
+      "interventions": [
+        {
+          "time": "20:20",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:35",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        }
+      ],
+      "steps": 7900,
+      "squats": 0,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": true,
+      "xp_gained": 360
+    },
+    {
+      "day_index": 17,
+      "date": "2026-11-23",
+      "feed_minutes": 63,
+      "reclaimed_minutes": 25,
+      "planned_minutes": 20,
+      "by_app": {
+        "instagram": 21,
+        "tiktok": 42
+      },
+      "interventions": [
+        {
+          "time": "20:10",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "SQUATS",
+          "avoiding": "unava"
+        },
+        {
+          "time": "21:25",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "BORROWED",
+          "avoiding": "unava"
+        },
+        {
+          "time": "22:45",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        }
+      ],
+      "steps": 5300,
+      "squats": 20,
+      "debt_minutes": 10,
+      "contract_fulfilled": false,
+      "battle_won": false,
+      "xp_gained": 85
+    },
+    {
+      "day_index": 18,
+      "date": "2026-11-24",
+      "feed_minutes": 41,
+      "reclaimed_minutes": 90,
+      "planned_minutes": 55,
+      "by_app": {
+        "instagram": 14,
+        "tiktok": 27
+      },
+      "interventions": [
+        {
+          "time": "20:00",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        },
+        {
+          "time": "21:10",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "22:00",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "SQUATS",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 8400,
+      "squats": 20,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": true,
+      "xp_gained": 390
+    },
+    {
+      "day_index": 19,
+      "date": "2026-11-25",
+      "feed_minutes": 38,
+      "reclaimed_minutes": 80,
+      "planned_minutes": 60,
+      "by_app": {
+        "instagram": 19,
+        "tiktok": 19
+      },
+      "interventions": [
+        {
+          "time": "19:35",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:20",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        }
+      ],
+      "steps": 8600,
+      "squats": 50,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": true,
+      "xp_gained": 375
+    },
+    {
+      "day_index": 20,
+      "date": "2026-11-26",
+      "feed_minutes": 36,
+      "reclaimed_minutes": 80,
+      "planned_minutes": 45,
+      "by_app": {
+        "tiktok": 18,
+        "youtube": 18
+      },
+      "interventions": [
+        {
+          "time": "20:25",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "21:40",
+          "app": "youtube",
+          "surface": "SHORTS",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        }
+      ],
+      "steps": 8800,
+      "squats": 0,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": true,
+      "xp_gained": 370
+    },
+    {
+      "day_index": 21,
+      "date": "2026-11-27",
+      "feed_minutes": 33,
+      "reclaimed_minutes": 105,
+      "planned_minutes": 50,
+      "by_app": {
+        "instagram": 11,
+        "tiktok": 22
+      },
+      "interventions": [
+        {
+          "time": "20:10",
+          "app": "instagram",
+          "surface": "REELS",
+          "outcome": "CLOSED",
+          "avoiding": "ukol"
+        },
+        {
+          "time": "21:30",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "nuda"
+        },
+        {
+          "time": "22:20",
+          "app": "tiktok",
+          "surface": "FEED",
+          "outcome": "CLOSED",
+          "avoiding": "unava"
+        }
+      ],
+      "steps": 8900,
+      "squats": 0,
+      "debt_minutes": 0,
+      "contract_fulfilled": true,
+      "battle_won": true,
+      "xp_gained": 415
+    }
+  ]
+}

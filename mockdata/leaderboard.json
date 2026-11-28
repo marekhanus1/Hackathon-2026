@@ -1,0 +1,47 @@
+{
+  "party_name": "Kovárna",
+  "challenge": {
+    "title": "200 000 kroků za týden",
+    "steps_goal": 200000,
+    "steps_done": 203400,
+    "ends": "2026-11-30"
+  },
+  "members": [
+    {
+      "name": "Bára",
+      "is_me": false,
+      "reclaimed_minutes": 610,
+      "steps": 61200,
+      "streak_days": 9,
+      "level": 11,
+      "avatar_state": 5
+    },
+    {
+      "name": "Ty",
+      "is_me": true,
+      "reclaimed_minutes": 550,
+      "steps": 56000,
+      "streak_days": 4,
+      "level": 9,
+      "avatar_state": 4
+    },
+    {
+      "name": "Kuba",
+      "is_me": false,
+      "reclaimed_minutes": 410,
+      "steps": 47300,
+      "streak_days": 5,
+      "level": 7,
+      "avatar_state": 4
+    },
+    {
+      "name": "Ondra",
+      "is_me": false,
+      "reclaimed_minutes": 240,
+      "steps": 38900,
+      "streak_days": 2,
+      "level": 4,
+      "avatar_state": 2
+    }
+  ]
+}

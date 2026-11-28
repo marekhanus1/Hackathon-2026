@@ -1,0 +1,440 @@
+{
+  "ratings": [
+    {
+      "date": "2026-11-14",
+      "title": "Ownership za 20 minut",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "pochopit borrow checker",
+      "planned": true,
+      "watched_percent": 95,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-14",
+      "title": "Kdo s kým TENTOKRÁT",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 90,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-15",
+      "title": "Když je pondělí #312",
+      "channel": "Memes denně",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 100,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-15",
+      "title": "Těstoviny za 60 s",
+      "channel": "Kuchyně za minutu",
+      "format": "SHORT",
+      "intent": "nápad na večeři",
+      "planned": false,
+      "watched_percent": 80,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-16",
+      "title": "Lifetimes bez bolesti",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "lifetimes",
+      "planned": true,
+      "watched_percent": 88,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-16",
+      "title": "Rozchod roku?!",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 85,
+      "rating": 1
+    },
+    {
+      "date": "2026-11-17",
+      "title": "Proč je nebe modré",
+      "channel": "Fyzika v kostce",
+      "format": "LONG",
+      "intent": "",
+      "planned": true,
+      "watched_percent": 92,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-17",
+      "title": "Kočka vs. okurka",
+      "channel": "Kočičí svět",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 100,
+      "rating": 3
+    },
+    {
+      "date": "2026-11-18",
+      "title": "Další skandál",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 95,
+      "rating": 1
+    },
+    {
+      "date": "2026-11-18",
+      "title": "Když je pondělí #318",
+      "channel": "Memes denně",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 90,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-18",
+      "title": "Traity v praxi",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "traity",
+      "planned": true,
+      "watched_percent": 70,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-19",
+      "title": "Polévka za 60 s",
+      "channel": "Kuchyně za minutu",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 75,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-19",
+      "title": "Kdo lže?",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 90,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-20",
+      "title": "Černé díry za 15 minut",
+      "channel": "Fyzika v kostce",
+      "format": "LONG",
+      "intent": "na odpočinek",
+      "planned": true,
+      "watched_percent": 96,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-20",
+      "title": "Když je pondělí #321",
+      "channel": "Memes denně",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 85,
+      "rating": 1
+    },
+    {
+      "date": "2026-11-21",
+      "title": "Async Rust",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "async",
+      "planned": true,
+      "watched_percent": 90,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-21",
+      "title": "Kočka a krabice",
+      "channel": "Kočičí svět",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 60,
+      "rating": 3
+    },
+    {
+      "date": "2026-11-22",
+      "title": "Shrnutí týdne",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 88,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-22",
+      "title": "Chybové typy",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "error handling",
+      "planned": true,
+      "watched_percent": 85,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-23",
+      "title": "Konec přátelství?",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 98,
+      "rating": 1
+    },
+    {
+      "date": "2026-11-23",
+      "title": "Když je pondělí #330",
+      "channel": "Memes denně",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 100,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-23",
+      "title": "Reakce na reakci",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 92,
+      "rating": 1
+    },
+    {
+      "date": "2026-11-24",
+      "title": "Kvantové tunelování",
+      "channel": "Fyzika v kostce",
+      "format": "LONG",
+      "intent": "",
+      "planned": true,
+      "watched_percent": 90,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-25",
+      "title": "Makra pro začátečníky",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "makra",
+      "planned": true,
+      "watched_percent": 93,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-25",
+      "title": "Rizoto za 60 s",
+      "channel": "Kuchyně za minutu",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 70,
+      "rating": 3
+    },
+    {
+      "date": "2026-11-26",
+      "title": "Entropie lidsky",
+      "channel": "Fyzika v kostce",
+      "format": "LONG",
+      "intent": "",
+      "planned": true,
+      "watched_percent": 88,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-24",
+      "title": "Kari za 60 s",
+      "channel": "Kuchyně za minutu",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 65,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-24",
+      "title": "Kdo vyhrál hádku",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 80,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-24",
+      "title": "Iterátory",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "iterátory",
+      "planned": true,
+      "watched_percent": 91,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-25",
+      "title": "Proč padají letadla? (nepadají)",
+      "channel": "Fyzika v kostce",
+      "format": "LONG",
+      "intent": "",
+      "planned": true,
+      "watched_percent": 89,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-25",
+      "title": "Když je pondělí #335",
+      "channel": "Memes denně",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 70,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-25",
+      "title": "Kočka na klávesnici",
+      "channel": "Kočičí svět",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 55,
+      "rating": 3
+    },
+    {
+      "date": "2026-11-26",
+      "title": "Unsafe Rust",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "unsafe",
+      "planned": true,
+      "watched_percent": 86,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-26",
+      "title": "Palačinky za 60 s",
+      "channel": "Kuchyně za minutu",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 72,
+      "rating": 4
+    },
+    {
+      "date": "2026-11-26",
+      "title": "Usmíření?",
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 75,
+      "rating": 2
+    },
+    {
+      "date": "2026-11-27",
+      "title": "Přednáška: Rust v embedded",
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "intent": "přednáška o Rustu",
+      "planned": true,
+      "watched_percent": 97,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-27",
+      "title": "Teplota a pohyb molekul",
+      "channel": "Fyzika v kostce",
+      "format": "LONG",
+      "intent": "",
+      "planned": true,
+      "watched_percent": 90,
+      "rating": 5
+    },
+    {
+      "date": "2026-11-27",
+      "title": "Když je pondělí #340",
+      "channel": "Memes denně",
+      "format": "SHORT",
+      "intent": "",
+      "planned": false,
+      "watched_percent": 60,
+      "rating": 2
+    }
+  ],
+  "channels": [
+    {
+      "channel": "Rust za kafe",
+      "format": "LONG",
+      "views": 9,
+      "minutes": 174,
+      "avg_watched_percent": 88,
+      "avg_rating": 4.7,
+      "verdict": "KEEP"
+    },
+    {
+      "channel": "Fyzika v kostce",
+      "format": "LONG",
+      "views": 6,
+      "minutes": 82,
+      "avg_watched_percent": 91,
+      "avg_rating": 4.5,
+      "verdict": "KEEP"
+    },
+    {
+      "channel": "Drama Recap CZ",
+      "format": "SHORT",
+      "views": 72,
+      "minutes": 63,
+      "avg_watched_percent": 88,
+      "avg_rating": 1.6,
+      "verdict": "TRAP"
+    },
+    {
+      "channel": "Memes denně",
+      "format": "SHORT",
+      "views": 48,
+      "minutes": 40,
+      "avg_watched_percent": 84,
+      "avg_rating": 1.8,
+      "verdict": "TRAP"
+    },
+    {
+      "channel": "Kuchyně za minutu",
+      "format": "SHORT",
+      "views": 40,
+      "minutes": 29,
+      "avg_watched_percent": 72,
+      "avg_rating": 3.8,
+      "verdict": "NEUTRAL"
+    },
+    {
+      "channel": "Kočičí svět",
+      "format": "SHORT",
+      "views": 24,
+      "minutes": 17,
+      "avg_watched_percent": 72,
+      "avg_rating": 3.0,
+      "verdict": "NEUTRAL"
+    }
+  ]
+}
