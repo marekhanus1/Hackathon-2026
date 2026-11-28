@@ -3,7 +3,7 @@ status: in-progress
 owner: stepan
 agent: codex
 branch: stepan/codex/333-task-first-contract
-pr:
+pr: https://github.com/marekhanus1/Hackathon-2026/pull/130
 ---
 
 # 333 – Task-first obrazovka smlouvy
