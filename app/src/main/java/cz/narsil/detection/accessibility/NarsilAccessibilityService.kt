@@ -99,7 +99,7 @@ class NarsilAccessibilityService : AccessibilityService() {
             video = result?.let { videoOf(app, it, now) },
         )
         AccessibilityEvents.emit(snapshot)
-        snapshot.video?.takeIf { it.ended || it.durationMillis != null }?.let { Log.d(TAG, "video: $it") }
+        snapshot.video?.takeIf { it.ended || it.durationMillis != null || kind == SnapshotKind.WINDOW_CHANGED }?.let { Log.d(TAG, "video: $it") }
         if (kind == SnapshotKind.WINDOW_CHANGED || snapshot.url != null) {
             Log.d(TAG, "popředí: $app ($pkg) okno=${snapshot.className} tab=${snapshot.selectedTab} url=${snapshot.url} ids=${snapshot.viewIds.size}")
         }
